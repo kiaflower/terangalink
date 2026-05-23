@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
       <!-- CTA -->
       <a
-        href={`${platformUrl}/login`}
+        href="${platformUrl}/login"
         style="display:block;background:#F97316;color:white;text-align:center;padding:14px 24px;border-radius:12px;font-weight:700;font-size:15px;text-decoration:none;margin-bottom:16px;"
       >
         Accéder à mon tableau de bord →
