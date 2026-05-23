@@ -1,0 +1,213 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Clock, Truck, Phone, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+
+const JOURS = [
+  { key: 'lundi', label: 'Lundi' },
+  { key: 'mardi', label: 'Mardi' },
+  { key: 'mercredi', label: 'Mercredi' },
+  { key: 'jeudi', label: 'Jeudi' },
+  { key: 'vendredi', label: 'Vendredi' },
+  { key: 'samedi', label: 'Samedi' },
+  { key: 'dimanche', label: 'Dimanche' },
+] as const
+
+type HoursEntry = { ouverture: string; fermeture: string; ferme: boolean }
+type OpeningHours = Partial<Record<string, HoursEntry>>
+
+export default function SettingsPage() {
+  const supabase = createClient()
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [restaurantId, setRestaurantId] = useState<string | null>(null)
+
+  const [whatsapp, setWhatsapp] = useState('')
+  const [openingHours, setOpeningHours] = useState<OpeningHours>({})
+  const [deliveryFee, setDeliveryFee] = useState('0')
+  const [showDeliveryFee, setShowDeliveryFee] = useState(false)
+
+  const loadData = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data: profile } = await supabase.from('profiles').select('restaurant_id').eq('id', user.id).single()
+    if (!profile?.restaurant_id) { setLoading(false); return }
+    setRestaurantId(profile.restaurant_id)
+
+    const { data: r } = await supabase.from('restaurants').select('whatsapp_number, opening_hours, delivery_fee, show_delivery_fee').eq('id', profile.restaurant_id).single()
+    if (r) {
+      setWhatsapp(r.whatsapp_number || '')
+      setOpeningHours((r.opening_hours as OpeningHours) || {})
+      setDeliveryFee(String(r.delivery_fee || 0))
+      setShowDeliveryFee(r.show_delivery_fee || false)
+    }
+    setLoading(false)
+  }, [supabase])
+
+  useEffect(() => { loadData() }, [loadData])
+
+  function updateHours(jour: string, field: 'ouverture' | 'fermeture' | 'ferme', value: string | boolean) {
+    setOpeningHours(prev => ({
+      ...prev,
+      [jour]: {
+        ouverture: '08:00',
+        fermeture: '22:00',
+        ferme: false,
+        ...(prev[jour] || {}),
+        [field]: value,
+      },
+    }))
+  }
+
+  async function handleSave() {
+    if (!restaurantId) return
+    setSaving(true)
+    setMessage(null)
+
+    const { error } = await supabase.from('restaurants').update({
+      whatsapp_number: whatsapp || null,
+      opening_hours: openingHours,
+      delivery_fee: parseInt(deliveryFee) || 0,
+      show_delivery_fee: showDeliveryFee,
+    }).eq('id', restaurantId)
+
+    setSaving(false)
+    setMessage(error
+      ? { type: 'error', text: 'Erreur lors de la sauvegarde.' }
+      : { type: 'success', text: 'Paramètres mis à jour avec succès !' }
+    )
+    setTimeout(() => setMessage(null), 3000)
+  }
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-64"><Loader2 className="w-8 h-8 animate-spin text-brand-orange" /></div>
+  }
+
+  return (
+    <div className="p-6 sm:p-8 max-w-2xl">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Paramètres</h1>
+          <p className="text-gray-500 text-sm mt-1">Horaires, WhatsApp et livraison</p>
+        </div>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60"
+        >
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          Enregistrer
+        </button>
+      </div>
+
+      {message && (
+        <div className={`flex items-center gap-3 p-4 rounded-xl mb-6 ${message.type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
+          {message.type === 'success' ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+          {message.text}
+        </div>
+      )}
+
+      <div className="space-y-6">
+        {/* WhatsApp */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Phone className="w-4 h-4 text-brand-orange" />
+            <h2 className="text-white font-semibold text-sm">WhatsApp</h2>
+          </div>
+          <div>
+            <label className="text-gray-400 text-xs block mb-1.5">Numéro WhatsApp (ex: 221771234567)</label>
+            <input
+              type="text"
+              value={whatsapp}
+              onChange={e => setWhatsapp(e.target.value)}
+              placeholder="221771234567"
+              className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+            />
+            <p className="text-gray-600 text-xs mt-1">Format international sans + ni espaces. Les commandes seront envoyées sur ce numéro.</p>
+          </div>
+        </div>
+
+        {/* Livraison */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Truck className="w-4 h-4 text-brand-orange" />
+            <h2 className="text-white font-semibold text-sm">Livraison</h2>
+          </div>
+          <div className="space-y-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showDeliveryFee}
+                onChange={e => setShowDeliveryFee(e.target.checked)}
+                className="w-4 h-4 accent-brand-orange"
+              />
+              <span className="text-gray-300 text-sm">Afficher les frais de livraison sur la page du restaurant</span>
+            </label>
+            {showDeliveryFee && (
+              <div>
+                <label className="text-gray-400 text-xs block mb-1.5">Frais de livraison (FCFA)</label>
+                <input
+                  type="number"
+                  value={deliveryFee}
+                  onChange={e => setDeliveryFee(e.target.value)}
+                  placeholder="2000"
+                  min="0"
+                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Horaires */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <Clock className="w-4 h-4 text-brand-orange" />
+            <h2 className="text-white font-semibold text-sm">Horaires d&apos;ouverture</h2>
+          </div>
+          <div className="space-y-4">
+            {JOURS.map(({ key, label }) => {
+              const h = openingHours[key]
+              const ferme = h?.ferme || false
+              return (
+                <div key={key} className="flex items-center gap-3 flex-wrap">
+                  <span className="text-gray-400 text-sm w-24 flex-shrink-0">{label}</span>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!ferme}
+                      onChange={e => updateHours(key, 'ferme', !e.target.checked)}
+                      className="w-4 h-4 accent-brand-orange"
+                    />
+                    <span className="text-xs text-gray-500">Ouvert</span>
+                  </label>
+                  {!ferme ? (
+                    <>
+                      <input
+                        type="time"
+                        value={h?.ouverture || '08:00'}
+                        onChange={e => updateHours(key, 'ouverture', e.target.value)}
+                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28"
+                      />
+                      <span className="text-gray-600 text-xs">→</span>
+                      <input
+                        type="time"
+                        value={h?.fermeture || '22:00'}
+                        onChange={e => updateHours(key, 'fermeture', e.target.value)}
+                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28"
+                      />
+                    </>
+                  ) : (
+                    <span className="text-xs text-red-400">Fermé</span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

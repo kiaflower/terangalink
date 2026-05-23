@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+  body {
+    background-color: #0A0A0A;
+    color: #ffffff;
+    font-family: var(--font-geist-sans), Inter, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #1C1C1C; }
+  ::-webkit-scrollbar-thumb { background: #2E2E2E; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #F97316; }
+  :focus-visible { outline: 2px solid #F97316; outline-offset: 2px; }
+}
+
+@layer components {
+  .container-app { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
+  .section { @apply py-16 sm:py-24; }
+  .heading-xl { @apply font-sans font-black text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight; }
+  .heading-lg { @apply font-sans font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight tracking-tight; }
+  .heading-md { @apply font-sans text-2xl sm:text-3xl font-bold tracking-tight; }
+  .text-gradient { @apply bg-gradient-to-r from-brand-orange via-brand-gold to-brand-orange-light bg-clip-text text-transparent; }
+  .glow-orange { box-shadow: 0 0 40px rgba(249,115,22,0.12), 0 0 80px rgba(249,115,22,0.04); }
+  .stats-grid { @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4; }
+  .form-card { @apply bg-surface-50 border border-surface-200 rounded-2xl p-6 sm:p-8; }
+
+  /* Glass card */
+  .glass-card {
+    @apply bg-white/[0.03] border border-white/[0.08] rounded-2xl backdrop-blur-sm;
+  }
+}
