@@ -309,6 +309,7 @@ function RestaurantInner({ data }: Props) {
           <Home className="w-3.5 h-3.5" />
           Accueil
         </a>
+        )}
       {/* Desktop demo button */}
       {restaurant.is_demo && (
         <a
