@@ -300,7 +300,7 @@ function RestaurantInner({ data }: Props) {
       </div>
 
       {/* Floating "Retour à l'accueil" — demo only */}
-      restaurant.is_demo
+        {restaurant.is_demo && (
         <a
           href="/"
           className="lg:hidden fixed top-4 left-4 z-40 flex items-center gap-2 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg transition-all"
