@@ -45,10 +45,10 @@ export function QRCodeButton({ url, restaurantName, tokens }: QRCodeButtonProps)
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
         style={{
-          backgroundColor: `${tokens.accent}12`,
-          color: tokens.accentText,
-          border: `1px solid ${tokens.accent}25`,
-        }}
+  backgroundColor: 'rgba(0,0,0,0.65)',
+  color: 'white',
+  border: '1px solid rgba(255,255,255,0.15)',
+}}
       >
         <QrCode className="w-3.5 h-3.5" />
         QR Code
