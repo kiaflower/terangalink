@@ -303,7 +303,7 @@ function RestaurantInner({ data }: Props) {
       restaurant.is_demo
         <a
           href="/"
-          className="lg:hidden fixed top-4 right-4 z-40 flex items-center gap-2 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg transition-all"
+          className="lg:hidden fixed top-4 left-4 z-40 flex items-center gap-2 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg transition-all"
           style={{ backgroundColor: tokens.accent, boxShadow: `0 4px 20px ${tokens.accent}40` }}
         >
           <Home className="w-3.5 h-3.5" />
@@ -313,7 +313,7 @@ function RestaurantInner({ data }: Props) {
       {restaurant.is_demo && (
         <a
           href="/"
-          className="hidden lg:flex fixed top-6 right-6 z-40 items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg transition-all hover:opacity-90"
+          className="hidden lg:flex fixed top-6 left-6 z-40 items-center gap-2 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg transition-all hover:opacity-90"
           style={{ backgroundColor: tokens.accent, boxShadow: `0 4px 20px ${tokens.accent}40` }}
         >
           <Home className="w-4 h-4" />
