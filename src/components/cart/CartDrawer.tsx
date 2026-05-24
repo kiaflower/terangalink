@@ -31,7 +31,7 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      restaurant_id: restaurant.id,
+      restaurant_id: 'demo',
       event_type: 'open_cart'
     })
   })
