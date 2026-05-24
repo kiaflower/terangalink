@@ -111,7 +111,7 @@ function RestaurantInner({ data }: Props) {
         <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${tokens.bgPage} 0%, ${tokens.bgPage}60 40%, transparent 100%)` }} />
 
         {/* TerangaLink branding - hide if annuel */}
-        {!canHideBranding && (
+        {!canHideBranding && !restaurant.is_demo && (
           <a href="/" className="absolute top-3 left-4 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
             <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: tokens.accent }}>
               <Zap className="w-3 h-3 text-white" />
