@@ -12,7 +12,7 @@ const WHATSAPP_MSG = encodeURIComponent("Bonjour, j'ai découvert TerangaLink et
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`
 
 // Contact info — also editable in super admin settings
-export const CONTACT_INFO = {
+const CONTACT_INFO = {
   whatsapp: WHATSAPP_NUMBER,
   email: 'support@terangalink.sn',
   city: 'Dakar, Sénégal',
