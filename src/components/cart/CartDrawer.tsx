@@ -24,17 +24,23 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
     <>
       {totalItems > 0 && (
         <button
-          onClick={() => {
-  fetch('/api/analytics/track', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      restaurant_id: 'demo',
-      event_type: 'open_cart'
+          onClick={async () => {
+  try {
+    await fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        restaurant_id: 'demo',
+        event_type: 'open_cart'
+      })
     })
-  })
+
+    console.log('TRACK SENT')
+  } catch (error) {
+    console.error(error)
+  }
 
   setOpen(true)
 }}
