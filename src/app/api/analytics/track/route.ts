@@ -11,12 +11,17 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient()
-    await supabase.from('analytics_events').insert({
-      restaurant_id,
-      event_type,
-      item_id: item_id || null,
-      item_name: item_name || null,
-    })
+    const { data, error } = await supabase
+  .from('analytics_events')
+  .insert({
+    restaurant_id,
+    event_type,
+    item_id: item_id || null,
+    item_name: item_name || null,
+  })
+
+console.log('SUPABASE DATA:', data)
+console.log('SUPABASE ERROR:', error)
 
     return NextResponse.json({ success: true })
   } catch {
