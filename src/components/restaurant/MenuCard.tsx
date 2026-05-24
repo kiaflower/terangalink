@@ -36,7 +36,7 @@ export function MenuCard({ item, restaurantId, restaurantSlug, restaurantPhone, 
       {/* Image */}
       <div className="relative w-full h-40 overflow-hidden" style={{ backgroundColor: tokens.bgCardHover }}>
         {item.image_url ? (
-          <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 640px) 50vw, 33vw" loading="lazy" />
+          <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 640px) 50vw, 33vw" loading="lazy" unoptimized/>
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: tokens.bgCardHover }}>
             <span className="text-4xl opacity-30">🍽️</span>
