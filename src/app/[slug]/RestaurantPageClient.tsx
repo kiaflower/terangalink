@@ -83,7 +83,7 @@ function RestaurantInner({ data }: Props) {
   return (
     <div style={style} className="min-h-screen">
       {/* Demo banner */}
-      {restaurant.slug === 'chez-teranga' && (
+      {restaurant.is_demo && (
         <div className="text-white text-center text-xs py-2 px-4 font-semibold" style={{ backgroundColor: `${tokens.accent}CC` }}>
           Ceci est un site démo TerangaLink —
 <a
@@ -300,7 +300,7 @@ function RestaurantInner({ data }: Props) {
       </div>
 
       {/* Floating "Retour à l'accueil" — demo only */}
-      restaurant.slug === 'chez-teranga'
+      restaurant.is_demo
         <a
           href="/"
           className="lg:hidden fixed top-4 right-4 z-40 flex items-center gap-2 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-lg transition-all"
