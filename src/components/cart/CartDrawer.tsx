@@ -24,7 +24,16 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
     <>
       {totalItems > 0 && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={ fetch('/api/analytics/track', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    restaurant_id: restaurant.id,
+    event_type: 'open_cart'
+  })
+}) => setOpen(true)}
           className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 text-white px-6 py-3.5 rounded-full shadow-2xl font-semibold text-sm"
           style={{ backgroundColor: tokens.accent, boxShadow: `0 8px 30px ${tokens.accent}40` }}
         >
