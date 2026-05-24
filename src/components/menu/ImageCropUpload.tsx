@@ -305,7 +305,7 @@ export function ImageCropUpload({
       >
         {value ? (
           <>
-            <Image src={value} alt="Preview" fill className="object-cover" sizes="320px" />
+            <Image src={value} alt="Preview" fill className="object-cover" sizes="320px" unoptimized />
             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
               <p className="text-white text-xs font-semibold">Changer</p>
             </div>

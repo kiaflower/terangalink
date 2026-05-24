@@ -120,7 +120,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
             <div key={item.id} className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: tokens.bgCardHover }}>
               {item.image_url && (
                 <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                  <Image src={item.image_url} alt={item.name} fill className="object-cover" sizes="48px" />
+                  <Image src={item.image_url} alt={item.name} fill className="object-cover" sizes="48px" unoptimized />
                 </div>
               )}
               <div className="flex-1 min-w-0">
