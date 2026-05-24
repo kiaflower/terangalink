@@ -103,6 +103,7 @@ function RestaurantInner({ data }: Props) {
           <Image
             src={(restaurant as { banner_url?: string }).banner_url || restaurant.cover_url!}
             alt={restaurant.name} fill className="object-cover" priority sizes="100vw"
+          unoptimized
           />
         ) : (
           <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${tokens.accent}25 0%, ${tokens.bgPage} 100%)` }} />
@@ -151,7 +152,7 @@ function RestaurantInner({ data }: Props) {
         <div className="flex items-end gap-4 mb-3">
           <div className="w-20 h-20 rounded-2xl border-4 flex-shrink-0 overflow-hidden shadow-xl" style={{ borderColor: tokens.bgPage, backgroundColor: tokens.bgCard }}>
             {restaurant.logo_url ? (
-              <Image src={restaurant.logo_url} alt={restaurant.name} width={80} height={80} className="object-cover w-full h-full" />
+              <Image src={restaurant.logo_url} alt={restaurant.name} width={80} height={80} className="object-cover w-full h-full" unoptimized/>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl font-black" style={{ color: tokens.accent }}>
                 {restaurant.name.charAt(0)}
@@ -308,7 +309,6 @@ function RestaurantInner({ data }: Props) {
           <Home className="w-3.5 h-3.5" />
           Accueil
         </a>
-      )}
       {/* Desktop demo button */}
       {restaurant.is_demo && (
         <a
