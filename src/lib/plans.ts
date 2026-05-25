@@ -42,7 +42,7 @@ export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
   mensuel: {
     maxPlats: 20,
     maxAdmins: 1,
-    modeClairSombre: false,
+    modeClairSombre: true,
     couleursPersonnalisees: false,
     brandingPersonnalise: false,
     suppressionBranding: false,
@@ -84,18 +84,15 @@ export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
 }
 
 export function getPlanFeatures(plan: string): PlanFeatures {
-  // Backward compat: map old plan names
   const normalized = normalizePlan(plan)
   return PLAN_FEATURES[normalized] ?? PLAN_FEATURES.mensuel
 }
 
 export function normalizePlan(plan: string): PlanType {
-  if (['mensuel', 'trimestriel', 'annuel'].includes(plan)) return plan as PlanType
-  // Map legacy names
-  if (plan === 'mensuel') return 'mensuel'
-  if (plan === 'trimestriel') return 'trimestriel'
-  if (plan === 'annuel') return 'annuel'
-  if (plan === 'trial') return 'mensuel'
+  const normalized = (plan || '').trim().toLowerCase()
+  if (['mensuel', 'trimestriel', 'annuel'].includes(normalized)) return normalized as PlanType
+  if (normalized === 'premium') return 'annuel'
+  if (normalized === 'free' || normalized === 'demo' || normalized === 'gratuit' || normalized === 'trial') return 'mensuel'
   return 'mensuel'
 }
 

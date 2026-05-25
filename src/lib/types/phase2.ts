@@ -30,6 +30,7 @@ export interface MenuItem {
 }
 
 export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+export type PaymentMethod = 'cash' | 'wave' | 'orange_money'
 
 export interface OrderItem {
   id: string
@@ -46,6 +47,7 @@ export interface Order {
   customer_phone: string | null
   items: OrderItem[]
   total: number
+  payment_method: PaymentMethod | null
   status: OrderStatus
   notes: string | null
   created_at: string

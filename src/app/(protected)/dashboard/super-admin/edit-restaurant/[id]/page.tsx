@@ -39,6 +39,10 @@ export default function EditRestaurantPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const supabase = createClient()
+  const settings = useSettings()
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : settings.platform_url
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -88,94 +92,119 @@ export default function EditRestaurantPage() {
   const [resetSuccess, setResetSuccess] = useState(false)
   const [resetError, setResetError] = useState<string | null>(null)
 
-  const settings = useSettings()
-  const planFeatures = getPlanFeatures(plan)
-  const maxAdmins = planFeatures.maxAdmins
+  const maxAdmins = getPlanFeatures(plan).maxAdmins
 
   const loadData = useCallback(async () => {
-    const { data: r } = await supabase.from('restaurants').select('*').eq('id', id).single()
+    setLoading(true)
+
+    const { data: r } = await supabase
+      .from('restaurants')
+      .select('*')
+      .eq('id', id)
+      .single()
+
     if (!r) { router.push('/dashboard/super-admin/restaurants'); return }
 
     setRestaurantName(r.name)
-    setName(r.name); setSlug(r.slug); setDescription(r.description || '')
-    setCity(r.city || ''); setAddress(r.address || ''); setPhone(r.phone || '')
-    setWhatsapp(r.whatsapp_number || ''); setLogoUrl(r.logo_url)
-    setBannerUrl(r.banner_url || r.cover_url); setPrimaryColor(r.primary_color || '#F97316')
-    setBgColor(r.background_color || '#0A0A0A'); setThemeMode(r.theme_mode || 'dark')
-    setIsActive(r.is_active); setOpeningHours((r.opening_hours as OpeningHours) || {})
-    setDeliveryFee(String(r.delivery_fee || 0)); setShowDeliveryFee(r.show_delivery_fee || false)
+    setName(r.name)
+    setSlug(r.slug || '')
+    setDescription(r.description || '')
+    setCity(r.city || '')
+    setAddress(r.address || '')
+    setPhone(r.phone || '')
+    setWhatsapp(r.whatsapp_number || '')
+    setLogoUrl(r.logo_url)
+    setBannerUrl(r.banner_url || r.cover_url)
+    setPrimaryColor(r.primary_color || '#F97316')
+    setBgColor(r.background_color || '#0A0A0A')
+    setThemeMode(r.theme_mode || 'dark')
+    setIsActive(r.is_active ?? true)
+    setOpeningHours((r.opening_hours as OpeningHours) || {})
+    setDeliveryFee(String(r.delivery_fee ?? 0))
+    setShowDeliveryFee(!!r.show_delivery_fee)
 
-    // Subscription
-    const { data: sub } = await supabase.from('subscriptions').select('*').eq('restaurant_id', id).single()
-    if (sub) { setPlan(sub.plan as PlanType); setSubStatus(sub.status); setSubId(sub.id) }
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('restaurant_id', id)
+      .single()
 
-    // Admins linked to this restaurant
-    const { data: adminList } = await supabase
+    if (sub) {
+      setSubId(sub.id)
+      setPlan((sub.plan as PlanType) || 'mensuel')
+      setSubStatus(sub.status || 'active')
+    }
+
+    const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, email, full_name, restaurant_id')
+      .select('id,email,full_name,restaurant_id')
       .eq('restaurant_id', id)
       .eq('role', 'restaurant_admin')
-    setAdmins(adminList ?? [])
 
+    setAdmins((profiles as AdminProfile[]) || [])
     setLoading(false)
   }, [id, router, supabase])
 
   useEffect(() => { loadData() }, [loadData])
 
-  function updateHours(jour: string, field: 'ouverture' | 'fermeture' | 'ferme', value: string | boolean) {
-    setOpeningHours(prev => ({
-      ...prev,
-      [jour]: { ouverture: '08:00', fermeture: '22:00', ferme: false, ...(prev[jour] || {}), [field]: value },
-    }))
-  }
-
   async function handleSave() {
     setSaving(true)
-    const updates = {
-      name, slug, description: description || null, city: city || null, address: address || null,
-      phone: phone || null, whatsapp_number: whatsapp || null, logo_url: logoUrl,
-      banner_url: bannerUrl, cover_url: bannerUrl,
-      primary_color: primaryColor, background_color: bgColor, theme_mode: themeMode,
-      is_active: isActive, opening_hours: openingHours,
-      delivery_fee: parseInt(deliveryFee) || 0, show_delivery_fee: showDeliveryFee,
-    }
-    await supabase.from('restaurants').update(updates).eq('id', id)
+    setSuccess(false)
+
+    await fetch('/api/admin/edit-restaurant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id,
+        name,
+        slug,
+        description,
+        city,
+        address,
+        phone: phone || null,
+        whatsapp_number: whatsapp || null,
+        logo_url: logoUrl,
+        banner_url: bannerUrl,
+        primary_color: primaryColor,
+        background_color: bgColor,
+        theme_mode: themeMode,
+        is_active: isActive,
+        opening_hours: openingHours,
+        delivery_fee: Number(deliveryFee) || 0,
+        show_delivery_fee: showDeliveryFee,
+      }),
+    })
 
     if (subId) {
-      await supabase.from('subscriptions').update({ plan, status: subStatus }).eq('id', subId)
-    } else {
-      await supabase.from('subscriptions').insert({ restaurant_id: id, plan, status: subStatus })
+      await supabase
+        .from('subscriptions')
+        .update({ plan, status: subStatus })
+        .eq('id', subId)
     }
 
     setSaving(false)
     setSuccess(true)
-    setTimeout(() => setSuccess(false), 3000)
+    setTimeout(() => setSuccess(false), 1800)
+  }
+
+  async function handleDeleteAdmin(adminId: string) {
+    if (!confirm('Supprimer cet administrateur ?')) return
+    await supabase.from('profiles').delete().eq('id', adminId)
+    setAdmins(prev => prev.filter(a => a.id !== adminId))
   }
 
   async function handleAddAdmin() {
-    if (!newAdminName || !newAdminEmail || !newAdminPassword) {
-      setAddAdminError('Tous les champs sont requis.')
-      return
-    }
-    if (newAdminPassword.length < 8) {
-      setAddAdminError('Mot de passe trop court (minimum 8 caractères).')
-      return
-    }
-    if (admins.length >= maxAdmins) {
-      setAddAdminError(`Le plan ${PLAN_LABELS[plan]} est limité à ${maxAdmins} admin(s).`)
-      return
-    }
-
     setAddingAdmin(true)
     setAddAdminError(null)
+    setAddAdminSuccess(false)
 
     const res = await fetch('/api/admin/create-admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        full_name: newAdminName,
         email: newAdminEmail,
         password: newAdminPassword,
+        full_name: newAdminName,
         restaurant_id: id,
       }),
     })
@@ -184,49 +213,39 @@ export default function EditRestaurantPage() {
     setAddingAdmin(false)
 
     if (!res.ok) {
-      setAddAdminError(data.error || 'Erreur inconnue')
+      setAddAdminError(data.error || 'Erreur')
       return
     }
 
     setAddAdminSuccess(true)
+    setNewAdminName('')
+    setNewAdminEmail('')
+    setNewAdminPassword('')
     await loadData()
-    setTimeout(() => {
-      setAddAdminModal(false)
-      setAddAdminSuccess(false)
-      setNewAdminName(''); setNewAdminEmail(''); setNewAdminPassword('')
-    }, 2000)
   }
 
-  async function handleRemoveAdmin(profileId: string) {
-    if (!confirm('Retirer cet admin du restaurant ? Son compte reste actif.')) return
-    await fetch('/api/admin/remove-admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile_id: profileId, action: 'unlink' }),
-    })
-    setAdmins(prev => prev.filter(a => a.id !== profileId))
-  }
-
-  function openReset(admin: AdminProfile) {
+  function openResetModal(admin: AdminProfile) {
     setSelectedAdmin(admin)
-    setResetPassword('')
+    setResetPassword(generatePassword())
     setResetSuccess(false)
     setResetError(null)
     setResetModal(true)
   }
 
-  async function handleReset() {
-    if (!selectedAdmin || resetPassword.length < 8) {
-      setResetError('Minimum 8 caractères.')
-      return
-    }
+  async function handleResetPassword() {
+    if (!selectedAdmin) return
     setResetting(true)
     setResetError(null)
+
     const res = await fetch('/api/admin/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: selectedAdmin.id, new_password: resetPassword }),
+      body: JSON.stringify({
+        user_id: selectedAdmin.id,
+        new_password: resetPassword,
+      }),
     })
+
     const data = await res.json()
     setResetting(false)
     if (!res.ok) { setResetError(data.error || 'Erreur'); return }
@@ -260,7 +279,7 @@ export default function EditRestaurantPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <a href={`/${slug}`} target="_blank" rel="noopener noreferrer"
+          <a href={`${baseUrl.replace(/\/$/, '')}/${slug}`} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-1.5 bg-surface-100 hover:bg-surface-200 text-gray-300 px-3 py-2 rounded-xl text-sm font-medium transition-colors">
             <ExternalLink className="w-3.5 h-3.5" />Voir le site
           </a>
@@ -288,221 +307,201 @@ export default function EditRestaurantPage() {
             </div>
             <button
               onClick={() => {
+                setAddAdminModal(true)
                 setAddAdminError(null)
                 setAddAdminSuccess(false)
-                setNewAdminName(''); setNewAdminEmail(''); setNewAdminPassword('')
-                setAddAdminModal(true)
+                setNewAdminPassword(generatePassword())
               }}
               disabled={admins.length >= maxAdmins}
-              className="flex items-center gap-1.5 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange border border-brand-orange/20 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40"
             >
               <UserPlus className="w-3.5 h-3.5" />
-              Ajouter un admin
+              Ajouter
             </button>
           </div>
 
-          {admins.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 bg-surface-200 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <Users className="w-6 h-6 text-gray-600" />
-              </div>
-              <p className="text-gray-500 text-sm">Aucun admin lié à ce restaurant</p>
-              <p className="text-gray-600 text-xs mt-1">Ajoutez le premier administrateur ci-dessus</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {admins.map(admin => (
-                <div key={admin.id} className="flex items-center gap-3 bg-surface-100 rounded-xl px-4 py-3">
-                  <div className="w-9 h-9 bg-brand-orange/10 rounded-full flex items-center justify-center text-brand-orange text-sm font-bold flex-shrink-0">
-                    {getInitials(admin.full_name || admin.email)}
+          <div className="space-y-2">
+            {admins.map((a) => (
+              <div key={a.id} className="flex items-center justify-between bg-surface-100 rounded-xl px-3 py-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    {getInitials(a.full_name || a.email)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{admin.full_name || 'Sans nom'}</p>
-                    <p className="text-gray-500 text-xs truncate">{admin.email}</p>
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{a.full_name || 'Admin'}</p>
+                    <p className="text-gray-500 text-xs truncate">{a.email}</p>
                   </div>
-                  <Badge variant="success">Actif</Badge>
-                  <button
-                    onClick={() => openReset(admin)}
-                    className="p-1.5 text-gray-500 hover:text-brand-orange transition-colors"
-                    title="Modifier le mot de passe"
-                  >
-                    <Key className="w-3.5 h-3.5" />
+                </div>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => openResetModal(a)} className="p-2 text-gray-500 hover:text-brand-orange transition-colors" title="Réinitialiser mot de passe">
+                    <Key className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => handleRemoveAdmin(admin.id)}
-                    className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"
-                    title="Retirer du restaurant"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
+                  <button onClick={() => handleDeleteAdmin(a.id)} className="p-2 text-gray-500 hover:text-red-400 transition-colors" title="Supprimer">
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {admins.length >= maxAdmins && (
-            <p className="text-yellow-400 text-xs mt-3 text-center">
-              Limite atteinte pour le plan {PLAN_LABELS[plan]}. Passez au plan supérieur pour ajouter plus d&apos;admins.
-            </p>
-          )}
-        </div>
-
-        {/* ── Abonnement & Statut ───────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <h2 className="text-white font-semibold mb-4 text-sm">Abonnement & Statut</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select label="Plan" value={plan} onChange={e => setPlan(e.target.value as PlanType)}
-              options={Object.entries(PLAN_LABELS).map(([v, l]) => ({ value: v, label: l }))} />
-            <Select label="Statut" value={subStatus} onChange={e => setSubStatus(e.target.value)}
-              options={[
-                { value: 'active', label: 'Actif' },
-                { value: 'trial', label: 'Essai' },
-                { value: 'suspended', label: 'Suspendu' },
-                { value: 'cancelled', label: 'Annulé' },
-              ]} />
-          </div>
-          <div className="flex items-center justify-between mt-4 p-3 bg-surface-100 rounded-xl">
-            <div>
-              <p className="text-white text-sm font-medium">Restaurant actif</p>
-              <p className="text-gray-500 text-xs">Désactiver rend le site public inaccessible</p>
-            </div>
-            <button onClick={() => setIsActive(!isActive)} className="text-gray-400 hover:text-white transition-colors">
-              {isActive
-                ? <ToggleRight className="w-7 h-7 text-green-400" />
-                : <ToggleLeft className="w-7 h-7" />
-              }
-            </button>
-          </div>
-        </div>
-
-        {/* ── Infos de base ─────────────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <h2 className="text-white font-semibold mb-4 text-sm">Informations</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Nom" value={name} onChange={e => setName(e.target.value)} />
-            <Input label="Slug (URL)" value={slug} onChange={e => setSlug(e.target.value)} hint={`${settings.platform_url.replace("https://", "")}/${slug}`} />
-            <Input label="Ville" value={city} onChange={e => setCity(e.target.value)} />
-            <Input label="Téléphone" value={phone} onChange={e => setPhone(e.target.value)} />
-            <div className="sm:col-span-2">
-              <Input label="Adresse" value={address} onChange={e => setAddress(e.target.value)} />
-            </div>
-            <div className="sm:col-span-2">
-              <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} />
-            </div>
-            <div className="sm:col-span-2">
-              <Input label="WhatsApp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} hint="221771234567" />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Images ────────────────────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <h2 className="text-white font-semibold mb-4 text-sm">Images</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <ImageCropUpload
-                label="Logo"
-                value={logoUrl}
-                onChange={setLogoUrl}
-                folder="logos"
-                aspect="square"
-                previewShape="circle"
-              />
-            </div>
-            <div>
-              <ImageCropUpload
-                label="Bannière"
-                value={bannerUrl}
-                onChange={setBannerUrl}
-                folder="banners"
-                aspect="banner"
-                previewShape="rect"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Thème ─────────────────────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <h2 className="text-white font-semibold mb-1 text-sm">Thème du site</h2>
-          <p className="text-gray-500 text-xs mb-4">Couleurs personnalisées (plan Annuel requis)</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-gray-400 text-xs block mb-2">Mode</label>
-              <div className="flex gap-2">
-                {(['dark', 'light'] as const).map(m => (
-                  <button key={m} onClick={() => setThemeMode(m)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors border ${themeMode === m ? 'bg-brand-orange/10 border-brand-orange/50 text-brand-orange' : 'bg-surface-100 border-surface-300 text-gray-400 hover:text-white'}`}>
-                    {m === 'dark' ? '🌙 Sombre' : '☀️ Clair'}
-                  </button>
-                ))}
               </div>
-            </div>
-            <div>
-              <label className="text-gray-400 text-xs block mb-2">Couleur principale</label>
-              <div className="flex items-center gap-3">
-                <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="w-12 h-10 rounded-lg border border-surface-300 cursor-pointer bg-transparent" />
-                <input type="text" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="flex-1 bg-surface-100 border border-surface-300 rounded-xl px-3 py-2 text-white text-sm font-mono" />
-              </div>
-            </div>
-            <div>
-              <label className="text-gray-400 text-xs block mb-2">Couleur de fond</label>
-              <div className="flex items-center gap-3">
-                <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-12 h-10 rounded-lg border border-surface-300 cursor-pointer bg-transparent" />
-                <input type="text" value={bgColor} onChange={e => setBgColor(e.target.value)} className="flex-1 bg-surface-100 border border-surface-300 rounded-xl px-3 py-2 text-white text-sm font-mono" />
-              </div>
-            </div>
-            <div>
-              <label className="text-gray-400 text-xs block mb-2">Aperçu live</label>
-              <div className="rounded-xl p-3 flex items-center gap-3" style={{ backgroundColor: bgColor, border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-sm" style={{ backgroundColor: primaryColor }}>R</div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold" style={{ color: themeMode === 'dark' ? '#fff' : '#111' }}>Mon Restaurant</p>
-                  <p className="text-xs" style={{ color: primaryColor }}>2 500 FCFA</p>
-                </div>
-                <button className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: primaryColor }}>
-                  <span className="text-white text-xs font-bold">+</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Livraison ─────────────────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <h2 className="text-white font-semibold mb-4 text-sm">Livraison</h2>
-          <div className="space-y-3">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" checked={showDeliveryFee} onChange={e => setShowDeliveryFee(e.target.checked)} className="w-4 h-4 accent-brand-orange" />
-              <span className="text-gray-300 text-sm">Afficher les frais de livraison</span>
-            </label>
-            {showDeliveryFee && (
-              <Input label="Frais de livraison (FCFA)" type="number" value={deliveryFee} onChange={e => setDeliveryFee(e.target.value)} />
+            ))}
+            {admins.length === 0 && (
+              <p className="text-gray-500 text-xs text-center py-3">Aucun administrateur</p>
             )}
           </div>
         </div>
 
-        {/* ── Horaires ──────────────────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <h2 className="text-white font-semibold mb-4 text-sm">Horaires d&apos;ouverture</h2>
-          <div className="space-y-3">
-            {JOURS.map(({ key, label }) => {
-              const h = openingHours[key]
-              const ferme = h?.ferme ?? false
+        {/* ── Restaurant core section ───────────────────────────────────── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-white font-semibold text-sm">Informations du restaurant</h2>
+
+          <Input label="Nom" value={name} onChange={e => setName(e.target.value)} />
+          <Input label="Slug" value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))} hint="Ex: chez-teranga" />
+          <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} />
+          <Input label="Ville" value={city} onChange={e => setCity(e.target.value)} />
+          <Input label="Adresse" value={address} onChange={e => setAddress(e.target.value)} />
+          <Input label="Téléphone" value={phone} onChange={e => setPhone(e.target.value)} hint="221771234567" />
+          <Input label="WhatsApp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} hint="221771234567" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <ImageCropUpload
+              label="Logo (1:1)"
+              value={logoUrl}
+              onChange={setLogoUrl}
+              bucket="restaurant-assets"
+              folder={`restaurants/${id}/logo`}
+              aspect="square"
+            />
+            <ImageCropUpload
+              label="Bannière (16:9)"
+              value={bannerUrl}
+              onChange={setBannerUrl}
+              bucket="restaurant-assets"
+              folder={`restaurants/${id}/banner`}
+              aspect="banner"
+            />
+          </div>
+
+          <div className="flex items-center justify-between bg-surface-100 rounded-xl px-3 py-2">
+            <div>
+              <p className="text-white text-sm font-medium">Restaurant actif</p>
+              <p className="text-gray-500 text-xs">Désactiver rend le site public inaccessible</p>
+            </div>
+            <button onClick={() => setIsActive(v => !v)} className="text-brand-orange">
+              {isActive ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Subscription section ─────────────────────────────────────── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-white font-semibold text-sm">Abonnement</h2>
+
+          <Select
+            label="Plan"
+            value={plan}
+            onChange={e => setPlan(e.target.value as PlanType)}
+            options={[
+              { value: 'mensuel', label: 'Mensuel' },
+              { value: 'trimestriel', label: 'Trimestriel' },
+              { value: 'annuel', label: 'Annuel' },
+            ]}
+          />
+
+          <Select
+            label="Statut"
+            value={subStatus}
+            onChange={e => setSubStatus(e.target.value)}
+            options={[
+              { value: 'active', label: 'Actif' },
+              { value: 'past_due', label: 'En retard' },
+              { value: 'canceled', label: 'Annulé' },
+            ]}
+          />
+
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(getPlanFeatures(plan)).map(([k, v]) => (
+              <Badge key={k} variant={v ? 'success' : 'default'}>{k}</Badge>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Theme section ────────────────────────────────────────────── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-white font-semibold mb-1 text-sm">Thème du site</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Couleur primaire</label>
+              <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)}
+                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Fond</label>
+              <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
+                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Mode</label>
+              <Select
+                value={themeMode}
+                onChange={e => setThemeMode(e.target.value as 'dark' | 'light')}
+                options={[
+                  { value: 'dark', label: 'Sombre' },
+                  { value: 'light', label: 'Clair' },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Delivery / hours section ─────────────────────────────────── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-white font-semibold text-sm">Livraison & horaires</h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Frais de livraison (FCFA)"
+              value={deliveryFee}
+              onChange={e => setDeliveryFee(e.target.value)}
+              type="number"
+            />
+            <div className="flex items-center justify-between bg-surface-100 rounded-xl px-3 py-2 mt-6 sm:mt-0">
+              <div>
+                <p className="text-white text-sm font-medium">Afficher frais de livraison</p>
+                <p className="text-gray-500 text-xs">Visible sur le site public</p>
+              </div>
+              <button onClick={() => setShowDeliveryFee(v => !v)} className="text-brand-orange">
+                {showDeliveryFee ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {JOURS.map(j => {
+              const v = openingHours[j.key] || { ouverture: '08:00', fermeture: '22:00', ferme: false }
               return (
-                <div key={key} className="flex items-center gap-3 flex-wrap">
-                  <span className="text-gray-400 text-sm w-10 flex-shrink-0">{label}</span>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={!ferme} onChange={e => updateHours(key, 'ferme', !e.target.checked)} className="w-4 h-4 accent-brand-orange" />
-                    <span className="text-xs text-gray-500">Ouvert</span>
-                  </label>
-                  {!ferme ? (
-                    <>
-                      <input type="time" value={h?.ouverture || '08:00'} onChange={e => updateHours(key, 'ouverture', e.target.value)} className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm w-28" />
-                      <span className="text-gray-600 text-xs">→</span>
-                      <input type="time" value={h?.fermeture || '22:00'} onChange={e => updateHours(key, 'fermeture', e.target.value)} className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm w-28" />
-                    </>
-                  ) : <span className="text-xs text-red-400">Fermé</span>}
+                <div key={j.key} className="grid grid-cols-12 gap-2 items-center bg-surface-100 rounded-xl p-2.5">
+                  <div className="col-span-3 sm:col-span-2 text-gray-300 text-xs font-semibold">{j.label}</div>
+                  <div className="col-span-3 sm:col-span-3">
+                    <Input
+                      value={v.ouverture}
+                      onChange={e => setOpeningHours(prev => ({ ...prev, [j.key]: { ...v, ouverture: e.target.value } }))}
+                      type="time"
+                    />
+                  </div>
+                  <div className="col-span-3 sm:col-span-3">
+                    <Input
+                      value={v.fermeture}
+                      onChange={e => setOpeningHours(prev => ({ ...prev, [j.key]: { ...v, fermeture: e.target.value } }))}
+                      type="time"
+                    />
+                  </div>
+                  <div className="col-span-3 sm:col-span-4 flex justify-end">
+                    <button
+                      onClick={() => setOpeningHours(prev => ({ ...prev, [j.key]: { ...v, ferme: !v.ferme } }))}
+                      className={`text-xs px-2.5 py-1 rounded-lg border ${v.ferme ? 'border-red-500/40 text-red-400' : 'border-green-500/40 text-green-400'}`}
+                    >
+                      {v.ferme ? 'Fermé' : 'Ouvert'}
+                    </button>
+                  </div>
                 </div>
               )
             })}
@@ -510,94 +509,62 @@ export default function EditRestaurantPage() {
         </div>
       </div>
 
-      {/* ── Add Admin Modal ──────────────────────────────────────────────── */}
-      <Modal open={addAdminModal} onClose={() => setAddAdminModal(false)} title="Ajouter un administrateur" size="sm">
-        {addAdminSuccess ? (
-          <div className="flex flex-col items-center text-center py-4 gap-3">
-            <CheckCircle className="w-12 h-12 text-green-400" />
-            <p className="text-white font-semibold">Admin ajouté avec succès !</p>
-            <p className="text-gray-500 text-sm">Le compte est créé et lié à ce restaurant.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="bg-surface-100 rounded-xl p-3 text-xs text-gray-400">
-              Cet admin aura accès uniquement au dashboard de <span className="text-white font-semibold">{restaurantName}</span>.
-            </div>
-            {addAdminError && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">{addAdminError}</div>
-            )}
-            <Input label="Nom complet" value={newAdminName} onChange={e => setNewAdminName(e.target.value)} placeholder="Aminata Diallo" />
-            <Input label="Email" type="email" value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} placeholder="admin@restaurant.com" />
-            <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Mot de passe</label>
-              <div className="relative">
-                <input
-                  type={showNewPassword ? 'text' : 'password'}
-                  value={newAdminPassword}
-                  onChange={e => setNewAdminPassword(e.target.value)}
-                  placeholder="Minimum 8 caractères"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 pr-10"
-                />
-                <button onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-            <button
-              onClick={() => { const p = generatePassword(); setNewAdminPassword(p); setShowNewPassword(true) }}
-              className="text-xs text-brand-orange hover:underline"
-            >
-              Générer un mot de passe aléatoire
-            </button>
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => setAddAdminModal(false)} className="flex-1 bg-surface-100 hover:bg-surface-200 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors">
-                Annuler
-              </button>
-              <button onClick={handleAddAdmin} disabled={addingAdmin} className="flex-1 bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
-                {addingAdmin ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Ajouter'}
+      {/* Add admin modal */}
+      <Modal open={addAdminModal} onClose={() => setAddAdminModal(false)} title="Ajouter un administrateur">
+        <div className="space-y-3">
+          <Input label="Nom complet" value={newAdminName} onChange={e => setNewAdminName(e.target.value)} />
+          <Input label="Email" type="email" value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} />
+          <div>
+            <label className="text-gray-400 text-xs block mb-1.5">Mot de passe</label>
+            <div className="relative">
+              <Input type={showNewPassword ? 'text' : 'password'} value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} />
+              <button onClick={() => setShowNewPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
-        )}
+
+          {addAdminError && <p className="text-red-400 text-xs">{addAdminError}</p>}
+          {addAdminSuccess && <p className="text-green-400 text-xs">Administrateur créé avec succès.</p>}
+
+          <button
+            onClick={handleAddAdmin}
+            disabled={addingAdmin}
+            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60"
+          >
+            {addingAdmin ? 'Création...' : 'Créer'}
+          </button>
+        </div>
       </Modal>
 
-      {/* ── Reset Password Modal ─────────────────────────────────────────── */}
-      <Modal open={resetModal} onClose={() => setResetModal(false)} title="Modifier le mot de passe" size="sm">
-        {resetSuccess ? (
-          <div className="flex flex-col items-center text-center py-4 gap-3">
-            <CheckCircle className="w-12 h-12 text-green-400" />
-            <p className="text-white font-semibold">Mot de passe mis à jour !</p>
-            <div className="w-full bg-surface-100 rounded-xl px-4 py-3 font-mono text-brand-orange text-sm break-all text-center">{resetPassword}</div>
-            <p className="text-gray-500 text-xs">Transmettez ce mot de passe à l&apos;administrateur.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="bg-surface-100 rounded-xl px-4 py-3">
-              <p className="text-gray-400 text-xs">Admin</p>
-              <p className="text-white text-sm font-medium">{selectedAdmin?.full_name || selectedAdmin?.email}</p>
-            </div>
-            {resetError && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">{resetError}</div>}
-            <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Nouveau mot de passe</label>
-              <div className="relative">
-                <input type={showResetPassword ? 'text' : 'password'} value={resetPassword} onChange={e => setResetPassword(e.target.value)} placeholder="Minimum 8 caractères"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 pr-10" />
-                <button onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                  {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-            <button onClick={() => { const p = generatePassword(); setResetPassword(p); setShowResetPassword(true) }} className="text-xs text-brand-orange hover:underline">
-              Générer un mot de passe aléatoire
-            </button>
-            <div className="flex gap-3 pt-2">
-              <button onClick={() => setResetModal(false)} className="flex-1 bg-surface-100 hover:bg-surface-200 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors">Annuler</button>
-              <button onClick={handleReset} disabled={resetting} className="flex-1 bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
-                {resetting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Mettre à jour'}
+      {/* Reset password modal */}
+      <Modal open={resetModal} onClose={() => setResetModal(false)} title="Réinitialiser le mot de passe">
+        <div className="space-y-3">
+          <p className="text-gray-400 text-xs">
+            Admin: <span className="text-white">{selectedAdmin?.email}</span>
+          </p>
+
+          <div>
+            <label className="text-gray-400 text-xs block mb-1.5">Nouveau mot de passe</label>
+            <div className="relative">
+              <Input type={showResetPassword ? 'text' : 'password'} value={resetPassword} onChange={e => setResetPassword(e.target.value)} />
+              <button onClick={() => setShowResetPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
-        )}
+
+          {resetError && <p className="text-red-400 text-xs">{resetError}</p>}
+          {resetSuccess && <p className="text-green-400 text-xs">Mot de passe mis à jour.</p>}
+
+          <button
+            onClick={handleResetPassword}
+            disabled={resetting}
+            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60"
+          >
+            {resetting ? 'Mise à jour...' : 'Mettre à jour'}
+          </button>
+        </div>
       </Modal>
     </div>
   )

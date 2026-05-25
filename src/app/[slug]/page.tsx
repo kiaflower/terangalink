@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { RestaurantPageClient } from './RestaurantPageClient'
+import RestaurantPageClient from './RestaurantPageClient'
 
 interface Props { params: { slug: string } }
+
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
@@ -56,7 +58,7 @@ export default async function RestaurantPage({ params }: Props) {
       data={{
         restaurant: {
           ...restaurant,
-          plan: subscription?.plan ?? 'mensuel',
+          plan: subscription?.plan ?? null,
         },
         categories: categories ?? [],
         items: items ?? [],

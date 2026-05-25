@@ -8,11 +8,15 @@ import { Download, QrCode, Loader2, ExternalLink } from 'lucide-react'
 
 export default function QRCodePage() {
   const { user } = useAuth()
+  const settings = useSettings()
   const supabase = createClient()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [slug, setSlug] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [qrReady, setQrReady] = useState(false)
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : settings.platform_url
 
   const loadSlug = useCallback(async () => {
     if (!user?.restaurant_id) return
@@ -30,9 +34,7 @@ export default function QRCodePage() {
   // Générer le QR code avec la lib qrcode
   useEffect(() => {
     if (!slug || !canvasRef.current) return
-
-    const settings = useSettings()
-  const url = `${settings.platform_url}/${slug}`
+    const url = `${baseUrl.replace(/\/$/, '')}/${slug}`
 
     // Import dynamique de la lib qrcode
     import('qrcode').then((QRCode) => {
@@ -51,7 +53,7 @@ export default function QRCodePage() {
       // Fallback: essayer avec une URL de génération d'image QR
       setQrReady(true)
     })
-  }, [slug])
+  }, [slug, baseUrl])
 
   const handleDownload = () => {
     const canvas = canvasRef.current
@@ -83,7 +85,7 @@ export default function QRCodePage() {
     // URL
     ctx.fillStyle = '#666666'
     ctx.font = '13px system-ui, sans-serif'
-    ctx.fillText(`${new URL(settings.platform_url).hostname}/${slug}`, size / 2, qrSize + 72)
+    ctx.fillText(`${new URL(baseUrl).hostname}/${slug}`, size / 2, qrSize + 72)
 
     // Télécharger
     const link = document.createElement('a')
@@ -108,7 +110,7 @@ export default function QRCodePage() {
     )
   }
 
-  const publicUrl = `${settings.platform_url}/${slug}`
+  const publicUrl = `${baseUrl.replace(/\/$/, '')}/${slug}`
 
   return (
     <div className="p-6 sm:p-8 max-w-2xl">
@@ -151,7 +153,7 @@ export default function QRCodePage() {
         {/* URL */}
         <div className="flex items-center gap-2 mb-2">
           <code className="text-brand-orange text-sm font-mono bg-brand-orange/10 px-3 py-1.5 rounded-lg">
-            {new URL(settings.platform_url).hostname}/{slug}
+            {new URL(baseUrl).hostname}/{slug}
           </code>
           <a
             href={publicUrl}

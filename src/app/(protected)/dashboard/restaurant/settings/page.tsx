@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, Truck, Phone, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { Clock, Truck, Phone, Save, CheckCircle, AlertCircle, Loader2, Wallet, Timer } from 'lucide-react'
 
 const JOURS = [
   { key: 'lundi', label: 'Lundi' },
@@ -17,6 +17,8 @@ const JOURS = [
 type HoursEntry = { ouverture: string; fermeture: string; ferme: boolean }
 type OpeningHours = Partial<Record<string, HoursEntry>>
 
+const PREP_TIMES = [10, 15, 20, 25, 30, 40, 45, 60]
+
 export default function SettingsPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
@@ -24,10 +26,16 @@ export default function SettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [restaurantId, setRestaurantId] = useState<string | null>(null)
 
+  // Existing fields
   const [whatsapp, setWhatsapp] = useState('')
   const [openingHours, setOpeningHours] = useState<OpeningHours>({})
   const [deliveryFee, setDeliveryFee] = useState('0')
   const [showDeliveryFee, setShowDeliveryFee] = useState(false)
+
+  // New fields
+  const [waveNumber, setWaveNumber] = useState('')
+  const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
+  const [prepTime, setPrepTime] = useState(25)
 
   const loadData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -36,12 +44,20 @@ export default function SettingsPage() {
     if (!profile?.restaurant_id) { setLoading(false); return }
     setRestaurantId(profile.restaurant_id)
 
-    const { data: r } = await supabase.from('restaurants').select('whatsapp_number, opening_hours, delivery_fee, show_delivery_fee').eq('id', profile.restaurant_id).single()
+    const { data: r } = await supabase
+      .from('restaurants')
+      .select('whatsapp_number, opening_hours, delivery_fee, show_delivery_fee, wave_number, orange_money_number, prep_time_minutes')
+      .eq('id', profile.restaurant_id)
+      .single()
+
     if (r) {
       setWhatsapp(r.whatsapp_number || '')
       setOpeningHours((r.opening_hours as OpeningHours) || {})
       setDeliveryFee(String(r.delivery_fee || 0))
       setShowDeliveryFee(r.show_delivery_fee || false)
+      setWaveNumber(r.wave_number || '')
+      setOrangeMoneyNumber(r.orange_money_number || '')
+      setPrepTime(r.prep_time_minutes || 25)
     }
     setLoading(false)
   }, [supabase])
@@ -71,6 +87,9 @@ export default function SettingsPage() {
       opening_hours: openingHours,
       delivery_fee: parseInt(deliveryFee) || 0,
       show_delivery_fee: showDeliveryFee,
+      wave_number: waveNumber || null,
+      orange_money_number: orangeMoneyNumber || null,
+      prep_time_minutes: prepTime,
     }).eq('id', restaurantId)
 
     setSaving(false)
@@ -90,7 +109,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Paramètres</h1>
-          <p className="text-gray-500 text-sm mt-1">Horaires, WhatsApp et livraison</p>
+          <p className="text-gray-500 text-sm mt-1">Horaires, paiements et livraison</p>
         </div>
         <button
           onClick={handleSave}
@@ -110,11 +129,76 @@ export default function SettingsPage() {
       )}
 
       <div className="space-y-6">
-        {/* WhatsApp */}
+
+        {/* ── Paiement mobile ── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Wallet className="w-4 h-4 text-brand-orange" />
+            <h2 className="text-white font-semibold text-sm">Numéros de paiement mobile</h2>
+          </div>
+          <p className="text-gray-500 text-xs mb-4">Ces numéros seront envoyés au client dans le message de confirmation de commande.</p>
+          <div className="space-y-4">
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-[#1E90FF] inline-flex items-center justify-center text-white font-bold" style={{fontSize:'9px'}}>W</span>
+                  Numéro Wave
+                </span>
+              </label>
+              <input
+                type="text"
+                value={waveNumber}
+                onChange={e => setWaveNumber(e.target.value)}
+                placeholder="77 123 45 67"
+                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full bg-[#FF6600] inline-flex items-center justify-center text-white font-bold" style={{fontSize:'9px'}}>O</span>
+                  Numéro Orange Money
+                </span>
+              </label>
+              <input
+                type="text"
+                value={orangeMoneyNumber}
+                onChange={e => setOrangeMoneyNumber(e.target.value)}
+                placeholder="76 123 45 67"
+                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Temps de préparation ── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Timer className="w-4 h-4 text-brand-orange" />
+            <h2 className="text-white font-semibold text-sm">Temps de préparation</h2>
+          </div>
+          <p className="text-gray-500 text-xs mb-4">Durée estimée communiquée au client lors de la confirmation de commande.</p>
+          <div className="flex flex-wrap gap-2">
+            {PREP_TIMES.map(t => (
+              <button
+                key={t}
+                onClick={() => setPrepTime(t)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${prepTime === t ? 'bg-brand-orange text-white' : 'bg-surface-100 text-gray-400 hover:text-white border border-surface-300'}`}
+              >
+                {t} min
+              </button>
+            ))}
+          </div>
+          <p className="text-gray-500 text-xs mt-3">
+            Sélectionné : <span className="text-brand-orange font-semibold">{prepTime} minutes</span>
+          </p>
+        </div>
+
+        {/* ── WhatsApp ── */}
         <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Phone className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">WhatsApp</h2>
+            <h2 className="text-white font-semibold text-sm">WhatsApp restaurant</h2>
           </div>
           <div>
             <label className="text-gray-400 text-xs block mb-1.5">Numéro WhatsApp (ex: 221771234567)</label>
@@ -125,11 +209,11 @@ export default function SettingsPage() {
               placeholder="221771234567"
               className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
             />
-            <p className="text-gray-600 text-xs mt-1">Format international sans + ni espaces. Les commandes seront envoyées sur ce numéro.</p>
+            <p className="text-gray-600 text-xs mt-1">Format international sans + ni espaces. Les commandes client arrivent sur ce numéro.</p>
           </div>
         </div>
 
-        {/* Livraison */}
+        {/* ── Livraison ── */}
         <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Truck className="w-4 h-4 text-brand-orange" />
@@ -161,7 +245,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Horaires */}
+        {/* ── Horaires ── */}
         <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-5">
             <Clock className="w-4 h-4 text-brand-orange" />
@@ -207,6 +291,7 @@ export default function SettingsPage() {
             })}
           </div>
         </div>
+
       </div>
     </div>
   )

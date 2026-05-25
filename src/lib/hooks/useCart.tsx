@@ -8,13 +8,9 @@ type CartAction =
   | { type: 'ADD_ITEM'; item: CartItem; restaurantId: string; restaurantSlug: string; restaurantPhone: string; restaurantName: string }
   | { type: 'REMOVE_ITEM'; id: string }
   | { type: 'UPDATE_QTY'; id: string; quantity: number }
-  | { type: 'SET_LOCATION'; address: string; mapsUrl: string }
   | { type: 'CLEAR' }
 
-interface CartStateExtended extends CartState {
-  customerLocation: string | null
-  customerMapsUrl: string | null
-}
+type CartStateExtended = CartState
 
 const initialState: CartStateExtended = {
   items: [],
@@ -22,8 +18,6 @@ const initialState: CartStateExtended = {
   restaurantSlug: null,
   restaurantPhone: null,
   restaurantName: null,
-  customerLocation: null,
-  customerMapsUrl: null,
 }
 
 function cartReducer(state: CartStateExtended, action: CartAction): CartStateExtended {
@@ -73,8 +67,6 @@ function cartReducer(state: CartStateExtended, action: CartAction): CartStateExt
           i.id === action.id ? { ...i, quantity: action.quantity } : i
         ),
       }
-    case 'SET_LOCATION':
-      return { ...state, customerLocation: action.address, customerMapsUrl: action.mapsUrl }
     case 'CLEAR':
       return initialState
     default:
@@ -88,11 +80,9 @@ interface CartContextType {
   addItem: (item: CartItem, restaurantId: string, restaurantSlug: string, restaurantPhone: string, restaurantName: string) => void
   removeItem: (id: string) => void
   updateQty: (id: string, quantity: number) => void
-  setLocation: (address: string, mapsUrl: string) => void
   clearCart: () => void
   totalItems: number
   totalPrice: number
-  whatsappMessage: string
 }
 
 const CartContext = createContext<CartContextType | null>(null)
@@ -107,29 +97,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   )
   const removeItem = useCallback((id: string) => dispatch({ type: 'REMOVE_ITEM', id }), [])
   const updateQty = useCallback((id: string, quantity: number) => dispatch({ type: 'UPDATE_QTY', id, quantity }), [])
-  const setLocation = useCallback((address: string, mapsUrl: string) => dispatch({ type: 'SET_LOCATION', address, mapsUrl }), [])
   const clearCart = useCallback(() => dispatch({ type: 'CLEAR' }), [])
 
   const totalItems = state.items.reduce((s, i) => s + i.quantity, 0)
   const totalPrice = state.items.reduce((s, i) => s + i.price * i.quantity, 0)
 
-  // Build WhatsApp message with optional location
-  const itemLines = state.items.map(i =>
-    `• ${i.name} x${i.quantity} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`
-  ).join('\n')
-
-  const locationLine = state.customerLocation
-    ? `\n\n📍 *Ma localisation :* ${state.customerLocation}${state.customerMapsUrl ? `\n${state.customerMapsUrl}` : ''}`
-    : ''
-
-  const whatsappMessage = state.items.length > 0
-    ? encodeURIComponent(
-        `Bonjour ${state.restaurantName || ''} ! 👋\n\nJe souhaite commander :\n\n${itemLines}\n\n*Total : ${totalPrice.toLocaleString('fr-SN')} FCFA*${locationLine}\n\nMerci !`
-      )
-    : ''
-
   return (
-    <CartContext.Provider value={{ state, addItem, removeItem, updateQty, setLocation, clearCart, totalItems, totalPrice, whatsappMessage }}>
+    <CartContext.Provider value={{ state, addItem, removeItem, updateQty, clearCart, totalItems, totalPrice }}>
       {children}
     </CartContext.Provider>
   )

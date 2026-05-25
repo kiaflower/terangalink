@@ -32,6 +32,59 @@ export default async function RestaurantDashboard() {
     subscription = sub
   }
 
+  // ── Vraies données réelles ─────────────────────────────────────────────────
+  let todayOrders = 0
+  let monthRevenue = 0
+  let menuItemsCount = 0
+  let totalOrders = 0
+
+  if (restaurant) {
+    const rid = restaurant.id
+    const now = new Date()
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+
+    // Commandes aujourd'hui (non annulées)
+    const { count: todayCount } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('restaurant_id', rid)
+      .neq('status', 'cancelled')
+      .gte('created_at', todayStart)
+    todayOrders = todayCount ?? 0
+
+    // Revenus ce mois (commandes livrées)
+    const { data: monthOrders } = await supabase
+      .from('orders')
+      .select('total')
+      .eq('restaurant_id', rid)
+      .eq('status', 'delivered')
+      .gte('created_at', monthStart)
+    monthRevenue = (monthOrders ?? []).reduce((sum, o) => sum + (o.total ?? 0), 0)
+
+    // Nombre de plats actifs au menu
+    const { count: itemsCount } = await supabase
+      .from('menu_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('restaurant_id', rid)
+      .eq('is_available', true)
+    menuItemsCount = itemsCount ?? 0
+
+    // Total commandes (tous statuts sauf annulées)
+    const { count: total } = await supabase
+      .from('orders')
+      .select('*', { count: 'exact', head: true })
+      .eq('restaurant_id', rid)
+      .neq('status', 'cancelled')
+    totalOrders = total ?? 0
+  }
+
+  const formatRevenue = (amount: number) => {
+    if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M FCFA`
+    if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}k FCFA`
+    return `${amount} FCFA`
+  }
+
   return (
     <div className="p-6 sm:p-8 max-w-7xl">
       <div className="mb-8">
@@ -70,10 +123,34 @@ export default async function RestaurantDashboard() {
       )}
 
       <div className="stats-grid mb-8">
-        <StatCard title="Commandes aujourd'hui" value="—" icon={<ShoppingBag className="w-5 h-5" />} color="orange" subtitle="Bientôt disponible" />
-        <StatCard title="Revenus ce mois" value="—" icon={<TrendingUp className="w-5 h-5" />} color="green" subtitle="Bientôt disponible" />
-        <StatCard title="Plats au menu" value="—" icon={<UtensilsCrossed className="w-5 h-5" />} color="blue" subtitle="Bientôt disponible" />
-        <StatCard title="Clients fidèles" value="—" icon={<Users className="w-5 h-5" />} color="purple" subtitle="Bientôt disponible" />
+        <StatCard
+          title="Commandes aujourd'hui"
+          value={restaurant ? String(todayOrders) : '—'}
+          icon={<ShoppingBag className="w-5 h-5" />}
+          color="orange"
+          subtitle={restaurant ? (todayOrders === 0 ? 'Aucune commande ce jour' : `${todayOrders} commande${todayOrders > 1 ? 's' : ''} active${todayOrders > 1 ? 's' : ''}`) : 'Bientôt disponible'}
+        />
+        <StatCard
+          title="Revenus ce mois"
+          value={restaurant ? formatRevenue(monthRevenue) : '—'}
+          icon={<TrendingUp className="w-5 h-5" />}
+          color="green"
+          subtitle={restaurant ? 'Commandes livrées' : 'Bientôt disponible'}
+        />
+        <StatCard
+          title="Plats au menu"
+          value={restaurant ? String(menuItemsCount) : '—'}
+          icon={<UtensilsCrossed className="w-5 h-5" />}
+          color="blue"
+          subtitle={restaurant ? (menuItemsCount === 0 ? 'Aucun plat actif' : `${menuItemsCount} plat${menuItemsCount > 1 ? 's' : ''} disponible${menuItemsCount > 1 ? 's' : ''}`) : 'Bientôt disponible'}
+        />
+        <StatCard
+          title="Commandes totales"
+          value={restaurant ? String(totalOrders) : '—'}
+          icon={<Users className="w-5 h-5" />}
+          color="purple"
+          subtitle={restaurant ? 'Depuis le début' : 'Bientôt disponible'}
+        />
       </div>
 
       <Card>

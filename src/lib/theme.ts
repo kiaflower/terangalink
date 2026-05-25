@@ -11,6 +11,7 @@
 export interface RestaurantTheme {
   primary: string
   mode: 'dark' | 'light'
+  background?: string
 }
 
 export interface ThemeTokens {
@@ -45,11 +46,11 @@ export interface ThemeTokens {
 }
 
 export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
-  const { primary, mode } = theme
+  const { primary, mode, background } = theme
 
   if (mode === 'dark') {
     return {
-      bgPage: '#0A0A0A',
+      bgPage: background || '#0A0A0A',
       bgCard: '#141414',
       bgCardHover: '#1C1C1C',
       bgInput: '#1C1C1C',
@@ -62,7 +63,7 @@ export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
       textOnAccent: '#FFFFFF',
       accent: primary,
       accentHover: darkenColor(primary, 10),
-      accentSubtle: `${primary}1A`,
+      accentSubtle: hexToRgba(primary, 0.1),
       accentText: primary,
       openBg: 'rgba(34,197,94,0.12)',
       openText: '#4ADE80',
@@ -73,7 +74,7 @@ export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
 
   // Light mode
   return {
-    bgPage: '#F8F7F4',
+    bgPage: background || '#F8F7F4',
     bgCard: '#FFFFFF',
     bgCardHover: '#F5F4F1',
     bgInput: '#F5F4F1',
@@ -86,13 +87,23 @@ export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
     textOnAccent: '#FFFFFF',
     accent: primary,
     accentHover: darkenColor(primary, 10),
-    accentSubtle: `${primary}15`,
+    accentSubtle: hexToRgba(primary, 0.08),
     accentText: darkenColor(primary, 15),
     openBg: 'rgba(22,163,74,0.10)',
     openText: '#16A34A',
     closedBg: 'rgba(220,38,38,0.10)',
     closedText: '#DC2626',
   }
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const c = hex.replace('#', '')
+  const full = c.length === 3 ? c.split('').map(ch => ch + ch).join('') : c
+  const int = parseInt(full, 16)
+  const r = (int >> 16) & 255
+  const g = (int >> 8) & 255
+  const b = int & 255
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
 /** Simple hex darkening utility */

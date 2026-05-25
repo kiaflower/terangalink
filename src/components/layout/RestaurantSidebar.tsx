@@ -5,15 +5,17 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, UtensilsCrossed, BarChart3,
-  QrCode, Settings, LogOut, Zap, User, ExternalLink,
+  QrCode, Settings, LogOut, Zap, User, ExternalLink, ShoppingBag,
 } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useSettings } from '@/lib/hooks/useSettings'
 
 const navItems = [
   { label: 'Tableau de bord', href: '/dashboard/restaurant', icon: LayoutDashboard, exact: true },
   { label: 'Menu', href: '/dashboard/restaurant/menu', icon: UtensilsCrossed },
+  { label: 'Commandes', href: '/dashboard/restaurant/orders', icon: ShoppingBag },
   { label: 'Analytiques', href: '/dashboard/restaurant/analytics', icon: BarChart3 },
   { label: 'QR Code', href: '/dashboard/restaurant/qrcode', icon: QrCode },
   { label: 'Profil', href: '/dashboard/restaurant/profile', icon: User },
@@ -24,7 +26,11 @@ export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
   const supabase = createClient()
+  const settings = useSettings()
   const [slug, setSlug] = useState<string | null>(null)
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : settings.platform_url
 
   useEffect(() => {
     if (!user?.restaurant_id) return
@@ -62,7 +68,7 @@ export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {
         {/* Voir mon site */}
         {slug && (
           <a
-            href={`/${slug}`}
+            href={`${baseUrl.replace(/\/$/, '')}/${slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-surface-100 hover:text-white transition-all duration-150 mt-2 border-t border-surface-200 pt-4"

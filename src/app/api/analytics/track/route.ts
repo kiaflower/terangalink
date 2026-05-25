@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -10,8 +12,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 })
     }
 
+    if (!UUID_RE.test(restaurant_id)) {
+      return NextResponse.json({ success: true, skipped: true })
+    }
+
     const supabase = createAdminClient()
-    const { data, error } = await supabase
+    await supabase
   .from('analytics_events')
   .insert({
     restaurant_id,
@@ -19,9 +25,6 @@ export async function POST(request: NextRequest) {
     item_id: item_id || null,
     item_name: item_name || null,
   })
-
-console.log('SUPABASE DATA:', data)
-console.log('SUPABASE ERROR:', error)
 
     return NextResponse.json({ success: true })
   } catch {

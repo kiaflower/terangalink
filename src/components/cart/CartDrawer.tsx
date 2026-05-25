@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { ShoppingBag, X, Plus, Minus, Trash2, MessageCircle, MapPin, Loader2, CheckCircle } from 'lucide-react'
+import { ShoppingBag, X, Plus, Minus, Trash2, MessageCircle } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 import { formatCurrency } from '@/lib/utils'
 import Image from 'next/image'
 import type { ThemeTokens } from '@/lib/theme'
+import { useSettings } from '@/lib/hooks/useSettings'
 
 interface Props { onClose?: () => void; inline?: boolean; tokens?: ThemeTokens }
 
@@ -25,29 +26,22 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
       {totalItems > 0 && (
         <button
           onClick={async () => {
-  try {
-    await fetch('/api/analytics/track', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        restaurant_id: 'demo',
-        event_type: 'open_cart'
-      })
-    })
-
-    console.log('TRACK SENT')
-  } catch (error) {
-    console.error(error)
-  }
-
-  setOpen(true)
-}}
-          className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 text-white px-6 py-3.5 rounded-full shadow-2xl font-semibold text-sm"
+            try {
+              await fetch('/api/analytics/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ restaurant_id: 'demo', event_type: 'open_cart' }),
+              })
+            } catch {
+              // silent
+            }
+            setOpen(true)
+          }}
+          className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 text-white px-5 py-3 rounded-2xl font-semibold shadow-2xl"
           style={{ backgroundColor: tokens.accent, boxShadow: `0 8px 30px ${tokens.accent}40` }}
         >
-          <ShoppingBag className="w-4 h-4" />Voir le panier ({totalItems})
+          <ShoppingBag className="w-4 h-4" />
+          Voir le panier ({totalItems})
         </button>
       )}
       {open && <CartDrawer onClose={() => setOpen(false)} tokens={tokens} />}
@@ -56,49 +50,102 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
 }
 
 export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }: Props) {
-  const { state, updateQty, clearCart, setLocation, totalItems, totalPrice, whatsappMessage } = useCart()
-  const [geoLoading, setGeoLoading] = useState(false)
-  const [geoError, setGeoError] = useState<string | null>(null)
+  const { state, updateQty, clearCart, totalItems, totalPrice } = useCart()
+  const settings = useSettings()
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : settings.platform_url
 
-  const whatsappUrl = state.restaurantPhone
-    ? `https://wa.me/${state.restaurantPhone.replace(/\D/g, '')}?text=${whatsappMessage}`
-    : null
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<'Wave' | 'Orange Money' | 'Cash'>('Wave')
 
-  async function handleGetLocation() {
-    if (!navigator.geolocation) {
-      setGeoError('Géolocalisation non supportée sur cet appareil.')
+  function openWhatsAppReliable(url: string, pendingWindow: Window | null) {
+    // Safari/iOS: prefer same-tab fallback if popup handle is lost/blocked
+    if (pendingWindow && !pendingWindow.closed) {
+      try {
+        pendingWindow.location.href = url
+        return
+      } catch {
+        // fallback below
+      }
+    }
+
+    // try new tab
+    const w = window.open(url, '_blank')
+    if (!w) {
+      // hard fallback (works on iOS Safari)
+      window.location.href = url
+    }
+  }
+
+  async function handleOrderViaWhatsApp() {
+    if (!state.restaurantPhone || !state.restaurantId || state.items.length === 0 || submitting) return
+
+    const cleanCustomerPhone = customerPhone.replace(/\D/g, '')
+    if (!cleanCustomerPhone) {
+      setSubmitError('Veuillez entrer votre numéro WhatsApp.')
       return
     }
-    setGeoLoading(true)
-    setGeoError(null)
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords
-        const mapsUrl = `https://maps.google.com/?q=${latitude},${longitude}`
+    setSubmitting(true)
+    setSubmitError(null)
 
-        // Reverse geocode using a free API
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=fr`
-          )
-          const data = await res.json()
-          const address = data.display_name
-            ? data.display_name.split(',').slice(0, 3).join(', ')
-            : `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
-          setLocation(address, mapsUrl)
-        } catch {
-          setLocation(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`, mapsUrl)
-        }
-        setGeoLoading(false)
-      },
-      (err) => {
-        setGeoLoading(false)
-        if (err.code === 1) setGeoError('Accès à la localisation refusé. Activez-la dans vos paramètres.')
-        else setGeoError('Impossible de récupérer votre position.')
-      },
-      { timeout: 10000, maximumAge: 60000 }
-    )
+    // Important for Safari popup blockers: open synchronously from user gesture
+    const pendingWindow = window.open('about:blank', '_blank')
+
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurant_id: state.restaurantId,
+          customer_name: customerName.trim() || 'Client',
+          customer_phone: cleanCustomerPhone,
+          items: state.items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+          total: totalPrice,
+          notes: `Paiement: ${paymentMethod}`,
+        }),
+      })
+
+      const payload = await response.json()
+      if (!response.ok || !payload?.data?.id) {
+        throw new Error(payload?.error || 'Erreur de création de commande')
+      }
+
+      const order = payload.data as { id: string; created_at: string }
+      const itemsLines = state.items
+        .map(i => `• ${i.name} x${i.quantity} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`)
+        .join('\n')
+
+      const orderTime = new Date(order.created_at || Date.now()).toLocaleString('fr-SN')
+      const manageUrl = `${baseUrl.replace(/\/$/, '')}/dashboard/restaurant/orders?order=${order.id}`
+
+      const message = encodeURIComponent(
+        `Nouvelle commande TerangaLink\n\n` +
+        `Client: ${customerName.trim() || 'Client'}\n` +
+        `Téléphone: ${cleanCustomerPhone}\n` +
+        `Articles:\n${itemsLines}\n\n` +
+        `Total: ${totalPrice.toLocaleString('fr-SN')} FCFA\n` +
+        `Paiement: ${paymentMethod}\n` +
+        `Heure: ${orderTime}\n\n` +
+        `Gérer la commande:\n${manageUrl}`
+      )
+
+      const restaurantPhone = state.restaurantPhone.replace(/\D/g, '')
+      const url = `https://wa.me/${restaurantPhone}?text=${message}`
+
+      openWhatsAppReliable(url, pendingWindow)
+
+      clearCart()
+      onClose?.()
+    } catch (error) {
+      console.error('Order checkout error:', error)
+      if (pendingWindow && !pendingWindow.closed) pendingWindow.close()
+      setSubmitError('La commande a échoué. Veuillez réessayer.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const content = (
@@ -163,62 +210,53 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
       {/* Footer */}
       {state.items.length > 0 && (
         <div className="p-4 space-y-3" style={{ borderTop: `1px solid ${tokens.border}` }}>
+          <input
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder="Nom (optionnel)"
+            className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+            style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+          />
+
+          <input
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            placeholder="Votre numéro WhatsApp (obligatoire)"
+            className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+            style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+          />
+
+          <select
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value as 'Wave' | 'Orange Money' | 'Cash')}
+            className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+            style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+          >
+            <option value="Wave">Paiement : Wave</option>
+            <option value="Orange Money">Paiement : Orange Money</option>
+            <option value="Cash">Paiement : Cash</option>
+          </select>
+
           {/* Total */}
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: tokens.textSecondary }}>Total</span>
             <span className="font-bold text-lg" style={{ color: tokens.textPrimary }}>{formatCurrency(totalPrice)}</span>
           </div>
 
-          {/* Geolocation */}
-          <div>
-            {state.customerLocation ? (
-              <div className="flex items-start gap-2 rounded-xl p-3" style={{ backgroundColor: `${tokens.accent}12`, border: `1px solid ${tokens.accent}25` }}>
-                <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: tokens.accent }} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold mb-0.5" style={{ color: tokens.accentText }}>Localisation ajoutée</p>
-                  <p className="text-xs truncate" style={{ color: tokens.textMuted }}>{state.customerLocation}</p>
-                </div>
-                <button onClick={() => setLocation('', '')} className="text-xs flex-shrink-0" style={{ color: tokens.textMuted }}>✕</button>
-              </div>
-            ) : (
-              <div>
-                <button
-                  onClick={handleGetLocation}
-                  disabled={geoLoading}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-semibold transition-colors disabled:opacity-60"
-                  style={{
-                    backgroundColor: tokens.bgCardHover,
-                    color: tokens.textSecondary,
-                    border: `1px solid ${tokens.border}`,
-                  }}
-                >
-                  {geoLoading
-                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Localisation...</>
-                    : <><MapPin className="w-3.5 h-3.5" />Partager ma localisation</>
-                  }
-                </button>
-                {geoError && <p className="text-xs text-red-400 mt-1.5 text-center">{geoError}</p>}
-                <p className="text-xs text-center mt-1" style={{ color: tokens.textMuted }}>
-                  Optionnel — aide le restaurant à vous livrer
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* WhatsApp button */}
-          {whatsappUrl ? (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+          {state.restaurantPhone ? (
+            <button
+              onClick={handleOrderViaWhatsApp}
+              disabled={submitting}
               className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#20b858] text-white font-bold py-3.5 rounded-xl transition-colors text-sm"
             >
               <MessageCircle className="w-4 h-4" />
-              Commander via WhatsApp
-            </a>
+              {submitting ? 'Ouverture WhatsApp...' : 'Commander via WhatsApp'}
+            </button>
           ) : (
             <p className="text-xs text-center" style={{ color: tokens.textMuted }}>Numéro WhatsApp non configuré</p>
           )}
+
+          {submitError && <p className="text-xs text-center text-red-400">{submitError}</p>}
         </div>
       )}
     </div>

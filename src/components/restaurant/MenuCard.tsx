@@ -16,6 +16,23 @@ interface MenuCardProps {
   tokens: ThemeTokens
 }
 
+async function trackAddToCart(restaurantId: string, itemId: string, itemName: string) {
+  try {
+    await fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        restaurant_id: restaurantId,
+        event_type: 'add_to_cart',
+        item_id: itemId,
+        item_name: itemName,
+      }),
+    })
+  } catch {
+    // silently ignore — tracking must never break the UX
+  }
+}
+
 export function MenuCard({ item, restaurantId, restaurantSlug, restaurantPhone, restaurantName, tokens }: MenuCardProps) {
   const { state, addItem, updateQty } = useCart()
   const cartItem = state.items.find(i => i.id === item.id)
@@ -26,6 +43,10 @@ export function MenuCard({ item, restaurantId, restaurantSlug, restaurantPhone, 
       { id: item.id, name: item.name, price: item.price, quantity: 1, image_url: item.image_url },
       restaurantId, restaurantSlug, restaurantPhone, restaurantName
     )
+    // Track only on first add (qty === 0), not on quantity increment
+    if (qty === 0) {
+      trackAddToCart(restaurantId, item.id, item.name)
+    }
   }
 
   return (
