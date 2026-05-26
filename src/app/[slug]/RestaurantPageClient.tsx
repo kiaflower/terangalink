@@ -84,18 +84,36 @@ function RestaurantInner({ data }: Props) {
   return (
     <div style={style} className="min-h-screen">
       {/* Demo banner */}
-      {restaurant.is_demo && (
-        <div className="text-white text-center text-xs py-2 px-4 font-semibold" style={{ backgroundColor: `${tokens.accent}CC` }}>
-          Ceci est un site démo TerangaLink —
-<a
-  href="https://wa.me/221777777777?text=Bonjour%2C%20j%E2%80%99ai%20d%C3%A9couvert%20TerangaLink%20et%20je%20souhaiterais%20cr%C3%A9er%20un%20site%20pour%20mon%20restaurant."
-  target="_blank"
-  className="underline opacity-90 hover:opacity-100 ml-1"
->
-  Créez votre propre restaurant
-</a>
-        </div>
-      )}
+    {restaurant.is_demo && (
+  <div
+    className="text-white px-3 py-1.5"
+    style={{ backgroundColor: `${tokens.accent}CC` }}
+  >
+    <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 text-[11px] sm:text-xs">
+      <a
+        href="/"
+        className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold transition-colors"
+        style={{ backgroundColor: 'rgba(0,0,0,0.22)' }}
+      >
+        <Home className="w-3.5 h-3.5" />
+        Accueil
+      </a>
+
+      <span className="opacity-95 whitespace-nowrap">
+        Démo TerangaLink
+      </span>
+
+      <a
+        href="https://wa.me/221777777777?text=Bonjour%2C%20j%E2%80%99ai%20d%C3%A9couvert%20TerangaLink%20et%20je%20souhaiterais%20cr%C3%A9er%20un%20site%20pour%20mon%20restaurant."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-semibold underline underline-offset-2 whitespace-nowrap"
+      >
+        Créer mon site
+      </a>
+    </div>
+  </div>
+)}
 
       {/* Hero */}
       <div className="relative h-52 sm:h-64 overflow-hidden">
@@ -259,64 +277,18 @@ function RestaurantInner({ data }: Props) {
           {/* Info section */}
           <div className="mt-10 space-y-3 pt-8" style={{ borderTop: `1px solid ${tokens.border}` }}>
             {restaurant.address && (
-              <div className="rounded-2xl p-5" style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}>
-                <div className="flex items-start gap-2.5">
-                  <Home className="w-4 h-4 mt-0.5" style={{ color: tokens.accent }} />
-                  <div>
-                    <p className="font-semibold text-sm mb-1" style={{ color: tokens.textPrimary }}>Adresse</p>
-                    <p className="text-sm leading-relaxed" style={{ color: tokens.textSecondary }}>{restaurant.address}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {restaurant.address && (
               <GoogleMap
                 address={restaurant.address}
-                tokens={tokens}
+                city={restaurant.city}
+                restaurantName={restaurant.name}
+                accentColor={tokens.accent}
+                textPrimary={tokens.textPrimary}
+                textSecondary={tokens.textSecondary}
               />
             )}
-
-            {!canHideBranding && (
-              <div className="mt-8 pt-5 text-center" style={{ borderTop: `1px solid ${tokens.border}` }}>
-                <a href="/" className="inline-flex items-center gap-1.5 text-xs font-semibold transition-opacity opacity-75 hover:opacity-100" style={{ color: tokens.textMuted }}>
-                  <Zap className="w-3 h-3" style={{ color: tokens.accent }} />
-                  Propulsé par TerangaLink
-                  <ChevronRight className="w-3 h-3" />
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop cart */}
-        <div className="hidden lg:block w-[340px] flex-shrink-0">
-          <div className="sticky top-20 rounded-2xl overflow-hidden max-h-[calc(100vh-6rem)]" style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}>
-            <CartDrawer inline tokens={tokens} />
           </div>
         </div>
       </div>
-
-      {/* Floating cart button mobile */}
-      <CartButton tokens={tokens} />
-
-      {restaurant.is_demo && (
-        <a
-          href="https://wa.me/221777777777?text=Bonjour%2C%20j%E2%80%99ai%20d%C3%A9couvert%20TerangaLink%20et%20je%20souhaiterais%20cr%C3%A9er%20un%20site%20pour%20mon%20restaurant."
-          target="_blank"
-          className="fixed bottom-24 right-4 lg:right-6 z-40 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl"
-          style={{ backgroundColor: tokens.accent }}
-        >
-          Créer mon site
-        </a>
-      )}
-
-      {/* Demo sticky bottom banner */}
-      {restaurant.is_demo && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 px-4 py-2.5 text-center text-xs font-semibold text-white" style={{ backgroundColor: tokens.accent }}>
-          Démo TerangaLink — Créez votre propre site de commande
-        </div>
-      )}
     </div>
   )
 }
@@ -325,6 +297,7 @@ export default function RestaurantPageClient(props: Props) {
   return (
     <CartProvider>
       <RestaurantInner {...props} />
+      <CartButton />
     </CartProvider>
   )
 }

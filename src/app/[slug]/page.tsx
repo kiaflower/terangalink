@@ -9,8 +9,14 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
-  const { data } = await supabase.from('restaurants').select('name, description').eq('slug', params.slug).single()
+  const { data } = await supabase
+    .from('restaurants')
+    .select('name, description')
+    .eq('slug', params.slug)
+    .single()
+
   if (!data) return { title: 'Restaurant introuvable' }
+
   return {
     title: `${data.name} — Commander en ligne`,
     description: data.description || `Commandez chez ${data.name} via WhatsApp`,
@@ -22,7 +28,7 @@ export default async function RestaurantPage({ params }: Props) {
 
   const { data: restaurant } = await supabase
     .from('restaurants')
-    .select('id, name, slug, description, city, phone, whatsapp_number, address, logo_url, banner_url, cover_url, primary_color, background_color, theme_mode, opening_hours, is_active, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes')
+    .select('id, name, slug, description, city, phone, whatsapp_number, address, logo_url, banner_url, cover_url, primary_color, background_color, theme_mode, opening_hours, is_active, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes')
     .eq('slug', params.slug)
     .single()
 
@@ -41,7 +47,6 @@ export default async function RestaurantPage({ params }: Props) {
     )
   }
 
-  // Fetch plan from subscription
   const { data: subscription } = await supabase
     .from('subscriptions')
     .select('plan, status')
