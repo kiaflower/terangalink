@@ -21,6 +21,7 @@ const DEFAULT_TOKENS: ThemeTokens = {
 export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }) {
   const { totalItems } = useCart()
   const [open, setOpen] = useState(false)
+
   return (
     <>
       {totalItems > 0 && (
@@ -30,15 +31,21 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
               await fetch('/api/analytics/track', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ restaurant_id: 'demo', event_type: 'open_cart' }),
+                body: JSON.stringify({
+                  restaurant_id: 'demo',
+                  event_type: 'open_cart',
+                }),
               })
             } catch {
-              // silent
+              // ignore analytics failure
             }
             setOpen(true)
           }}
           className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 text-white px-5 py-3 rounded-2xl font-semibold shadow-2xl"
-          style={{ backgroundColor: tokens.accent, boxShadow: `0 8px 30px ${tokens.accent}40` }}
+          style={{
+            backgroundColor: tokens.accent,
+            boxShadow: `0 8px 30px ${tokens.accent}40`,
+          }}
         >
           <ShoppingBag className="w-4 h-4" />
           Voir le panier ({totalItems})
@@ -52,7 +59,9 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
 export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }: Props) {
   const { state, updateQty, clearCart, totalItems, totalPrice } = useCart()
   const settings = useSettings()
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : settings.platform_url
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : settings.platform_url
 
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -60,21 +69,20 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
   const [customerPhone, setCustomerPhone] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'Wave' | 'Orange Money' | 'Cash'>('Wave')
 
-  function openWhatsAppReliable(url: string, pendingWindow: Window | null) {
-    // Safari/iOS: prefer same-tab fallback if popup handle is lost/blocked
+  function openWhatsappSafely(url: string, pendingWindow: Window | null) {
+    // iOS Safari safe fallback chain
     if (pendingWindow && !pendingWindow.closed) {
       try {
         pendingWindow.location.href = url
         return
       } catch {
-        // fallback below
+        // continue fallback
       }
     }
 
-    // try new tab
-    const w = window.open(url, '_blank')
-    if (!w) {
-      // hard fallback (works on iOS Safari)
+    const popup = window.open(url, '_blank')
+    if (!popup) {
+      // last-resort fallback (works better on iOS Safari)
       window.location.href = url
     }
   }
@@ -82,8 +90,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
   async function handleOrderViaWhatsApp() {
     if (!state.restaurantPhone || !state.restaurantId || state.items.length === 0 || submitting) return
 
-    const cleanCustomerPhone = customerPhone.replace(/\D/g, '')
-    if (!cleanCustomerPhone) {
+    const cleanedCustomerPhone = customerPhone.replace(/\D/g, '')
+    if (!cleanedCustomerPhone) {
       setSubmitError('Veuillez entrer votre numéro WhatsApp.')
       return
     }
@@ -91,7 +99,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
     setSubmitting(true)
     setSubmitError(null)
 
-    // Important for Safari popup blockers: open synchronously from user gesture
+    // Open immediately in click context (anti popup-block)
     const pendingWindow = window.open('about:blank', '_blank')
 
     try {
@@ -101,8 +109,13 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
         body: JSON.stringify({
           restaurant_id: state.restaurantId,
           customer_name: customerName.trim() || 'Client',
-          customer_phone: cleanCustomerPhone,
-          items: state.items.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+          customer_phone: cleanedCustomerPhone,
+          items: state.items.map(i => ({
+            id: i.id,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
+          })),
           total: totalPrice,
           notes: `Paiement: ${paymentMethod}`,
         }),
@@ -124,7 +137,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
       const message = encodeURIComponent(
         `Nouvelle commande TerangaLink\n\n` +
         `Client: ${customerName.trim() || 'Client'}\n` +
-        `Téléphone: ${cleanCustomerPhone}\n` +
+        `Téléphone: ${cleanedCustomerPhone}\n` +
         `Articles:\n${itemsLines}\n\n` +
         `Total: ${totalPrice.toLocaleString('fr-SN')} FCFA\n` +
         `Paiement: ${paymentMethod}\n` +
@@ -135,7 +148,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
       const restaurantPhone = state.restaurantPhone.replace(/\D/g, '')
       const url = `https://wa.me/${restaurantPhone}?text=${message}`
 
-      openWhatsAppReliable(url, pendingWindow)
+      openWhatsappSafely(url, pendingWindow)
 
       clearCart()
       onClose?.()
@@ -194,7 +207,11 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
                 <p className="text-xs font-semibold" style={{ color: tokens.accentText }}>{formatCurrency(item.price)}</p>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <button onClick={() => updateQty(item.id, item.quantity - 1)} className="w-6 h-6 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}>
+                <button
+                  onClick={() => updateQty(item.id, item.quantity - 1)}
+                  className="w-6 h-6 rounded-full flex items-center justify-center transition-colors"
+                  style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+                >
                   {item.quantity === 1 ? <Trash2 className="w-3 h-3 text-red-400" /> : <Minus className="w-3 h-3" style={{ color: tokens.textSecondary }} />}
                 </button>
                 <span className="text-sm font-bold w-4 text-center" style={{ color: tokens.textPrimary }}>{item.quantity}</span>
@@ -237,7 +254,6 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
             <option value="Cash">Paiement : Cash</option>
           </select>
 
-          {/* Total */}
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: tokens.textSecondary }}>Total</span>
             <span className="font-bold text-lg" style={{ color: tokens.textPrimary }}>{formatCurrency(totalPrice)}</span>

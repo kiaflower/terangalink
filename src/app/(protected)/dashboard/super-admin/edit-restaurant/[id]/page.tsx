@@ -17,7 +17,9 @@ import Link from 'next/link'
 import { PLAN_LABELS, type PlanType, getPlanFeatures } from '@/lib/plans'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { getInitials } from '@/lib/utils'
-
+const [previewPrimary, setPreviewPrimary] = useState('#F97316')
+const [previewBg, setPreviewBg] = useState('#0A0A0A')
+const [previewMode, setPreviewMode] = useState<'dark' | 'light'>('dark')
 const JOURS = [
   { key: 'lundi', label: 'Lun' }, { key: 'mardi', label: 'Mar' },
   { key: 'mercredi', label: 'Mer' }, { key: 'jeudi', label: 'Jeu' },
@@ -118,6 +120,9 @@ export default function EditRestaurantPage() {
     setPrimaryColor(r.primary_color || '#F97316')
     setBgColor(r.background_color || '#0A0A0A')
     setThemeMode(r.theme_mode || 'dark')
+    setPreviewPrimary(r.primary_color || '#F97316')
+setPreviewBg(r.background_color || '#0A0A0A')
+setPreviewMode(r.theme_mode || 'dark')
     setIsActive(r.is_active ?? true)
     setOpeningHours((r.opening_hours as OpeningHours) || {})
     setDeliveryFee(String(r.delivery_fee ?? 0))

@@ -1,11 +1,6 @@
 /**
  * TerangaLink Theme System
- * Generates ALL CSS variables automatically from:
- * - primaryColor (hex)
- * - mode ('dark' | 'light')
- *
- * Dashboards always use the TerangaLink dark theme.
- * Only public restaurant pages use this system.
+ * Génère les variables CSS pour les pages publiques restaurants.
  */
 
 export interface RestaurantTheme {
@@ -15,38 +10,44 @@ export interface RestaurantTheme {
 }
 
 export interface ThemeTokens {
-  // Backgrounds
   bgPage: string
   bgCard: string
   bgCardHover: string
   bgInput: string
   bgBadge: string
 
-  // Borders
   border: string
   borderStrong: string
 
-  // Text
   textPrimary: string
   textSecondary: string
   textMuted: string
   textOnAccent: string
 
-  // Accent (from primaryColor)
   accent: string
   accentHover: string
   accentSubtle: string
   accentText: string
 
-  // Status
   openBg: string
   openText: string
   closedBg: string
   closedText: string
 }
 
+function normalizeHex(hex: string, fallback = '#F97316'): string {
+  const v = (hex || '').trim()
+  if (/^#[0-9A-Fa-f]{6}$/.test(v)) return v
+  if (/^#[0-9A-Fa-f]{3}$/.test(v)) {
+    return `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`
+  }
+  return fallback
+}
+
 export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
-  const { primary, mode, background } = theme
+  const primary = normalizeHex(theme.primary, '#F97316')
+  const background = theme.background ? normalizeHex(theme.background, '#0A0A0A') : undefined
+  const mode = theme.mode === 'light' ? 'light' : 'dark'
 
   if (mode === 'dark') {
     return {
@@ -63,7 +64,7 @@ export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
       textOnAccent: '#FFFFFF',
       accent: primary,
       accentHover: darkenColor(primary, 10),
-      accentSubtle: hexToRgba(primary, 0.1),
+      accentSubtle: hexToRgba(primary, 0.10),
       accentText: primary,
       openBg: 'rgba(34,197,94,0.12)',
       openText: '#4ADE80',
@@ -72,7 +73,6 @@ export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
     }
   }
 
-  // Light mode
   return {
     bgPage: background || '#F8F7F4',
     bgCard: '#FFFFFF',
@@ -97,25 +97,23 @@ export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
 }
 
 function hexToRgba(hex: string, alpha: number): string {
-  const c = hex.replace('#', '')
-  const full = c.length === 3 ? c.split('').map(ch => ch + ch).join('') : c
-  const int = parseInt(full, 16)
+  const c = normalizeHex(hex).replace('#', '')
+  const int = parseInt(c, 16)
   const r = (int >> 16) & 255
   const g = (int >> 8) & 255
   const b = int & 255
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-/** Simple hex darkening utility */
 function darkenColor(hex: string, percent: number): string {
-  const num = parseInt(hex.replace('#', ''), 16)
+  const h = normalizeHex(hex).replace('#', '')
+  const num = parseInt(h, 16)
   const r = Math.max(0, (num >> 16) - Math.round(2.55 * percent))
   const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(2.55 * percent))
   const b = Math.max(0, (num & 0xff) - Math.round(2.55 * percent))
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }
 
-/** Converts ThemeTokens to inline CSS variables string for a container element */
 export function themeToStyle(tokens: ThemeTokens): React.CSSProperties {
   return {
     '--bg-page': tokens.bgPage,

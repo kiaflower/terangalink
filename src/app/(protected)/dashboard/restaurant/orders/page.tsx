@@ -10,26 +10,16 @@ import { ShoppingBag, Phone, ChevronDown, MessageCircle } from 'lucide-react'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/types'
 import type { Order, OrderStatus } from '@/lib/types'
 
-const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
-  pending: 'preparing',
-  preparing: 'ready',
-  ready: 'delivered',
-}
-
-const NEXT_LABEL: Partial<Record<OrderStatus, string>> = {
-  pending: 'Accepter / Préparer',
-  preparing: 'Marquer comme prêt',
-  ready: 'Marquer comme livré',
-}
-
 export default function OrdersPage() {
   const supabase = createClient()
   const searchParams = useSearchParams()
+
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [filterStatus, setFilterStatus] = useState<OrderStatus | 'all'>('all')
   const [restaurantName, setRestaurantName] = useState('Restaurant')
+  const [waveNumber, setWaveNumber] = useState('')
+  const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
 
   const fetchOrders = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -54,13 +44,17 @@ export default function OrdersPage() {
         .order('created_at', { ascending: false }),
       supabase
         .from('restaurants')
-        .select('name')
+        .select('name, whatsapp_number, phone')
         .eq('id', profile.restaurant_id)
         .single(),
     ])
 
     setOrders((orderData as Order[]) ?? [])
     setRestaurantName(restaurant?.name || 'Restaurant')
+    // Numéros de paiement (source actuelle)
+    setWaveNumber(restaurant?.whatsapp_number || '')
+    setOrangeMoneyNumber(restaurant?.phone || '')
+
     setLoading(false)
   }, [supabase])
 
@@ -84,49 +78,39 @@ export default function OrdersPage() {
     if (targetOrderId) setExpandedId(targetOrderId)
   }, [searchParams])
 
-  function buildCustomerConfirmation(order: Order) {
+  function buildCustomerConfirmationUrl(order: Order) {
     const phone = (order.customer_phone || '').replace(/\D/g, '')
     if (!phone) return null
 
-    const itemsLines = (order.items as { name: string; quantity: number }[])
+    const items = (order.items as { name: string; quantity: number; price?: number }[])
       .map(i => `• ${i.name} x${i.quantity}`)
       .join('\n')
 
     const message = encodeURIComponent(
-      `Bonjour ${order.customer_name || ''}, votre commande a bien été acceptée par ${restaurantName}.\n` +
+      `Bonjour ${order.customer_name || ''}, votre commande a bien été validée par ${restaurantName}.\n` +
       `Temps de préparation estimé : 25 min.\n` +
-      `Paiement Wave : XXXXXXXX\n` +
-      `Paiement Orange Money : XXXXXXXX\n\n` +
-      `Résumé:\n${itemsLines}\n\nMerci 🙏`
+      `Paiement Wave : ${waveNumber || 'À confirmer'}\n` +
+      `Paiement Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
+      `${items ? `Résumé :\n${items}\n\n` : ''}` +
+      `Merci 🙏`
     )
 
     return `https://wa.me/${phone}?text=${message}`
   }
 
-  async function updateStatus(orderId: string, status: OrderStatus) {
-    await supabase.from('orders').update({ status }).eq('id', orderId)
-    setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status } : o)))
-
-    // On accept/preparing: open customer confirmation WhatsApp
-    if (status === 'preparing') {
-      const target = orders.find(o => o.id === orderId)
-      const url = target ? buildCustomerConfirmation(target) : null
-      if (url) {
-        const w = window.open(url, '_blank')
-        if (!w) window.location.href = url
-      }
-    }
+  async function validerCommande(orderId: string) {
+    // Statut technique utilisé pour "Validée" (sans migration DB)
+    await supabase.from('orders').update({ status: 'delivered' }).eq('id', orderId)
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'delivered' as OrderStatus } : o))
   }
 
-  async function cancelOrder(orderId: string) {
+  async function annulerCommande(orderId: string) {
     if (!confirm('Annuler cette commande ?')) return
-    await updateStatus(orderId, 'cancelled')
+    await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' as OrderStatus } : o))
   }
 
-  const filtered = filterStatus === 'all'
-    ? orders
-    : orders.filter(o => o.status === filterStatus)
-
+  // On garde toutes les commandes visibles
   const pendingCount = orders.filter(o => o.status === 'pending').length
 
   return (
@@ -145,30 +129,9 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto mb-6 pb-1" style={{ scrollbarWidth: 'none' }}>
-        {([['all', 'Toutes'], ['pending', 'En attente'], ['preparing', 'En préparation'], ['ready', 'Prêtes'], ['delivered', 'Livrées']] as const).map(([val, label]) => (
-          <button
-            key={val}
-            onClick={() => setFilterStatus(val)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-              filterStatus === val
-                ? 'bg-brand-orange text-white'
-                : 'bg-surface-100 text-gray-400 hover:text-white'
-            }`}
-          >
-            {label}
-            {val !== 'all' && (
-              <span className="ml-1.5 text-xs opacity-70">
-                ({orders.filter(o => o.status === val).length})
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
       {loading ? (
         <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)}</div>
-      ) : filtered.length === 0 ? (
+      ) : orders.length === 0 ? (
         <EmptyState
           icon={<ShoppingBag className="w-7 h-7" />}
           title="Aucune commande"
@@ -176,8 +139,10 @@ export default function OrdersPage() {
         />
       ) : (
         <div className="space-y-3">
-          {filtered.map(order => {
-            const confirmUrl = buildCustomerConfirmation(order)
+          {orders.map(order => {
+            const confirmUrl = buildCustomerConfirmationUrl(order)
+            const dejaValidee = order.status === 'delivered'
+
             return (
               <div key={order.id} className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
                 <div
@@ -188,7 +153,7 @@ export default function OrdersPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-white font-semibold text-sm">{order.customer_name || 'Client anonyme'}</p>
                       <Badge variant={ORDER_STATUS_COLORS[order.status] as 'success' | 'warning' | 'info' | 'danger' | 'default'}>
-                        {ORDER_STATUS_LABELS[order.status]}
+                        {dejaValidee ? 'Validée' : ORDER_STATUS_LABELS[order.status]}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3 mt-1">
@@ -232,31 +197,26 @@ export default function OrdersPage() {
                     )}
 
                     <div className="flex gap-2 flex-wrap">
-                      {NEXT_STATUS[order.status] && (
-                        <button
-                          onClick={() => updateStatus(order.id, NEXT_STATUS[order.status]!)}
-                          className="flex-1 bg-brand-orange hover:bg-brand-orange-dark text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
-                        >
-                          {NEXT_LABEL[order.status]}
-                        </button>
-                      )}
-
                       {confirmUrl && (
                         <button
-                          onClick={() => {
+                          onClick={async () => {
+                            // 1) valider côté site/analytiques
+                            await validerCommande(order.id)
+
+                            // 2) ouvrir WhatsApp client
                             const w = window.open(confirmUrl, '_blank')
                             if (!w) window.location.href = confirmUrl
                           }}
-                          className="px-4 py-2.5 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] text-sm font-semibold rounded-xl transition-colors inline-flex items-center gap-1.5"
+                          className="flex-1 px-4 py-2.5 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] text-sm font-semibold rounded-xl transition-colors inline-flex items-center justify-center gap-1.5"
                         >
                           <MessageCircle className="w-4 h-4" />
                           Confirmer via WhatsApp
                         </button>
                       )}
 
-                      {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                      {order.status !== 'cancelled' && (
                         <button
-                          onClick={() => cancelOrder(order.id)}
+                          onClick={() => annulerCommande(order.id)}
                           className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl transition-colors"
                         >
                           Annuler
