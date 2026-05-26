@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import Link from 'next/link'
-import { PlusCircle, Store, Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
+import { PlusCircle, Store, Pencil, Trash2, AlertTriangle, Loader2, RotateCcw } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
 
@@ -30,6 +30,7 @@ export default function RestaurantsPage() {
   const [deleteAdmins, setDeleteAdmins] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [resettingId, setResettingId] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     const [{ data: rests }, { data: admins }, { data: subs }] = await Promise.all([
@@ -62,6 +63,26 @@ export default function RestaurantsPage() {
     setDeleteAdmins(false)
     setDeleteError(null)
     setDeleteModal(true)
+  }
+
+  async function resetAnalytics(restaurant: Restaurant) {
+    if (!confirm(`Réinitialiser les stats analytiques de ${restaurant.name} ?`)) return
+
+    setResettingId(restaurant.id)
+    const res = await fetch('/api/admin/reset-restaurant-analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ restaurant_id: restaurant.id }),
+    })
+    const data = await res.json()
+    setResettingId(null)
+
+    if (!res.ok) {
+      alert(data.error || 'Erreur lors de la réinitialisation des statistiques')
+      return
+    }
+
+    alert('Stats analytiques réinitialisées avec succès.')
   }
 
   async function confirmDelete() {
@@ -190,6 +211,13 @@ export default function RestaurantsPage() {
                       className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white px-3 py-2 rounded-xl text-xs font-semibold transition-colors">
                       <Pencil className="w-3 h-3" />Modifier
                     </Link>
+                    <button
+                      onClick={() => resetAnalytics(r)}
+                      disabled={resettingId === r.id}
+                      className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border border-amber-500/20 disabled:opacity-60"
+                    >
+                      {resettingId === r.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}Réinitialiser stats
+                    </button>
                     <button onClick={() => openDelete(r)}
                       className="inline-flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border border-red-500/20">
                       <Trash2 className="w-3 h-3" />Supprimer

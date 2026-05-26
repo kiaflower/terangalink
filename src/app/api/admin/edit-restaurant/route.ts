@@ -1,8 +1,7 @@
-// src/app/api/admin/edit-restaurant/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function PUT(request: NextRequest) {
+async function updateRestaurant(request: NextRequest) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -16,31 +15,42 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json()
     const {
-      id, name, slug, description, city, address,
-      whatsapp_number, latitude, longitude,
-      delivery_zones, opening_hours,
-      primary_color, background_color,
-      logo_url, banner_url,
+      id,
+      latitude,
+      longitude,
+      banner_url,
+      cover_url,
       plan,
+      ...rest
     } = body
 
     if (!id) return NextResponse.json({ error: 'id requis' }, { status: 400 })
 
+    const updatePayload: Record<string, unknown> = {
+      ...rest,
+      updated_at: new Date().toISOString(),
+    }
+
+    if ('phone' in rest) updatePayload.phone = rest.phone || null
+    if ('whatsapp_number' in rest) updatePayload.whatsapp_number = rest.whatsapp_number || null
+    if ('logo_url' in rest) updatePayload.logo_url = rest.logo_url || null
+
+    if (typeof latitude !== 'undefined') {
+      updatePayload.latitude = latitude ? parseFloat(latitude) : null
+    }
+    if (typeof longitude !== 'undefined') {
+      updatePayload.longitude = longitude ? parseFloat(longitude) : null
+    }
+
+    if (typeof banner_url !== 'undefined' || typeof cover_url !== 'undefined') {
+      const resolvedBanner = banner_url ?? cover_url ?? null
+      updatePayload.banner_url = resolvedBanner
+      updatePayload.cover_url = resolvedBanner
+    }
+
     const { error: rErr } = await supabase
       .from('restaurants')
-      .update({
-        name, slug, description, city, address,
-        whatsapp_number,
-        latitude: latitude ? parseFloat(latitude) : null,
-        longitude: longitude ? parseFloat(longitude) : null,
-        delivery_zones: delivery_zones || [],
-        opening_hours: opening_hours || {},
-        primary_color: primary_color || '#F97316',
-        background_color: background_color || '#0F0F0F',
-        logo_url,
-        banner_url,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', id)
 
     if (rErr) throw rErr
@@ -57,4 +67,12 @@ export async function PUT(request: NextRequest) {
     console.error('edit-restaurant error:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
+}
+
+export async function POST(request: NextRequest) {
+  return updateRestaurant(request)
+}
+
+export async function PUT(request: NextRequest) {
+  return updateRestaurant(request)
 }

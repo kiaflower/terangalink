@@ -22,7 +22,7 @@ export default async function RestaurantPage({ params }: Props) {
 
   const { data: restaurant } = await supabase
     .from('restaurants')
-    .select('*')
+    .select('id, name, slug, description, city, phone, whatsapp_number, address, logo_url, banner_url, cover_url, primary_color, background_color, theme_mode, opening_hours, is_active, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes')
     .eq('slug', params.slug)
     .single()
 
@@ -58,6 +58,8 @@ export default async function RestaurantPage({ params }: Props) {
       data={{
         restaurant: {
           ...restaurant,
+          banner_url: restaurant.banner_url || restaurant.cover_url || null,
+          cover_url: restaurant.banner_url || restaurant.cover_url || null,
           plan: subscription?.plan ?? null,
         },
         categories: categories ?? [],

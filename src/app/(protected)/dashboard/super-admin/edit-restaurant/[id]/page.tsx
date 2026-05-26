@@ -17,9 +17,6 @@ import Link from 'next/link'
 import { PLAN_LABELS, type PlanType, getPlanFeatures } from '@/lib/plans'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { getInitials } from '@/lib/utils'
-const [previewPrimary, setPreviewPrimary] = useState('#F97316')
-const [previewBg, setPreviewBg] = useState('#0A0A0A')
-const [previewMode, setPreviewMode] = useState<'dark' | 'light'>('dark')
 const JOURS = [
   { key: 'lundi', label: 'Lun' }, { key: 'mardi', label: 'Mar' },
   { key: 'mercredi', label: 'Mer' }, { key: 'jeudi', label: 'Jeu' },
@@ -50,6 +47,9 @@ export default function EditRestaurantPage() {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
+  const [previewPrimary, setPreviewPrimary] = useState('#F97316')
+  const [previewBg, setPreviewBg] = useState('#0A0A0A')
+  const [previewMode, setPreviewMode] = useState<'dark' | 'light'>('dark')
 
   // Restaurant fields
   const [name, setName] = useState('')
@@ -121,8 +121,8 @@ export default function EditRestaurantPage() {
     setBgColor(r.background_color || '#0A0A0A')
     setThemeMode(r.theme_mode || 'dark')
     setPreviewPrimary(r.primary_color || '#F97316')
-setPreviewBg(r.background_color || '#0A0A0A')
-setPreviewMode(r.theme_mode || 'dark')
+    setPreviewBg(r.background_color || '#0A0A0A')
+    setPreviewMode(r.theme_mode || 'dark')
     setIsActive(r.is_active ?? true)
     setOpeningHours((r.opening_hours as OpeningHours) || {})
     setDeliveryFee(String(r.delivery_fee ?? 0))
@@ -151,6 +151,12 @@ setPreviewMode(r.theme_mode || 'dark')
   }, [id, router, supabase])
 
   useEffect(() => { loadData() }, [loadData])
+
+  useEffect(() => {
+    setPreviewPrimary(primaryColor || '#F97316')
+    setPreviewBg(bgColor || '#0A0A0A')
+    setPreviewMode(themeMode || 'dark')
+  }, [primaryColor, bgColor, themeMode])
 
   async function handleSave() {
     setSaving(true)
@@ -318,7 +324,7 @@ setPreviewMode(r.theme_mode || 'dark')
                 setNewAdminPassword(generatePassword())
               }}
               disabled={admins.length >= maxAdmins}
-              className="flex items-center gap-1.5 bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40"
+              className="flex items-center gap-1.5 text-xs bg-brand-orange hover:bg-brand-orange-dark text-white px-3 py-1.5 rounded-lg disabled:opacity-50"
             >
               <UserPlus className="w-3.5 h-3.5" />
               Ajouter
@@ -326,15 +332,15 @@ setPreviewMode(r.theme_mode || 'dark')
           </div>
 
           <div className="space-y-2">
-            {admins.map((a) => (
-              <div key={a.id} className="flex items-center justify-between bg-surface-100 rounded-xl px-3 py-2.5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-brand-orange/15 text-brand-orange flex items-center justify-center text-xs font-bold flex-shrink-0">
-                    {getInitials(a.full_name || a.email)}
+            {admins.map(a => (
+              <div key={a.id} className="bg-surface-100 border border-surface-200 rounded-xl p-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-sm font-bold">
+                    {getInitials(a.full_name || a.email || '?')}
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{a.full_name || 'Admin'}</p>
-                    <p className="text-gray-500 text-xs truncate">{a.email}</p>
+                  <div>
+                    <p className="text-white text-sm font-medium">{a.full_name || 'Sans nom'}</p>
+                    <p className="text-gray-500 text-xs">{a.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
@@ -455,6 +461,27 @@ setPreviewMode(r.theme_mode || 'dark')
               />
             </div>
           </div>
+
+          <div
+            className="rounded-2xl border p-4 transition-all"
+            style={{
+              backgroundColor: previewBg,
+              borderColor: previewMode === 'dark' ? '#2A2A2A' : '#D1D5DB',
+            }}
+          >
+            <p className="text-xs mb-3" style={{ color: previewMode === 'dark' ? '#9CA3AF' : '#4B5563' }}>
+              Aperçu live (identique au rendu public)
+            </p>
+            <div className="rounded-xl p-4" style={{ backgroundColor: previewMode === 'dark' ? '#111111' : '#FFFFFF' }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold" style={{ color: previewMode === 'dark' ? '#FFFFFF' : '#111827' }}>{name || 'Nom du restaurant'}</p>
+                  <p className="text-xs" style={{ color: previewMode === 'dark' ? '#9CA3AF' : '#6B7280' }}>/{slug || 'restaurant-slug'}</p>
+                </div>
+                <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: previewPrimary, color: '#FFFFFF' }}>Commander</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* ── Delivery / hours section ─────────────────────────────────── */}
@@ -518,56 +545,79 @@ setPreviewMode(r.theme_mode || 'dark')
       <Modal open={addAdminModal} onClose={() => setAddAdminModal(false)} title="Ajouter un administrateur">
         <div className="space-y-3">
           <Input label="Nom complet" value={newAdminName} onChange={e => setNewAdminName(e.target.value)} />
-          <Input label="Email" type="email" value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} />
+          <Input label="Email" value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} type="email" />
           <div>
             <label className="text-gray-400 text-xs block mb-1.5">Mot de passe</label>
             <div className="relative">
-              <Input type={showNewPassword ? 'text' : 'password'} value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} />
-              <button onClick={() => setShowNewPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <Input
+                value={newAdminPassword}
+                onChange={e => setNewAdminPassword(e.target.value)}
+                type={showNewPassword ? 'text' : 'password'}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+              >
                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {addAdminError && <p className="text-red-400 text-xs">{addAdminError}</p>}
-          {addAdminSuccess && <p className="text-green-400 text-xs">Administrateur créé avec succès.</p>}
+          {addAdminSuccess && <p className="text-green-400 text-xs">Administrateur ajouté avec succès.</p>}
 
           <button
             onClick={handleAddAdmin}
-            disabled={addingAdmin}
-            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60"
+            disabled={addingAdmin || !newAdminEmail || !newAdminPassword}
+            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
           >
-            {addingAdmin ? 'Création...' : 'Créer'}
+            {addingAdmin ? 'Ajout...' : 'Ajouter'}
           </button>
         </div>
       </Modal>
 
       {/* Reset password modal */}
-      <Modal open={resetModal} onClose={() => setResetModal(false)} title="Réinitialiser le mot de passe">
+      <Modal open={resetModal} onClose={() => setResetModal(false)} title="Réinitialiser mot de passe">
         <div className="space-y-3">
-          <p className="text-gray-400 text-xs">
-            Admin: <span className="text-white">{selectedAdmin?.email}</span>
+          <p className="text-gray-400 text-sm">
+            {selectedAdmin ? `Nouveau mot de passe pour ${selectedAdmin.email}` : ''}
           </p>
-
           <div>
             <label className="text-gray-400 text-xs block mb-1.5">Nouveau mot de passe</label>
             <div className="relative">
-              <Input type={showResetPassword ? 'text' : 'password'} value={resetPassword} onChange={e => setResetPassword(e.target.value)} />
-              <button onClick={() => setShowResetPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <Input
+                value={resetPassword}
+                onChange={e => setResetPassword(e.target.value)}
+                type={showResetPassword ? 'text' : 'password'}
+              />
+              <button
+                type="button"
+                onClick={() => setShowResetPassword(v => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+              >
                 {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setResetPassword(generatePassword())}
+            className="text-xs text-brand-orange hover:text-brand-orange-dark"
+          >
+            Générer un autre mot de passe
+          </button>
 
           {resetError && <p className="text-red-400 text-xs">{resetError}</p>}
           {resetSuccess && <p className="text-green-400 text-xs">Mot de passe mis à jour.</p>}
 
           <button
             onClick={handleResetPassword}
-            disabled={resetting}
-            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60"
+            disabled={resetting || !resetPassword}
+            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
           >
-            {resetting ? 'Mise à jour...' : 'Mettre à jour'}
+            {resetting ? 'En cours...' : 'Confirmer'}
           </button>
         </div>
       </Modal>

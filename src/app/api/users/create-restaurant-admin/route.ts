@@ -3,15 +3,31 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { slugify } from '@/lib/utils'
 
+async function findUserByEmail(adminClient: ReturnType<typeof createAdminClient>, email: string) {
+  const target = email.toLowerCase()
+  let page = 1
+
+  while (page <= 20) {
+    const { data, error } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 })
+    if (error) throw error
+
+    const users = data?.users || []
+    const found = users.find(u => (u.email || '').toLowerCase() === target)
+    if (found) return found
+
+    if (users.length < 1000) break
+    page += 1
+  }
+
+  return null
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // Verify caller is super_admin
     const callerClient = await createClient()
     const { data: { user: caller } } = await callerClient.auth.getUser()
 
-    if (!caller) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-    }
+    if (!caller) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
     const { data: callerProfile } = await callerClient
       .from('profiles')
@@ -23,7 +39,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
-    // Parse body
     const body = await request.json()
     const {
       full_name,
@@ -38,37 +53,35 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!full_name || !email || !password || !restaurant_name) {
-      return NextResponse.json(
-        { error: 'Champs requis manquants' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
     }
 
     const adminClient = createAdminClient()
 
-    // ─── Step 1: Create auth user ──────────────────────────────────────────
-    const { data: newUser, error: userError } = await adminClient.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name,
-        role: 'restaurant_admin',
-      },
-    })
+    let userId: string | null = null
+    let createdUserId: string | null = null
 
-    if (userError || !newUser.user) {
-      return NextResponse.json(
-        { error: userError?.message || 'Erreur création utilisateur' },
-        { status: 500 }
-      )
+    const existing = await findUserByEmail(adminClient, String(email))
+
+    if (existing) {
+      userId = existing.id
+    } else {
+      const { data: newUser, error: userError } = await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name, role: 'restaurant_admin' },
+      })
+
+      if (userError || !newUser.user) {
+        return NextResponse.json({ error: userError?.message || 'Erreur création utilisateur' }, { status: 500 })
+      }
+
+      userId = newUser.user.id
+      createdUserId = newUser.user.id
     }
 
-    const userId = newUser.user.id
-
-    // ─── Step 2: Create restaurant ─────────────────────────────────────────
     const slug = slugify(restaurant_name)
-
     const { data: restaurant, error: restaurantError } = await adminClient
       .from('restaurants')
       .insert({
@@ -86,51 +99,52 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (restaurantError || !restaurant) {
-      // Rollback: delete the auth user
-      await adminClient.auth.admin.deleteUser(userId)
-      return NextResponse.json(
-        { error: restaurantError?.message || 'Erreur création restaurant' },
-        { status: 500 }
-      )
+      if (createdUserId) {
+        await adminClient.auth.admin.deleteUser(createdUserId)
+      }
+      return NextResponse.json({ error: restaurantError?.message || 'Erreur création restaurant' }, { status: 500 })
     }
 
-    // ─── Step 3: Update profile with restaurant_id ─────────────────────────
-    // The trigger already created the profile; update it with restaurant_id
-    const { error: profileError } = await adminClient
+    const { error: profileUpsertError } = await adminClient
       .from('profiles')
-      .update({
-        restaurant_id: restaurant.id,
+      .upsert({
+        id: userId,
+        email,
         full_name,
         role: 'restaurant_admin',
+        restaurant_id: restaurant.id,
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', userId)
 
-    if (profileError) {
-      // Non-fatal — log but continue
-      console.error('Profile update error:', profileError)
+    if (profileUpsertError) {
+      await adminClient.from('restaurants').delete().eq('id', restaurant.id)
+      if (createdUserId) {
+        await adminClient.auth.admin.deleteUser(createdUserId)
+      }
+      console.error('Profile upsert error:', profileUpsertError)
+      return NextResponse.json({ error: 'Restaurant créé mais liaison admin incomplète' }, { status: 500 })
     }
 
-    // ─── Step 4: Create subscription ──────────────────────────────────────
-    await adminClient.from('subscriptions').insert({
+    const { error: subError } = await adminClient.from('subscriptions').insert({
       restaurant_id: restaurant.id,
       plan,
       status: 'trial',
     })
 
+    if (subError) {
+      await adminClient.from('restaurants').delete().eq('id', restaurant.id)
+      if (createdUserId) {
+        await adminClient.auth.admin.deleteUser(createdUserId)
+      }
+      return NextResponse.json({ error: subError.message || 'Erreur création abonnement' }, { status: 500 })
+    }
+
     return NextResponse.json({
       success: true,
-      data: {
-        user_id: userId,
-        restaurant_id: restaurant.id,
-        restaurant_name: restaurant.name,
-        email,
-      },
+      data: { user_id: userId, restaurant_id: restaurant.id, restaurant_name: restaurant.name, email },
     })
   } catch (error) {
     console.error('Create restaurant admin error:', error)
-    return NextResponse.json(
-      { error: 'Erreur serveur interne' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Erreur serveur interne' }, { status: 500 })
   }
 }

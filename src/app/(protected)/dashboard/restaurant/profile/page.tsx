@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
-import { normalizePlan, PLAN_LABELS } from '@/lib/plans'
 import { Badge } from '@/components/ui/Badge'
 
 export const metadata = { title: 'Profil restaurant' }
@@ -13,11 +12,11 @@ export default async function RestaurantProfilePage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*, restaurant:restaurants(*)')
+    .select('full_name, restaurant:restaurants(id, name, slug, city, phone, address, cuisine_type, is_active, logo_url, banner_url, cover_url, primary_color, background_color, theme_mode)')
     .eq('id', user.id)
     .single()
 
-  const restaurant = profile?.restaurant
+  const restaurant = profile?.restaurant as Record<string, string | boolean | null> | null
 
   return (
     <div className="p-6 sm:p-8 max-w-2xl">
@@ -27,7 +26,6 @@ export default async function RestaurantProfilePage() {
       </div>
 
       <div className="space-y-6">
-        {/* Admin profile */}
         <Card>
           <h2 className="text-white font-semibold mb-4">Mon compte</h2>
           <div className="flex items-center gap-4 mb-4">
@@ -42,22 +40,26 @@ export default async function RestaurantProfilePage() {
           </div>
         </Card>
 
-        {/* Restaurant details */}
         {restaurant ? (
           <Card>
             <h2 className="text-white font-semibold mb-4">Mon restaurant</h2>
             <div className="space-y-3">
               {[
-                ['Nom', restaurant.name],
-                ['Slug', `/${restaurant.slug}`],
-                ['Ville', restaurant.city || '—'],
-                ['Téléphone', restaurant.phone || '—'],
-                ['Adresse', restaurant.address || '—'],
-                ['Type', restaurant.cuisine_type || '—'],
+                ['Nom', String(restaurant.name || '—')],
+                ['Slug', `/${String(restaurant.slug || '')}`],
+                ['Ville', String(restaurant.city || '—')],
+                ['Téléphone', String(restaurant.phone || '—')],
+                ['Adresse', String(restaurant.address || '—')],
+                ['Type', String(restaurant.cuisine_type || '—')],
+                ['Logo URL', String(restaurant.logo_url || '—')],
+                ['Bannière URL', String(restaurant.banner_url || restaurant.cover_url || '—')],
+                ['Couleur primaire', String(restaurant.primary_color || '—')],
+                ['Fond', String(restaurant.background_color || '—')],
+                ['Mode thème', String(restaurant.theme_mode || '—')],
               ].map(([label, value]) => (
-                <div key={label} className="flex justify-between items-center py-2 border-b border-surface-200 last:border-0">
+                <div key={label} className="flex justify-between items-center py-2 border-b border-surface-200 last:border-0 gap-4">
                   <span className="text-gray-500 text-sm">{label}</span>
-                  <span className="text-white text-sm font-medium">{value}</span>
+                  <span className="text-white text-sm font-medium text-right break-all">{value}</span>
                 </div>
               ))}
               <div className="flex justify-between items-center py-2">
@@ -70,9 +72,7 @@ export default async function RestaurantProfilePage() {
           </Card>
         ) : (
           <Card>
-            <p className="text-gray-500 text-sm text-center py-4">
-              Aucun restaurant lié à ce compte
-            </p>
+            <p className="text-gray-500 text-sm text-center py-4">Aucun restaurant lié à ce compte</p>
           </Card>
         )}
       </div>
