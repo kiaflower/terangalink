@@ -44,16 +44,15 @@ export default function OrdersPage() {
         .order('created_at', { ascending: false }),
       supabase
         .from('restaurants')
-        .select('name, whatsapp_number, phone')
+        .select('name, phone, wave_number, orange_money_number')
         .eq('id', profile.restaurant_id)
         .single(),
     ])
 
     setOrders((orderData as Order[]) ?? [])
     setRestaurantName(restaurant?.name || 'Restaurant')
-    // Numéros de paiement (source actuelle)
-    setWaveNumber(restaurant?.whatsapp_number || '')
-    setOrangeMoneyNumber(restaurant?.phone || '')
+    setWaveNumber(restaurant?.wave_number || restaurant?.phone || '')
+    setOrangeMoneyNumber(restaurant?.orange_money_number || restaurant?.phone || '')
 
     setLoading(false)
   }, [supabase])
@@ -99,7 +98,6 @@ export default function OrdersPage() {
   }
 
   async function validerCommande(orderId: string) {
-    // Statut technique utilisé pour "Validée" (sans migration DB)
     await supabase.from('orders').update({ status: 'delivered' }).eq('id', orderId)
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'delivered' as OrderStatus } : o))
   }
@@ -110,7 +108,6 @@ export default function OrdersPage() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' as OrderStatus } : o))
   }
 
-  // On garde toutes les commandes visibles
   const pendingCount = orders.filter(o => o.status === 'pending').length
 
   return (
@@ -179,48 +176,46 @@ export default function OrdersPage() {
                     <div className="space-y-2">
                       {(order.items as { name: string; quantity: number; price: number }[]).map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
-                          <span className="text-gray-300">{item.quantity}× {item.name}</span>
-                          <span className="text-white font-medium">{formatCurrency(item.price * item.quantity)}</span>
+                          <span className="text-gray-300">{item.name} × {item.quantity}</span>
+                          <span className="text-white">{formatCurrency(item.price * item.quantity)}</span>
                         </div>
                       ))}
-                      <div className="flex justify-between text-sm font-bold border-t border-surface-200 pt-2">
-                        <span className="text-white">Total</span>
-                        <span className="text-brand-orange">{formatCurrency(order.total)}</span>
-                      </div>
                     </div>
 
                     {order.notes && (
-                      <div className="bg-surface-100 rounded-xl px-4 py-3">
-                        <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1">Note</p>
-                        <p className="text-gray-300 text-sm">{order.notes}</p>
+                      <div className="bg-surface-100 rounded-xl p-3 text-sm text-gray-400">
+                        <span className="text-gray-500">Note:</span> {order.notes}
                       </div>
                     )}
 
-                    <div className="flex gap-2 flex-wrap">
-                      {confirmUrl && (
-                        <button
-                          onClick={async () => {
-                            // 1) valider côté site/analytiques
-                            await validerCommande(order.id)
-
-                            // 2) ouvrir WhatsApp client
-                            const w = window.open(confirmUrl, '_blank')
-                            if (!w) window.location.href = confirmUrl
-                          }}
-                          className="flex-1 px-4 py-2.5 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] text-sm font-semibold rounded-xl transition-colors inline-flex items-center justify-center gap-1.5"
-                        >
-                          <MessageCircle className="w-4 h-4" />
-                          Confirmer via WhatsApp
-                        </button>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {order.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => validerCommande(order.id)}
+                            className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                          >
+                            Valider
+                          </button>
+                          <button
+                            onClick={() => annulerCommande(order.id)}
+                            className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                          >
+                            Annuler
+                          </button>
+                        </>
                       )}
 
-                      {order.status !== 'cancelled' && (
-                        <button
-                          onClick={() => annulerCommande(order.id)}
-                          className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-sm font-semibold rounded-xl transition-colors"
+                      {confirmUrl && (
+                        <a
+                          href={confirmUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
                         >
-                          Annuler
-                        </button>
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          Confirmer au client
+                        </a>
                       )}
                     </div>
                   </div>

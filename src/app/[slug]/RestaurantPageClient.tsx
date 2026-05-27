@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
-import { MapPin, Phone, Zap, ChevronRight, Share2, PhoneCall, Truck, QrCode, Home } from 'lucide-react'
+import { MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home } from 'lucide-react'
 import { MenuCard } from '@/components/restaurant/MenuCard'
 import { CartDrawer, CartButton } from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/lib/hooks/useCart'
@@ -22,6 +22,8 @@ type RestaurantFull = RestaurantPageData['restaurant'] & {
   show_delivery_fee?: boolean
   is_demo?: boolean
   plan?: string
+  latitude?: number | null
+  longitude?: number | null
 }
 
 interface Props {
@@ -46,32 +48,36 @@ function RestaurantInner({ data }: Props) {
   const { restaurant, categories, items } = data
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [showQR, setShowQR] = useState(false)
 
   const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'free' : 'mensuel'))
-  const canCustomizeColors = !restaurant.is_demo && canUseFeature(plan, 'couleursPersonnalisees')
-  const canHideBranding = !restaurant.is_demo && canUseFeature(plan, 'suppressionBranding')
-  const canUseLightMode = !restaurant.is_demo && canUseFeature(plan, 'modeClairSombre')
+  const shouldShowTerangaBranding = !restaurant.is_demo && (plan === 'mensuel' || plan === 'trimestriel')
   const canCall = canUseFeature(plan, 'boutonAppel')
   const canShare = canUseFeature(plan, 'boutonPartage')
 
   const themeConfig: RestaurantTheme = {
-    primary: canCustomizeColors ? (restaurant.primary_color || '#F97316') : '#F97316',
-    mode: canUseLightMode ? (restaurant.theme_mode || 'dark') : 'dark',
-    background: canCustomizeColors ? (restaurant.background_color || undefined) : undefined,
+    primary: restaurant.primary_color || '#F97316',
+    mode: restaurant.theme_mode || 'dark',
+    background: restaurant.background_color || undefined,
   }
 
   const tokens = generateThemeTokens(themeConfig)
   const style = themeToStyle(tokens)
   const ouvert = isOpenNow(restaurant.opening_hours)
-  const publicUrl = typeof window !== 'undefined' ? window.location.href : `${restaurant.platform_url || 'https://terangalink.sn'}/${restaurant.slug}`
+  const publicUrl = typeof window !== 'undefined' ? window.location.href : `https://terangalink.sn/${restaurant.slug}`
 
   async function handleShare() {
     if (navigator.share) {
-      try { await navigator.share({ title: restaurant.name, text: `Commandez chez ${restaurant.name}`, url: publicUrl }) }
-      catch { /* cancelled */ }
+      try {
+        await navigator.share({
+          title: restaurant.name,
+          text: `Commandez chez ${restaurant.name}`,
+          url: publicUrl,
+        })
+      } catch {
+        // cancelled
+      }
     } else {
-      try { await navigator.clipboard.writeText(publicUrl) } catch { /* fallback */ }
+      try { await navigator.clipboard.writeText(publicUrl) } catch {}
       setCopied(true)
       setTimeout(() => setCopied(false), 2500)
     }
@@ -83,54 +89,55 @@ function RestaurantInner({ data }: Props) {
 
   return (
     <div style={style} className="min-h-screen">
-      {/* Demo banner */}
-    {restaurant.is_demo && (
-  <div
-    className="text-white px-3 py-1.5"
-    style={{ backgroundColor: `${tokens.accent}CC` }}
-  >
-    <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 text-[11px] sm:text-xs">
-      <a
-        href="/"
-        className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold transition-colors"
-        style={{ backgroundColor: 'rgba(0,0,0,0.22)' }}
-      >
-        <Home className="w-3.5 h-3.5" />
-        Accueil
-      </a>
+      {/* Demo top banner */}
+      {restaurant.is_demo && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[70] text-white px-3 py-1.5 backdrop-blur-sm"
+          style={{ backgroundColor: `${tokens.accent}CC` }}
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 text-[11px] sm:text-xs">
+            <a
+              href="/"
+              className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold transition-colors"
+              style={{ backgroundColor: 'rgba(0,0,0,0.22)' }}
+            >
+              <Home className="w-3.5 h-3.5" />
+              Accueil
+            </a>
 
-      <span className="opacity-95 whitespace-nowrap">
-        Démo TerangaLink
-      </span>
+            <span className="opacity-95 whitespace-nowrap">Démo TerangaLink</span>
 
-      <a
-        href="https://wa.me/221777777777?text=Bonjour%2C%20j%E2%80%99ai%20d%C3%A9couvert%20TerangaLink%20et%20je%20souhaiterais%20cr%C3%A9er%20un%20site%20pour%20mon%20restaurant."
-        target="_blank"
-        rel="noopener noreferrer"
-        className="font-semibold underline underline-offset-2 whitespace-nowrap"
-      >
-        Créer mon site
-      </a>
-    </div>
-  </div>
-)}
+            <a
+              href="https://wa.me/221777777777?text=Bonjour%2C%20j%E2%80%99ai%20d%C3%A9couvert%20TerangaLink%20et%20je%20souhaiterais%20cr%C3%A9er%20un%20site%20pour%20mon%20restaurant."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold underline underline-offset-2 whitespace-nowrap"
+            >
+              Créer mon site
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="relative h-52 sm:h-64 overflow-hidden">
-        
         {(restaurant as { banner_url?: string; cover_url?: string }).banner_url || restaurant.cover_url ? (
           <Image
             src={(restaurant as { banner_url?: string }).banner_url || restaurant.cover_url!}
-            alt={restaurant.name} fill className="object-cover" priority sizes="100vw"
-          unoptimized
+            alt={restaurant.name}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+            unoptimized
           />
         ) : (
           <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${tokens.accent}25 0%, ${tokens.bgPage} 100%)` }} />
         )}
         <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${tokens.bgPage} 0%, ${tokens.bgPage}60 40%, transparent 100%)` }} />
 
-        {/* TerangaLink branding - hide if annuel */}
-        {!canHideBranding && !restaurant.is_demo && (
+        {/* TerangaLink branding (mensuel/trimestriel uniquement) */}
+        {shouldShowTerangaBranding && (
           <a href="/" className="absolute top-3 left-4 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
             <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: tokens.accent }}>
               <Zap className="w-3 h-3 text-white" />
@@ -139,25 +146,31 @@ function RestaurantInner({ data }: Props) {
           </a>
         )}
 
-        {/* Action buttons */}
         <div className="absolute top-3 right-4 flex items-center gap-2">
-          <QRCodeButton
-            url={publicUrl}
-            restaurantName={restaurant.name}
-            tokens={tokens}
-          />
+          <QRCodeButton url={publicUrl} restaurantName={restaurant.name} tokens={tokens} />
           {canCall && restaurant.phone && (
-            <a href={`tel:${restaurant.phone}`} className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors" style={{ backgroundColor: 'rgba(0,0,0,0.35)', color: 'white' }}>
+            <a
+              href={`tel:${restaurant.phone}`}
+              className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+              style={{ backgroundColor: 'rgba(0,0,0,0.35)', color: 'white' }}
+            >
               <PhoneCall className="w-4 h-4" />
             </a>
           )}
           {canShare && (
             <div className="relative">
-              <button onClick={handleShare} className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors" style={{ backgroundColor: 'rgba(0,0,0,0.35)', color: 'white' }}>
+              <button
+                onClick={handleShare}
+                className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
+                style={{ backgroundColor: 'rgba(0,0,0,0.35)', color: 'white' }}
+              >
                 <Share2 className="w-4 h-4" />
               </button>
               {copied && (
-                <span className="absolute -bottom-9 right-0 text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg" style={{ backgroundColor: tokens.bgCard, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}>
+                <span
+                  className="absolute -bottom-9 right-0 text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg"
+                  style={{ backgroundColor: tokens.bgCard, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+                >
                   Lien copié !
                 </span>
               )}
@@ -169,9 +182,12 @@ function RestaurantInner({ data }: Props) {
       {/* Restaurant info */}
       <div className="px-4 sm:px-6 -mt-12 relative z-10 mb-5">
         <div className="flex items-end gap-4 mb-3">
-          <div className="w-20 h-20 rounded-2xl border-4 flex-shrink-0 overflow-hidden shadow-xl" style={{ borderColor: tokens.bgPage, backgroundColor: tokens.bgCard }}>
+          <div
+            className="w-20 h-20 rounded-2xl border-4 flex-shrink-0 overflow-hidden shadow-xl"
+            style={{ borderColor: tokens.bgPage, backgroundColor: tokens.bgCard }}
+          >
             {restaurant.logo_url ? (
-              <Image src={restaurant.logo_url} alt={restaurant.name} width={80} height={80} className="object-cover w-full h-full" unoptimized/>
+              <Image src={restaurant.logo_url} alt={restaurant.name} width={80} height={80} className="object-cover w-full h-full" unoptimized />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl font-black" style={{ color: tokens.accent }}>
                 {restaurant.name.charAt(0)}
@@ -189,20 +205,23 @@ function RestaurantInner({ data }: Props) {
         <div className="flex flex-wrap gap-3 items-center">
           {restaurant.city && (
             <div className="flex items-center gap-1.5 text-xs" style={{ color: tokens.textMuted }}>
-              <MapPin className="w-3.5 h-3.5" style={{ color: tokens.accent }} />{restaurant.city}
+              <MapPin className="w-3.5 h-3.5" style={{ color: tokens.accent }} />
+              {restaurant.city}
             </div>
           )}
           {restaurant.phone && (
             <a href={`tel:${restaurant.phone}`} className="flex items-center gap-1.5 text-xs transition-colors" style={{ color: tokens.textMuted }}>
-              <Phone className="w-3.5 h-3.5" style={{ color: tokens.accent }} />{restaurant.phone}
+              <Phone className="w-3.5 h-3.5" style={{ color: tokens.accent }} />
+              {restaurant.phone}
             </a>
           )}
-          {/* Open/closed badge */}
-          <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: ouvert ? tokens.openBg : tokens.closedBg, color: ouvert ? tokens.openText : tokens.closedText }}>
+          <div
+            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{ backgroundColor: ouvert ? tokens.openBg : tokens.closedBg, color: ouvert ? tokens.openText : tokens.closedText }}
+          >
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ouvert ? tokens.openText : tokens.closedText }} />
             {ouvert ? 'Ouvert maintenant' : 'Fermé'}
           </div>
-          {/* Delivery fee */}
           {restaurant.show_delivery_fee && (restaurant.delivery_fee ?? 0) > 0 && (
             <div className="flex items-center gap-1.5 text-xs" style={{ color: tokens.textMuted }}>
               <Truck className="w-3.5 h-3.5" style={{ color: tokens.accent }} />
@@ -214,15 +233,17 @@ function RestaurantInner({ data }: Props) {
 
       {/* Category bar */}
       {categories.length > 0 && (
-        <div className="sticky top-0 z-20 py-3" style={{ backgroundColor: `${tokens.bgPage}f0`, backdropFilter: 'blur(12px)', borderBottom: `1px solid ${tokens.border}` }}>
+        <div
+          className="sticky top-0 z-20 py-3"
+          style={{ backgroundColor: `${tokens.bgPage}f0`, backdropFilter: 'blur(12px)', borderBottom: `1px solid ${tokens.border}` }}
+        >
           <div className="flex gap-2 overflow-x-auto px-4 sm:px-6" style={{ scrollbarWidth: 'none' }}>
             <button
               onClick={() => setActiveCategory(null)}
               className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
               style={activeCategory === null
                 ? { backgroundColor: tokens.accent, color: tokens.textOnAccent }
-                : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }
-              }
+                : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
             >
               Tout
             </button>
@@ -233,8 +254,7 @@ function RestaurantInner({ data }: Props) {
                 className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap"
                 style={activeCategory === cat.id
                   ? { backgroundColor: tokens.accent, color: tokens.textOnAccent }
-                  : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }
-                }
+                  : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
               >
                 {cat.name}
               </button>
@@ -257,16 +277,34 @@ function RestaurantInner({ data }: Props) {
               {availableItems.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
                   {availableItems.map(item => (
-                    <MenuCard key={item.id} item={item} restaurantId={restaurant.id} restaurantSlug={restaurant.slug} restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''} restaurantName={restaurant.name} tokens={tokens} />
+                    <MenuCard
+                      key={item.id}
+                      item={item}
+                      restaurantId={restaurant.id}
+                      restaurantSlug={restaurant.slug}
+                      restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
+                      restaurantName={restaurant.name}
+                      tokens={tokens}
+                    />
                   ))}
                 </div>
               )}
               {unavailableItems.length > 0 && (
                 <div style={{ opacity: 0.45 }}>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: tokens.textMuted }}>Indisponibles</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: tokens.textMuted }}>
+                    Indisponibles
+                  </p>
                   <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {unavailableItems.map(item => (
-                      <MenuCard key={item.id} item={item} restaurantId={restaurant.id} restaurantSlug={restaurant.slug} restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''} restaurantName={restaurant.name} tokens={tokens} />
+                      <MenuCard
+                        key={item.id}
+                        item={item}
+                        restaurantId={restaurant.id}
+                        restaurantSlug={restaurant.slug}
+                        restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
+                        restaurantName={restaurant.name}
+                        tokens={tokens}
+                      />
                     ))}
                   </div>
                 </div>
@@ -274,21 +312,42 @@ function RestaurantInner({ data }: Props) {
             </>
           )}
 
-          {/* Info section */}
           <div className="mt-10 space-y-3 pt-8" style={{ borderTop: `1px solid ${tokens.border}` }}>
             {restaurant.address && (
               <GoogleMap
                 address={restaurant.address}
                 city={restaurant.city}
-                restaurantName={restaurant.name}
-                accentColor={tokens.accent}
-                textPrimary={tokens.textPrimary}
-                textSecondary={tokens.textSecondary}
+                latitude={restaurant.latitude ?? null}
+                longitude={restaurant.longitude ?? null}
+                tokens={tokens}
               />
             )}
           </div>
+
+          {/* Powered by TerangaLink (mensuel/trimestriel uniquement) */}
+          {shouldShowTerangaBranding && (
+            <div className="text-center py-6">
+              <a
+                href="/"
+                className="text-xs transition-opacity hover:opacity-100"
+                style={{ color: tokens.textMuted, opacity: 0.8 }}
+              >
+                Propulsé par TerangaLink
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop cart */}
+        <div className="hidden lg:block w-[340px] flex-shrink-0">
+          <div className="sticky top-20 rounded-2xl overflow-hidden max-h-[calc(100vh-6rem)]" style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}>
+            <CartDrawer inline tokens={tokens} />
+          </div>
         </div>
       </div>
+
+      {/* Floating cart button mobile */}
+      <CartButton tokens={tokens} />
     </div>
   )
 }
@@ -297,7 +356,6 @@ export default function RestaurantPageClient(props: Props) {
   return (
     <CartProvider>
       <RestaurantInner {...props} />
-      <CartButton />
     </CartProvider>
   )
 }
