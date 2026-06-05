@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import nodemailer from 'nodemailer'
 
-/**
- * Sends a welcome email via Supabase Auth's built-in email system.
- * Supabase can send transactional emails via their SMTP settings
- * (configure in Supabase Dashboard → Authentication → Email Templates).
- *
- * For custom SMTP (Resend, Brevo, etc.), replace the body below
- * with a call to your preferred email provider's API.
- */
 export async function POST(request: NextRequest) {
   try {
     const caller = await createClient()
@@ -23,18 +16,15 @@ export async function POST(request: NextRequest) {
 
     const { to_email, restaurant_name, admin_name, password, plan } = await request.json()
 
-    // Fetch platform settings for dynamic URLs
     const { data: settingsData } = await caller.from('platform_settings').select('key, value')
     const settingsMap: Record<string, string> = {}
     for (const row of settingsData ?? []) settingsMap[row.key] = row.value
     const platformUrl = settingsMap.platform_url || 'https://terangalink.sn'
-    const platformWhatsapp = settingsMap.whatsapp || '221700000000'
 
     if (!to_email || !restaurant_name) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 })
     }
 
-    // Build email content
     const subject = `Bienvenue sur TerangaLink — ${restaurant_name} est en ligne !`
 
     const htmlBody = `
@@ -47,25 +37,18 @@ export async function POST(request: NextRequest) {
 </head>
 <body style="margin:0;padding:0;background:#0A0A0A;font-family:Inter,Arial,sans-serif;">
   <div style="max-width:560px;margin:0 auto;padding:32px 16px;">
-
-    <!-- Header -->
     <div style="text-align:center;margin-bottom:32px;">
       <div style="display:inline-block;background:#F97316;border-radius:12px;padding:10px 16px;">
         <span style="color:white;font-weight:900;font-size:18px;letter-spacing:-0.5px;">TerangaLink</span>
       </div>
     </div>
-
-    <!-- Card -->
     <div style="background:#141414;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:32px;">
       <h1 style="color:#FFFFFF;font-size:22px;font-weight:700;margin:0 0 8px;">
         Bienvenue, ${admin_name || restaurant_name} ! 👋
       </h1>
       <p style="color:#A3A3A3;font-size:15px;margin:0 0 24px;line-height:1.6;">
         Votre restaurant <strong style="color:#FFFFFF;">${restaurant_name}</strong> est maintenant sur TerangaLink.
-        Vos clients peuvent déjà parcourir votre menu et commander via WhatsApp.
       </p>
-
-      <!-- Credentials -->
       <div style="background:#1C1C1C;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:24px;">
         <p style="color:#6B6B6B;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 12px;">Vos identifiants</p>
         <div style="margin-bottom:10px;">
@@ -83,62 +66,45 @@ export async function POST(request: NextRequest) {
           <span style="color:#FFFFFF;font-size:13px;font-weight:600;">${plan || 'Mensuel'}</span>
         </div>
       </div>
-
-      <!-- CTA -->
-      <a
-        href="${platformUrl}/login"
-        style="display:block;background:#F97316;color:white;text-align:center;padding:14px 24px;border-radius:12px;font-weight:700;font-size:15px;text-decoration:none;margin-bottom:16px;"
-      >
+      <a href="${platformUrl}/login"
+        style="display:block;background:#F97316;color:white;text-align:center;padding:14px 24px;border-radius:12px;font-weight:700;font-size:15px;text-decoration:none;margin-bottom:16px;">
         Accéder à mon tableau de bord →
       </a>
-
       <p style="color:#6B6B6B;font-size:13px;text-align:center;margin:0;">
-        Besoin d&apos;aide ? Répondez à cet email ou contactez-nous sur WhatsApp.
+        Besoin d'aide ? Contactez-nous sur WhatsApp.
       </p>
     </div>
-
-    <!-- Footer -->
     <p style="color:#444;font-size:12px;text-align:center;margin-top:24px;">
       © 2026 TerangaLink · Dakar, Sénégal
     </p>
   </div>
 </body>
-</html>
-    `.trim()
+</html>`.trim()
 
-    // Option 1: Use Supabase's built-in invite (triggers welcome email template)
-    // This requires setting up email templates in Supabase Dashboard
-    // Option 2: Use a third-party SMTP provider
-    // For now, we log and return success — plug in your SMTP below
+    // ✅ Connexion SMTP via LWS
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: Number(process.env.SMTP_PORT) === 465, // true pour 465, false pour 587
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
 
-    console.log(`[WELCOME EMAIL] To: ${to_email} | Restaurant: ${restaurant_name}`)
-    console.log(`[WELCOME EMAIL] Subject: ${subject}`)
+    // ✅ Envoi de l'email
+    await transporter.sendMail({
+      from: `"TerangaLink" <${process.env.SMTP_USER}>`,
+      to: to_email,
+      subject,
+      html: htmlBody,
+    })
 
-    // ── PLUG YOUR SMTP HERE ───────────────────────────────────────────────
-    // Example with Resend (https://resend.com — free tier: 100 emails/day):
-    //
-    // const resendApiKey = process.env.RESEND_API_KEY
-    // if (resendApiKey) {
-    //   await fetch('https://api.resend.com/emails', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${resendApiKey}`,
-    //     },
-    //     body: JSON.stringify({
-    //       from: 'TerangaLink <noreply@terangalink.sn>',
-    //       to: [to_email],
-    //       subject,
-    //       html: htmlBody,
-    //     }),
-    //   })
-    // }
-    // ─────────────────────────────────────────────────────────────────────
+    console.log(`[WELCOME EMAIL] ✅ Envoyé à ${to_email}`)
 
     return NextResponse.json({
       success: true,
-      message: `Email de bienvenue préparé pour ${to_email}`,
-      preview: { subject, html: htmlBody },
+      message: `Email de bienvenue envoyé à ${to_email}`,
     })
 
   } catch (err) {

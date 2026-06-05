@@ -7,7 +7,7 @@ import {
   Mail, Phone,
 } from 'lucide-react'
 
-const WHATSAPP_NUMBER = '221700000000'
+const WHATSAPP_NUMBER = '221774739266'
 const WHATSAPP_MSG = encodeURIComponent("Bonjour, j'ai découvert TerangaLink et je souhaite inscrire mon restaurant.")
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`
 
