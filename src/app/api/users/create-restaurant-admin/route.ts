@@ -139,6 +139,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: subError.message || 'Erreur création abonnement' }, { status: 500 })
     }
 
+    // ✅ Envoi email de bienvenue
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-welcome`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to_email: email,
+          restaurant_name: restaurant.name,
+          admin_name: full_name,
+          password,
+          plan,
+        }),
+      })
+      console.log(`[WELCOME EMAIL] ✅ Déclenché pour ${email}`)
+    } catch (emailError) {
+      // L'email a échoué mais le restaurant est créé — on log sans bloquer
+      console.error('[WELCOME EMAIL] ❌ Non envoyé:', emailError)
+    }
+
     return NextResponse.json({
       success: true,
       data: { user_id: userId, restaurant_id: restaurant.id, restaurant_name: restaurant.name, email },
