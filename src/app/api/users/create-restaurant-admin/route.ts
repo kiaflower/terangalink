@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
 
     // ✅ Envoi email de bienvenue
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/send-welcome`, {
+      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/send-welcome`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
