@@ -8,7 +8,7 @@ import { ArrowLeft, Store, User, CheckCircle2, Eye, EyeOff, Loader2 } from 'luci
 import Link from 'next/link'
 import { slugify } from '@/lib/utils'
 import { useSettings } from '@/lib/hooks/useSettings'
-import { PLAN_LABELS } from '@/lib/plans'
+import { PLAN_OPTIONS } from '@/lib/plans'
 
 const CUISINE_OPTIONS = [
   { value: '', label: 'Choisir un type...' },
@@ -23,7 +23,6 @@ const CUISINE_OPTIONS = [
   { value: 'autre', label: 'Autre' },
 ]
 
-const PLAN_OPTIONS = Object.entries(PLAN_LABELS).map(([v, l]) => ({ value: v, label: l }))
 
 export default function NewRestaurantPage() {
   const router = useRouter()
@@ -34,7 +33,7 @@ export default function NewRestaurantPage() {
   const [restCity, setRestCity] = useState('Dakar')
   const [restPhone, setRestPhone] = useState('')
   const [cuisineType, setCuisineType] = useState('')
-  const [plan, setPlan] = useState('mensuel')
+  const [plan, setPlan] = useState('starter')
   const [restAddress, setRestAddress] = useState('')
 
   const [adminName, setAdminName] = useState('')

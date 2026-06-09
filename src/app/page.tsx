@@ -29,16 +29,12 @@ const features = [
 
 const plans = [
   {
-    name: 'Mensuel', price: '15 000', period: '/mois', description: 'Flexibilité totale', badge: null, popular: false,
-    features: ['1 site de commande', 'Menu illimité', 'QR Code inclus', 'Commandes WhatsApp', 'Support email'],
+    name: 'Starter', price: '9 000', period: '/mois', description: 'L’essentiel pour commander en ligne', badge: null, popular: false,
+    features: ['Site de commande', 'Menu illimité', 'Commandes WhatsApp', 'Dashboard administrateur', 'Statistiques & revenus', 'QR Code', 'Support WhatsApp', 'Branding TerangaLink visible'],
   },
   {
-    name: 'Trimestriel', price: '40 000', period: '/3 mois', description: 'Le plus populaire', badge: null, popular: true,
-    features: ['1 site de commande premium', 'Menu illimité', 'QR Code inclus', 'Analytiques', 'Thème personnalisé', 'Support prioritaire'],
-  },
-  {
-    name: 'Annuel', price: '135 000', period: '/an', description: 'Meilleur rapport qualité/prix', badge: 'Économisez -25%', popular: false,
-    features: ['Tout du plan Trimestriel', 'Personnalisation avancée', 'Manager dédié', 'Formations incluses', 'SLA garanti'],
+    name: 'Pro', price: '15 000', period: '/mois', description: 'Personnalisation avancée par TerangaLink', badge: null, popular: true,
+    features: ['Tout Starter', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Réseaux sociaux affichés', 'Couleurs personnalisées', 'Support prioritaire', 'Accompagnement personnalisé'],
   },
 ]
 
@@ -68,7 +64,7 @@ const faqs = [
   { q: "Ai-je besoin de compétences techniques ?", a: "Aucune. Notre tableau de bord est conçu pour être utilisé depuis un smartphone. Tout est visuel et intuitif." },
   { q: "Combien de temps pour être en ligne ?", a: "Moins de 24h. Vous remplissez votre profil, ajoutez votre menu, et vous êtes prêts à recevoir des commandes." },
   { q: "Comment les clients paient-ils ?", a: "Les clients commandent via WhatsApp. Vous gérez le paiement directement avec eux — Wave, Orange Money, cash, comme vous préférez." },
-  { q: "Puis-je annuler à tout moment ?", a: "Oui, sans engagement sur le plan mensuel. Vous pouvez annuler votre abonnement à la fin du mois en cours." },
+  { q: "Puis-je annuler à tout moment ?", a: "Oui, les offres Starter et Pro sont mensuelles et peuvent être résiliées à la fin du mois en cours." },
 ]
 
 export default async function HomePage() {

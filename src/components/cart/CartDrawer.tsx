@@ -13,8 +13,8 @@ interface Props { onClose?: () => void; inline?: boolean; tokens?: ThemeTokens }
 const DEFAULT_TOKENS: ThemeTokens = {
   bgPage: '#0A0A0A', bgCard: '#141414', bgCardHover: '#1C1C1C', bgInput: '#1C1C1C', bgBadge: '#1C1C1C',
   border: 'rgba(255,255,255,0.08)', borderStrong: 'rgba(255,255,255,0.14)',
-  textPrimary: '#FFFFFF', textSecondary: '#A3A3A3', textMuted: '#6B6B6B', textOnAccent: '#FFFFFF',
-  accent: '#F97316', accentHover: '#EA580C', accentSubtle: '#F9731620', accentText: '#F97316',
+  textPrimary: '#FFFFFF', textSecondary: '#A3A3A3', textMuted: '#6B6B6B', textOnAccent: '#FFFFFF', textOnButton: '#FFFFFF',
+  accent: '#F97316', accentHover: '#EA580C', accentSubtle: '#F9731620', accentText: '#F97316', button: '#F97316', buttonHover: '#EA580C',
   openBg: 'rgba(34,197,94,0.12)', openText: '#4ADE80', closedBg: 'rgba(239,68,68,0.12)', closedText: '#F87171',
 }
 
@@ -43,8 +43,9 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
           }}
           className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 text-white px-5 py-3 rounded-2xl font-semibold shadow-2xl"
           style={{
-            backgroundColor: tokens.accent,
-            boxShadow: `0 8px 30px ${tokens.accent}40`,
+            backgroundColor: tokens.button,
+            color: tokens.textOnButton,
+            boxShadow: `0 8px 30px ${tokens.button}40`,
           }}
         >
           <ShoppingBag className="w-4 h-4" />
@@ -169,7 +170,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
           <ShoppingBag className="w-5 h-5" style={{ color: tokens.accent }} />
           <h2 className="font-bold text-sm" style={{ color: tokens.textPrimary }}>Votre panier</h2>
           {totalItems > 0 && (
-            <span className="text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.accent }}>
+            <span className="text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
               {totalItems}
             </span>
           )}
@@ -215,8 +216,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
                   {item.quantity === 1 ? <Trash2 className="w-3 h-3 text-red-400" /> : <Minus className="w-3 h-3" style={{ color: tokens.textSecondary }} />}
                 </button>
                 <span className="text-sm font-bold w-4 text-center" style={{ color: tokens.textPrimary }}>{item.quantity}</span>
-                <button onClick={() => updateQty(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.accent }}>
-                  <Plus className="w-3 h-3 text-white" />
+                <button onClick={() => updateQty(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
+                  <Plus className="w-3 h-3" />
                 </button>
               </div>
             </div>

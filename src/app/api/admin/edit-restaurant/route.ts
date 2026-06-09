@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { normalizePlan } from '@/lib/plans'
+import { DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR } from '@/lib/theme'
 
 async function updateRestaurant(request: NextRequest) {
   try {
@@ -26,9 +28,22 @@ async function updateRestaurant(request: NextRequest) {
 
     if (!id) return NextResponse.json({ error: 'id requis' }, { status: 400 })
 
+    const normalizedPlan = plan ? normalizePlan(String(plan)) : null
+    const isPro = normalizedPlan === 'pro'
+
     const updatePayload: Record<string, unknown> = {
       ...rest,
       updated_at: new Date().toISOString(),
+    }
+
+    if (normalizedPlan && !isPro) {
+      updatePayload.primary_color = DEFAULT_PRIMARY_COLOR
+      updatePayload.background_color = DEFAULT_DARK_BACKGROUND
+      updatePayload.button_color = DEFAULT_BUTTON_COLOR
+      updatePayload.theme_mode = 'dark'
+      updatePayload.facebook_url = null
+      updatePayload.instagram_url = null
+      updatePayload.tiktok_url = null
     }
 
     if ('phone' in rest) updatePayload.phone = rest.phone || null
@@ -55,10 +70,10 @@ async function updateRestaurant(request: NextRequest) {
 
     if (rErr) throw rErr
 
-    if (plan) {
+    if (normalizedPlan) {
       await supabase
         .from('subscriptions')
-        .update({ plan, updated_at: new Date().toISOString() })
+        .update({ plan: normalizedPlan, updated_at: new Date().toISOString() })
         .eq('restaurant_id', id)
     }
 

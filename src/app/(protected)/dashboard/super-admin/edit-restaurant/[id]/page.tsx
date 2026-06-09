@@ -14,9 +14,10 @@ import {
   ArrowLeft, UserPlus, Trash2, Users, Eye, EyeOff, Key,
 } from 'lucide-react'
 import Link from 'next/link'
-import { PLAN_LABELS, type PlanType, getPlanFeatures } from '@/lib/plans'
+import { PLAN_LABELS, PLAN_OPTIONS, type PlanType, getPlanFeatures, normalizePlan } from '@/lib/plans'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { getInitials } from '@/lib/utils'
+import { DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR, generateThemeTokens } from '@/lib/theme'
 const JOURS = [
   { key: 'lundi', label: 'Lun' }, { key: 'mardi', label: 'Mar' },
   { key: 'mercredi', label: 'Mer' }, { key: 'jeudi', label: 'Jeu' },
@@ -47,8 +48,8 @@ export default function EditRestaurantPage() {
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [restaurantName, setRestaurantName] = useState('')
-  const [previewPrimary, setPreviewPrimary] = useState('#F97316')
-  const [previewBg, setPreviewBg] = useState('#0A0A0A')
+  const [previewPrimary, setPreviewPrimary] = useState(DEFAULT_PRIMARY_COLOR)
+  const [previewBg, setPreviewBg] = useState(DEFAULT_DARK_BACKGROUND)
   const [previewMode, setPreviewMode] = useState<'dark' | 'light'>('dark')
 
   // Restaurant fields
@@ -61,14 +62,18 @@ export default function EditRestaurantPage() {
   const [whatsapp, setWhatsapp] = useState('')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
-  const [primaryColor, setPrimaryColor] = useState('#F97316')
-  const [bgColor, setBgColor] = useState('#0A0A0A')
+  const [primaryColor, setPrimaryColor] = useState(DEFAULT_PRIMARY_COLOR)
+  const [bgColor, setBgColor] = useState(DEFAULT_DARK_BACKGROUND)
+  const [buttonColor, setButtonColor] = useState(DEFAULT_BUTTON_COLOR)
+  const [facebookUrl, setFacebookUrl] = useState('')
+  const [instagramUrl, setInstagramUrl] = useState('')
+  const [tiktokUrl, setTiktokUrl] = useState('')
   const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark')
   const [isActive, setIsActive] = useState(true)
   const [openingHours, setOpeningHours] = useState<OpeningHours>({})
   const [deliveryFee, setDeliveryFee] = useState('0')
   const [showDeliveryFee, setShowDeliveryFee] = useState(false)
-  const [plan, setPlan] = useState<PlanType>('mensuel')
+  const [plan, setPlan] = useState<PlanType>('starter')
   const [subStatus, setSubStatus] = useState('active')
   const [subId, setSubId] = useState<string | null>(null)
 
@@ -94,7 +99,9 @@ export default function EditRestaurantPage() {
   const [resetSuccess, setResetSuccess] = useState(false)
   const [resetError, setResetError] = useState<string | null>(null)
 
-  const maxAdmins = getPlanFeatures(plan).maxAdmins
+  const features = getPlanFeatures(plan)
+  const maxAdmins = features.maxAdmins
+  const canCustomize = features.couleursPersonnalisees
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -117,11 +124,15 @@ export default function EditRestaurantPage() {
     setWhatsapp(r.whatsapp_number || '')
     setLogoUrl(r.logo_url)
     setBannerUrl(r.banner_url || r.cover_url)
-    setPrimaryColor(r.primary_color || '#F97316')
-    setBgColor(r.background_color || '#0A0A0A')
+    setPrimaryColor(r.primary_color || DEFAULT_PRIMARY_COLOR)
+    setBgColor(r.background_color || DEFAULT_DARK_BACKGROUND)
+    setButtonColor(r.button_color || r.primary_color || DEFAULT_BUTTON_COLOR)
+    setFacebookUrl(r.facebook_url || '')
+    setInstagramUrl(r.instagram_url || '')
+    setTiktokUrl(r.tiktok_url || '')
     setThemeMode(r.theme_mode || 'dark')
-    setPreviewPrimary(r.primary_color || '#F97316')
-    setPreviewBg(r.background_color || '#0A0A0A')
+    setPreviewPrimary(r.primary_color || DEFAULT_PRIMARY_COLOR)
+    setPreviewBg(r.background_color || DEFAULT_DARK_BACKGROUND)
     setPreviewMode(r.theme_mode || 'dark')
     setIsActive(r.is_active ?? true)
     setOpeningHours((r.opening_hours as OpeningHours) || {})
@@ -136,7 +147,7 @@ export default function EditRestaurantPage() {
 
     if (sub) {
       setSubId(sub.id)
-      setPlan((sub.plan as PlanType) || 'mensuel')
+      setPlan(normalizePlan(sub.plan || 'starter'))
       setSubStatus(sub.status || 'active')
     }
 
@@ -153,10 +164,10 @@ export default function EditRestaurantPage() {
   useEffect(() => { loadData() }, [loadData])
 
   useEffect(() => {
-    setPreviewPrimary(primaryColor || '#F97316')
-    setPreviewBg(bgColor || '#0A0A0A')
+    setPreviewPrimary(canCustomize ? (primaryColor || DEFAULT_PRIMARY_COLOR) : DEFAULT_PRIMARY_COLOR)
+    setPreviewBg(canCustomize ? (bgColor || DEFAULT_DARK_BACKGROUND) : DEFAULT_DARK_BACKGROUND)
     setPreviewMode(themeMode || 'dark')
-  }, [primaryColor, bgColor, themeMode])
+  }, [primaryColor, bgColor, themeMode, canCustomize])
 
   async function handleSave() {
     setSaving(true)
@@ -176,9 +187,14 @@ export default function EditRestaurantPage() {
         whatsapp_number: whatsapp || null,
         logo_url: logoUrl,
         banner_url: bannerUrl,
+        plan,
         primary_color: primaryColor,
         background_color: bgColor,
+        button_color: buttonColor,
         theme_mode: themeMode,
+        facebook_url: facebookUrl || null,
+        instagram_url: instagramUrl || null,
+        tiktok_url: tiktokUrl || null,
         is_active: isActive,
         opening_hours: openingHours,
         delivery_fee: Number(deliveryFee) || 0,
@@ -189,7 +205,7 @@ export default function EditRestaurantPage() {
     if (subId) {
       await supabase
         .from('subscriptions')
-        .update({ plan, status: subStatus })
+        .update({ status: subStatus })
         .eq('id', subId)
     }
 
@@ -409,11 +425,7 @@ export default function EditRestaurantPage() {
             label="Plan"
             value={plan}
             onChange={e => setPlan(e.target.value as PlanType)}
-            options={[
-              { value: 'mensuel', label: 'Mensuel' },
-              { value: 'trimestriel', label: 'Trimestriel' },
-              { value: 'annuel', label: 'Annuel' },
-            ]}
+            options={PLAN_OPTIONS}
           />
 
           <Select
@@ -422,8 +434,9 @@ export default function EditRestaurantPage() {
             onChange={e => setSubStatus(e.target.value)}
             options={[
               { value: 'active', label: 'Actif' },
-              { value: 'past_due', label: 'En retard' },
-              { value: 'canceled', label: 'Annulé' },
+              { value: 'trial', label: 'Essai' },
+              { value: 'suspended', label: 'Suspendu' },
+              { value: 'cancelled', label: 'Annulé' },
             ]}
           />
 
@@ -441,19 +454,25 @@ export default function EditRestaurantPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-gray-400 text-xs block mb-1.5">Couleur primaire</label>
-              <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)}
-                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer" />
+              <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} disabled={!canCustomize}
+                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
             </div>
             <div>
               <label className="text-gray-400 text-xs block mb-1.5">Fond</label>
-              <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
-                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer" />
+              <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} disabled={!canCustomize}
+                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Boutons</label>
+              <input type="color" value={buttonColor} onChange={e => setButtonColor(e.target.value)} disabled={!canCustomize}
+                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
             </div>
             <div>
               <label className="text-gray-400 text-xs block mb-1.5">Mode</label>
               <Select
                 value={themeMode}
                 onChange={e => setThemeMode(e.target.value as 'dark' | 'light')}
+                disabled={!canCustomize}
                 options={[
                   { value: 'dark', label: 'Sombre' },
                   { value: 'light', label: 'Clair' },
@@ -462,23 +481,37 @@ export default function EditRestaurantPage() {
             </div>
           </div>
 
+          {!canCustomize && (
+            <div className="bg-brand-orange/10 border border-brand-orange/20 text-brand-orange rounded-xl px-4 py-3 text-xs">
+              Le plan Starter utilise automatiquement le thème et le branding TerangaLink par défaut. Passez au plan Pro pour activer la personnalisation avancée.
+            </div>
+          )}
+
+          {canCustomize && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Input label="Instagram" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/..." />
+              <Input label="Facebook" value={facebookUrl} onChange={e => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
+              <Input label="TikTok" value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." />
+            </div>
+          )}
+
           <div
             className="rounded-2xl border p-4 transition-all"
             style={{
-              backgroundColor: previewBg,
-              borderColor: previewMode === 'dark' ? '#2A2A2A' : '#D1D5DB',
+              backgroundColor: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).bgPage,
+              borderColor: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).border,
             }}
           >
-            <p className="text-xs mb-3" style={{ color: previewMode === 'dark' ? '#9CA3AF' : '#4B5563' }}>
+            <p className="text-xs mb-3" style={{ color: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).textMuted }}>
               Aperçu live (identique au rendu public)
             </p>
-            <div className="rounded-xl p-4" style={{ backgroundColor: previewMode === 'dark' ? '#111111' : '#FFFFFF' }}>
+            <div className="rounded-xl p-4" style={{ backgroundColor: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).bgCard }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-bold" style={{ color: previewMode === 'dark' ? '#FFFFFF' : '#111827' }}>{name || 'Nom du restaurant'}</p>
-                  <p className="text-xs" style={{ color: previewMode === 'dark' ? '#9CA3AF' : '#6B7280' }}>/{slug || 'restaurant-slug'}</p>
+                  <p className="text-sm font-bold" style={{ color: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).textPrimary }}>{name || 'Nom du restaurant'}</p>
+                  <p className="text-xs" style={{ color: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).textMuted }}>/{slug || 'restaurant-slug'}</p>
                 </div>
-                <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: previewPrimary, color: '#FFFFFF' }}>Commander</button>
+                <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).button, color: generateThemeTokens({ primary: previewPrimary, background: previewBg, button: buttonColor, mode: previewMode }).textOnButton }}>Commander</button>
               </div>
             </div>
           </div>

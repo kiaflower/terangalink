@@ -6,6 +6,7 @@ import { StatCard } from '@/components/dashboard/StatCard'
 import Link from 'next/link'
 import { ShoppingBag, TrendingUp, UtensilsCrossed, Users, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
 import type { Restaurant, Subscription } from '@/lib/types'
+import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
 
 export const metadata = { title: 'Tableau de bord — Restaurant' }
 
@@ -117,7 +118,7 @@ export default async function RestaurantDashboard() {
             <p className="text-gray-500 text-sm">{restaurant.city || 'Dakar'}</p>
           </div>
           {subscription && (
-            <Badge variant="warning">{subscription.plan} · {subscription.status}</Badge>
+            <Badge variant="warning">{PLAN_LABELS[normalizePlan(subscription.plan)]} · {subscription.status}</Badge>
           )}
         </div>
       )}

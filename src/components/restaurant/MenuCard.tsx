@@ -80,8 +80,8 @@ export function MenuCard({ item, restaurantId, restaurantSlug, restaurantPhone, 
           <span className="font-bold text-sm" style={{ color: tokens.accentText }}>{formatCurrency(item.price)}</span>
           {item.is_available && (
             qty === 0 ? (
-              <button onClick={handleAdd} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-md" style={{ backgroundColor: tokens.accent }}>
-                <Plus className="w-4 h-4 text-white" />
+              <button onClick={handleAdd} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors shadow-md" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
+                <Plus className="w-4 h-4" />
               </button>
             ) : (
               <div className="flex items-center gap-2">
@@ -89,8 +89,8 @@ export function MenuCard({ item, restaurantId, restaurantSlug, restaurantPhone, 
                   <Minus className="w-3 h-3" style={{ color: tokens.textSecondary }} />
                 </button>
                 <span className="font-bold text-sm w-4 text-center" style={{ color: tokens.textPrimary }}>{qty}</span>
-                <button onClick={handleAdd} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.accent }}>
-                  <Plus className="w-3 h-3 text-white" />
+                <button onClick={handleAdd} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
+                  <Plus className="w-3 h-3" />
                 </button>
               </div>
             )

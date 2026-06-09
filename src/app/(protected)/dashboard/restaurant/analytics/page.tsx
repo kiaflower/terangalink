@@ -18,7 +18,7 @@ interface OrderStats {
 export default function AnalyticsPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
-  const [plan, setPlan] = useState('mensuel')
+  const [plan, setPlan] = useState('starter')
 
   // Analytics events (page views / paniers)
   const [viewsToday, setViewsToday] = useState(0)
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Analytiques avancées — plan trimestriel+ ── */}
+      {/* ── Statistiques et analytiques incluses dans Starter et Pro ── */}
       <FeatureGate feature="analyticsAvances" hasAccess={hasAdvanced}>
         <div className="space-y-4">
           {/* Trend card */}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { normalizePlan, PLAN_LABELS } from '@/lib/plans'
 import { createClient } from '@/lib/supabase/server'
 import nodemailer from 'nodemailer'
 
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { to_email, restaurant_name, admin_name, password, plan } = await request.json()
+    const planLabel = PLAN_LABELS[normalizePlan(plan || 'starter')]
 
     const { data: settingsData } = await caller.from('platform_settings').select('key, value')
     const settingsMap: Record<string, string> = {}
@@ -63,7 +65,7 @@ export async function POST(request: NextRequest) {
         ` : ''}
         <div>
           <span style="color:#6B6B6B;font-size:13px;">Plan : </span>
-          <span style="color:#FFFFFF;font-size:13px;font-weight:600;">${plan || 'Mensuel'}</span>
+          <span style="color:#FFFFFF;font-size:13px;font-weight:600;">${planLabel}</span>
         </div>
       </div>
       <a href="${platformUrl}/login"

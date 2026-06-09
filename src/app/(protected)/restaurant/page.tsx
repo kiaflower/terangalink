@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import type { Restaurant, Subscription } from '@/lib/types'
+import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
 
 export const metadata = { title: 'Tableau de bord — Restaurant' }
 
@@ -96,7 +97,7 @@ export default async function RestaurantDashboard() {
           </div>
           {subscription && (
             <Badge variant={planColors[subscription.status] ?? 'warning'}>
-              {subscription.plan} · {subscription.status}
+              {PLAN_LABELS[normalizePlan(subscription.plan)]} · {subscription.status}
             </Badge>
           )}
         </div>

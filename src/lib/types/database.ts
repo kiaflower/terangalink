@@ -97,7 +97,7 @@ export interface Database {
         Row: {
           id: string
           restaurant_id: string
-          plan: 'mensuel' | 'trimestriel' | 'annuel'
+          plan: 'starter' | 'pro'
           status: 'active' | 'trial' | 'suspended' | 'cancelled'
           started_at: string
           ends_at: string | null
@@ -107,7 +107,7 @@ export interface Database {
         Insert: {
           id?: string
           restaurant_id: string
-          plan?: 'mensuel' | 'trimestriel' | 'annuel'
+          plan?: 'starter' | 'pro'
           status?: 'active' | 'trial' | 'suspended' | 'cancelled'
           started_at?: string
           ends_at?: string | null
@@ -115,7 +115,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          plan?: 'mensuel' | 'trimestriel' | 'annuel'
+          plan?: 'starter' | 'pro'
           status?: 'active' | 'trial' | 'suspended' | 'cancelled'
           ends_at?: string | null
           updated_at?: string
@@ -130,7 +130,7 @@ export interface Database {
     }
     Enums: {
       user_role: 'super_admin' | 'restaurant_admin'
-      subscription_plan: 'mensuel' | 'trimestriel' | 'annuel'
+      subscription_plan: 'starter' | 'pro'
       subscription_status: 'active' | 'trial' | 'suspended' | 'cancelled'
     }
   }

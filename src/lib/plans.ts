@@ -1,99 +1,159 @@
 /**
  * TerangaLink Subscription System
- * Plans: mensuel | trimestriel | annuel
+ * Plans publics: starter | pro
+ *
+ * Les anciens plans de durée (mensuel, trimestriel, annuel) restent acceptés en
+ * entrée pour ne pas casser les restaurants existants, mais toute la logique
+ * applicative les normalise vers Starter ou Pro.
  */
 
-export type PlanType = 'mensuel' | 'trimestriel' | 'annuel'
+export type PlanType = 'starter' | 'pro'
+export type LegacyPlanType = 'mensuel' | 'trimestriel' | 'annuel' | 'enterprise' | 'premium' | 'free' | 'demo' | 'gratuit' | 'trial'
 
 export const PLAN_LABELS: Record<PlanType, string> = {
-  mensuel: 'Mensuel',
-  trimestriel: 'Trimestriel',
-  annuel: 'Annuel',
+  starter: 'Starter',
+  pro: 'Pro',
 }
 
 export const PLAN_PRICES: Record<PlanType, number> = {
-  mensuel: 15000,
-  trimestriel: 40000,
-  annuel: 135000,
+  starter: 9000,
+  pro: 15000,
 }
 
 export const PLAN_PERIODS: Record<PlanType, string> = {
-  mensuel: '/mois',
-  trimestriel: '/3 mois',
-  annuel: '/an',
+  starter: '/mois',
+  pro: '/mois',
 }
 
+export const PLAN_OPTIONS: { value: PlanType; label: string }[] = [
+  { value: 'starter', label: 'Starter — 9 000 FCFA/mois' },
+  { value: 'pro', label: 'Pro — 15 000 FCFA/mois' },
+]
+
 export interface PlanFeatures {
-  maxPlats: number | 'illimité'
-  maxAdmins: number
+  siteCommande: boolean
+  menuIllimite: boolean
+  commandesWhatsapp: boolean
+  dashboardAdministrateur: boolean
+  suiviCommandes: boolean
+  revenusMensuels: boolean
+  produitsPlusCommandes: boolean
+  statistiquesAnalytiques: boolean
+  qrCode: boolean
+  supportWhatsapp: boolean
+  formationIncluse: boolean
+  brandingTerangaVisible: boolean
+  couleursTerangaParDefaut: boolean
   modeClairSombre: boolean
   couleursPersonnalisees: boolean
-  brandingPersonnalise: boolean
+  couleurBoutonsPersonnalisee: boolean
+  elementsVisuelsPersonnalises: boolean
+  reseauxSociaux: boolean
   suppressionBranding: boolean
+  supportPrioritaire: boolean
+  accompagnementPersonnalise: boolean
+
+  // Compatibilité avec les feature gates existants.
+  maxPlats: number | 'illimité'
+  maxAdmins: number
+  brandingPersonnalise: boolean
   analyticsAvances: boolean
   qrCodePremium: boolean
   boutonAppel: boolean
   boutonPartage: boolean
-  supportPrioritaire: boolean
   managerDedie: boolean
 }
 
 export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
-  mensuel: {
-    maxPlats: 20,
-    maxAdmins: 1,
-    modeClairSombre: true,
+  starter: {
+    siteCommande: true,
+    menuIllimite: true,
+    commandesWhatsapp: true,
+    dashboardAdministrateur: true,
+    suiviCommandes: true,
+    revenusMensuels: true,
+    produitsPlusCommandes: true,
+    statistiquesAnalytiques: true,
+    qrCode: true,
+    supportWhatsapp: true,
+    formationIncluse: true,
+    brandingTerangaVisible: true,
+    couleursTerangaParDefaut: true,
+    modeClairSombre: false,
     couleursPersonnalisees: false,
-    brandingPersonnalise: false,
+    couleurBoutonsPersonnalisee: false,
+    elementsVisuelsPersonnalises: false,
+    reseauxSociaux: false,
     suppressionBranding: false,
-    analyticsAvances: false,
-    qrCodePremium: false,
+    supportPrioritaire: false,
+    accompagnementPersonnalise: false,
+    maxPlats: 'illimité',
+    maxAdmins: 1,
+    brandingPersonnalise: false,
+    analyticsAvances: true,
+    qrCodePremium: true,
     boutonAppel: false,
     boutonPartage: false,
-    supportPrioritaire: false,
     managerDedie: false,
   },
-  trimestriel: {
-    maxPlats: 'illimité',
-    maxAdmins: 2,
-    modeClairSombre: true,
-    couleursPersonnalisees: false,
-    brandingPersonnalise: false,
-    suppressionBranding: false,
-    analyticsAvances: true,
-    qrCodePremium: true,
-    boutonAppel: true,
-    boutonPartage: true,
-    supportPrioritaire: true,
-    managerDedie: false,
-  },
-  annuel: {
-    maxPlats: 'illimité',
-    maxAdmins: 5,
+  pro: {
+    siteCommande: true,
+    menuIllimite: true,
+    commandesWhatsapp: true,
+    dashboardAdministrateur: true,
+    suiviCommandes: true,
+    revenusMensuels: true,
+    produitsPlusCommandes: true,
+    statistiquesAnalytiques: true,
+    qrCode: true,
+    supportWhatsapp: true,
+    formationIncluse: true,
+    brandingTerangaVisible: false,
+    couleursTerangaParDefaut: false,
     modeClairSombre: true,
     couleursPersonnalisees: true,
-    brandingPersonnalise: true,
+    couleurBoutonsPersonnalisee: true,
+    elementsVisuelsPersonnalises: true,
+    reseauxSociaux: true,
     suppressionBranding: true,
+    supportPrioritaire: true,
+    accompagnementPersonnalise: true,
+    maxPlats: 'illimité',
+    maxAdmins: 5,
+    brandingPersonnalise: true,
     analyticsAvances: true,
     qrCodePremium: true,
     boutonAppel: true,
     boutonPartage: true,
-    supportPrioritaire: true,
     managerDedie: true,
   },
 }
 
+const LEGACY_PLAN_MAP: Record<string, PlanType> = {
+  starter: 'starter',
+  mensuel: 'starter',
+  trimestriel: 'starter',
+  free: 'starter',
+  demo: 'starter',
+  gratuit: 'starter',
+  trial: 'starter',
+  pro: 'pro',
+  annuel: 'pro',
+  enterprise: 'pro',
+  premium: 'pro',
+}
+
 export function getPlanFeatures(plan: string): PlanFeatures {
-  const normalized = normalizePlan(plan)
-  return PLAN_FEATURES[normalized] ?? PLAN_FEATURES.mensuel
+  return PLAN_FEATURES[normalizePlan(plan)]
 }
 
 export function normalizePlan(plan: string): PlanType {
   const normalized = (plan || '').trim().toLowerCase()
-  if (['mensuel', 'trimestriel', 'annuel'].includes(normalized)) return normalized as PlanType
-  if (normalized === 'premium') return 'annuel'
-  if (normalized === 'free' || normalized === 'demo' || normalized === 'gratuit' || normalized === 'trial') return 'mensuel'
-  return 'mensuel'
+  return LEGACY_PLAN_MAP[normalized] ?? 'starter'
+}
+
+export function isProPlan(plan: string): boolean {
+  return normalizePlan(plan) === 'pro'
 }
 
 export function canUseFeature(plan: string, feature: keyof PlanFeatures): boolean {
@@ -102,9 +162,9 @@ export function canUseFeature(plan: string, feature: keyof PlanFeatures): boolea
 }
 
 export function getUpgradeRequired(feature: keyof PlanFeatures): PlanType | null {
-  if (PLAN_FEATURES.mensuel[feature]) return null
-  if (PLAN_FEATURES.trimestriel[feature]) return 'trimestriel'
-  return 'annuel'
+  if (PLAN_FEATURES.starter[feature]) return null
+  if (PLAN_FEATURES.pro[feature]) return 'pro'
+  return null
 }
 
 export function getUpgradeLabel(feature: keyof PlanFeatures): string {

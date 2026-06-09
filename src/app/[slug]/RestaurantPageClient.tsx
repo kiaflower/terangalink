@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home } from 'lucide-react'
+import { MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home, Instagram, Facebook, Music2 } from 'lucide-react'
 import { MenuCard } from '@/components/restaurant/MenuCard'
 import { CartDrawer, CartButton } from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/lib/hooks/useCart'
 import { QRCodeButton } from '@/components/restaurant/QRCodeButton'
 import { GoogleMap } from '@/components/restaurant/GoogleMap'
-import { generateThemeTokens, themeToStyle, type RestaurantTheme } from '@/lib/theme'
+import { DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR, generateThemeTokens, themeToStyle, type RestaurantTheme } from '@/lib/theme'
 import { canUseFeature, normalizePlan } from '@/lib/plans'
 import type { RestaurantPageData } from '@/lib/types'
 
@@ -16,6 +16,10 @@ type RestaurantFull = RestaurantPageData['restaurant'] & {
   primary_color?: string
   background_color?: string
   theme_mode?: 'dark' | 'light'
+  button_color?: string
+  facebook_url?: string | null
+  instagram_url?: string | null
+  tiktok_url?: string | null
   whatsapp_number?: string
   opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }>
   delivery_fee?: number
@@ -49,15 +53,22 @@ function RestaurantInner({ data }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'free' : 'mensuel'))
-  const shouldShowTerangaBranding = !restaurant.is_demo && (plan === 'mensuel' || plan === 'trimestriel')
+  const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'free' : 'starter'))
+  const isPro = plan === 'pro'
+  const shouldShowTerangaBranding = !restaurant.is_demo && !canUseFeature(plan, 'suppressionBranding')
   const canCall = canUseFeature(plan, 'boutonAppel')
   const canShare = canUseFeature(plan, 'boutonPartage')
 
-  const themeConfig: RestaurantTheme = {
-    primary: restaurant.primary_color || '#F97316',
+  const themeConfig: RestaurantTheme = isPro ? {
+    primary: restaurant.primary_color || DEFAULT_PRIMARY_COLOR,
     mode: restaurant.theme_mode || 'dark',
     background: restaurant.background_color || undefined,
+    button: restaurant.button_color || restaurant.primary_color || DEFAULT_BUTTON_COLOR,
+  } : {
+    primary: DEFAULT_PRIMARY_COLOR,
+    mode: 'dark',
+    background: DEFAULT_DARK_BACKGROUND,
+    button: DEFAULT_BUTTON_COLOR,
   }
 
   const tokens = generateThemeTokens(themeConfig)
@@ -136,11 +147,11 @@ function RestaurantInner({ data }: Props) {
         )}
         <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${tokens.bgPage} 0%, ${tokens.bgPage}60 40%, transparent 100%)` }} />
 
-        {/* TerangaLink branding (mensuel/trimestriel uniquement) */}
+        {/* TerangaLink branding (Starter uniquement) */}
         {shouldShowTerangaBranding && (
           <a href="/" className="absolute top-3 left-4 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
-            <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: tokens.accent }}>
-              <Zap className="w-3 h-3 text-white" />
+            <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
+              <Zap className="w-3 h-3" />
             </div>
             <span className="text-xs font-semibold" style={{ color: tokens.textPrimary, opacity: 0.7 }}>TerangaLink</span>
           </a>
@@ -202,6 +213,26 @@ function RestaurantInner({ data }: Props) {
 
         {restaurant.description && <p className="text-sm leading-relaxed mb-4" style={{ color: tokens.textSecondary }}>{restaurant.description}</p>}
 
+          {isPro && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url) && (
+            <div className="flex items-center gap-2 mt-4">
+              {restaurant.instagram_url && (
+                <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Instagram">
+                  <Instagram className="w-4 h-4" />
+                </a>
+              )}
+              {restaurant.facebook_url && (
+                <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Facebook">
+                  <Facebook className="w-4 h-4" />
+                </a>
+              )}
+              {restaurant.tiktok_url && (
+                <a href={restaurant.tiktok_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="TikTok">
+                  <Music2 className="w-4 h-4" />
+                </a>
+              )}
+            </div>
+          )}
+
         <div className="flex flex-wrap gap-3 items-center">
           {restaurant.city && (
             <div className="flex items-center gap-1.5 text-xs" style={{ color: tokens.textMuted }}>
@@ -242,7 +273,7 @@ function RestaurantInner({ data }: Props) {
               onClick={() => setActiveCategory(null)}
               className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
               style={activeCategory === null
-                ? { backgroundColor: tokens.accent, color: tokens.textOnAccent }
+                ? { backgroundColor: tokens.button, color: tokens.textOnButton }
                 : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
             >
               Tout
@@ -253,7 +284,7 @@ function RestaurantInner({ data }: Props) {
                 onClick={() => setActiveCategory(cat.id)}
                 className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap"
                 style={activeCategory === cat.id
-                  ? { backgroundColor: tokens.accent, color: tokens.textOnAccent }
+                  ? { backgroundColor: tokens.button, color: tokens.textOnButton }
                   : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
               >
                 {cat.name}
@@ -316,7 +347,7 @@ function RestaurantInner({ data }: Props) {
             {restaurant.address && (
               <GoogleMap
                 address={restaurant.address}
-                city={restaurant.city}
+                city={restaurant.city || undefined}
                 latitude={restaurant.latitude ?? null}
                 longitude={restaurant.longitude ?? null}
                 tokens={tokens}
@@ -324,7 +355,7 @@ function RestaurantInner({ data }: Props) {
             )}
           </div>
 
-          {/* Powered by TerangaLink (mensuel/trimestriel uniquement) */}
+          {/* Powered by TerangaLink (Starter uniquement) */}
           {shouldShowTerangaBranding && (
             <div className="text-center py-6">
               <a

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { slugify } from '@/lib/utils'
+import { normalizePlan } from '@/lib/plans'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
     if (password.length < 8) {
       return NextResponse.json({ error: 'Mot de passe trop court (minimum 8 caractères)' }, { status: 400 })
     }
+
+    const normalizedPlan = normalizePlan(plan || 'starter')
 
     const admin = createAdminClient()
 
@@ -78,7 +81,7 @@ export async function POST(request: NextRequest) {
       // Create subscription
       await admin.from('subscriptions').insert({
         restaurant_id: restaurant.id,
-        plan: plan || 'mensuel',
+        plan: normalizedPlan,
         status: 'active',
       })
     }
@@ -115,7 +118,7 @@ export async function POST(request: NextRequest) {
           restaurant_name: create_restaurant ? restaurant_name : 'votre restaurant',
           admin_name: full_name,
           password,
-          plan: plan || 'mensuel',
+          plan: normalizedPlan,
         }),
       })
     } catch { /* email failure should not block account creation */ }

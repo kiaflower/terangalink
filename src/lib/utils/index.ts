@@ -42,24 +42,27 @@ export function getInitials(name: string): string {
 }
 
 export const PLAN_PRICES: Record<string, number> = {
-  mensuel: 15000,
-  trimestriel: 40000,
-  annuel: 135000,
-  // legacy compat
-  starter: 15000,
-  pro: 40000,
-  enterprise: 135000,
+  starter: 9000,
+  pro: 15000,
+  // Compatibilité lecture des anciens abonnements par durée.
+  mensuel: 9000,
+  trimestriel: 9000,
+  annuel: 15000,
+  enterprise: 15000,
+  premium: 15000,
 }
 
 export const PLAN_LABELS: Record<string, string> = {
-  mensuel: 'Mensuel',
-  trimestriel: 'Trimestriel',
-  annuel: 'Annuel',
-  // legacy compat
-  starter: 'Mensuel',
-  pro: 'Trimestriel',
-  enterprise: 'Annuel',
+  starter: 'Starter',
+  pro: 'Pro',
+  // Compatibilité lecture des anciens abonnements par durée.
+  mensuel: 'Starter',
+  trimestriel: 'Starter',
+  annuel: 'Pro',
+  enterprise: 'Pro',
+  premium: 'Pro',
 }
+
 
 export const STATUS_COLORS: Record<string, string> = {
   active: 'text-green-400 bg-green-400/10',
