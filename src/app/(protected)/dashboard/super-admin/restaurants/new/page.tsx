@@ -34,7 +34,7 @@ export default function NewRestaurantPage() {
   const [restCity, setRestCity] = useState('Dakar')
   const [restPhone, setRestPhone] = useState('')
   const [cuisineType, setCuisineType] = useState('')
-  const [plan, setPlan] = useState('mensuel')
+  const [plan, setPlan] = useState('starter')
   const [restAddress, setRestAddress] = useState('')
 
   const [adminName, setAdminName] = useState('')

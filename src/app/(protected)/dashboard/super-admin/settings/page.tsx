@@ -63,9 +63,8 @@ export default function SuperAdminSettingsPage() {
   const [allowSignup, setAllowSignup] = useState(false)
   const [demoActive, setDemoActive] = useState(true)
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true)
-  const [prixMensuel, setPrixMensuel] = useState('15000')
-  const [prixTrimestriel, setPrixTrimestriel] = useState('40000')
-  const [prixAnnuel, setPrixAnnuel] = useState('135000')
+  const [prixStarter, setPrixStarter] = useState('9000')
+  const [prixPro, setPrixPro] = useState('15000')
 
   const loadStats = useCallback(async () => {
     const [{ count: r }, { count: a }, { data: settingsData }] = await Promise.all([
@@ -151,9 +150,8 @@ export default function SuperAdminSettingsPage() {
         <Section icon={Settings} title="Tarifs abonnements" description="Prix affichés sur la landing page (FCFA)">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: 'Mensuel (FCFA/mois)', value: prixMensuel, set: setPrixMensuel },
-              { label: 'Trimestriel (FCFA/3 mois)', value: prixTrimestriel, set: setPrixTrimestriel },
-              { label: 'Annuel (FCFA/an)', value: prixAnnuel, set: setPrixAnnuel },
+              { label: 'Starter (FCFA/mois)', value: prixStarter, set: setPrixStarter },
+              { label: 'Pro (FCFA/mois)', value: prixPro, set: setPrixPro },
             ].map(p => (
               <div key={p.label}>
                 <label className="text-gray-400 text-xs block mb-1.5">{p.label}</label>

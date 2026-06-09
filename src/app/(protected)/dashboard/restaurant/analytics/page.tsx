@@ -18,7 +18,7 @@ interface OrderStats {
 export default function AnalyticsPage() {
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
-  const [plan, setPlan] = useState('mensuel')
+  const [plan, setPlan] = useState('starter')
 
   // Analytics events (page views / paniers)
   const [viewsToday, setViewsToday] = useState(0)
@@ -130,7 +130,7 @@ export default function AnalyticsPage() {
   useEffect(() => { loadAnalytics() }, [loadAnalytics])
 
   const normalizedPlan = normalizePlan(plan)
-  const hasAdvanced = canUseFeature(normalizedPlan, 'analyticsAvances')
+  const hasAdvanced = canUseFeature(normalizedPlan, 'statistiquesAnalytiques')
 
   const viewTrend = viewsYesterday > 0
     ? Math.round(((viewsToday - viewsYesterday) / viewsYesterday) * 100)
@@ -205,8 +205,8 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Analytiques avancées — plan trimestriel+ ── */}
-      <FeatureGate feature="analyticsAvances" hasAccess={hasAdvanced}>
+      {/* ── Analytiques avancées — plan Pro ── */}
+      <FeatureGate feature="statistiquesAnalytiques" hasAccess={hasAdvanced}>
         <div className="space-y-4">
           {/* Trend card */}
           <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">

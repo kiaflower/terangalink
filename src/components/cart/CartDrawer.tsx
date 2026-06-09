@@ -13,8 +13,8 @@ interface Props { onClose?: () => void; inline?: boolean; tokens?: ThemeTokens }
 const DEFAULT_TOKENS: ThemeTokens = {
   bgPage: '#0A0A0A', bgCard: '#141414', bgCardHover: '#1C1C1C', bgInput: '#1C1C1C', bgBadge: '#1C1C1C',
   border: 'rgba(255,255,255,0.08)', borderStrong: 'rgba(255,255,255,0.14)',
-  textPrimary: '#FFFFFF', textSecondary: '#A3A3A3', textMuted: '#6B6B6B', textOnAccent: '#FFFFFF',
-  accent: '#F97316', accentHover: '#EA580C', accentSubtle: '#F9731620', accentText: '#F97316',
+  textPrimary: '#FFFFFF', textSecondary: '#A3A3A3', textMuted: '#6B6B6B', textOnAccent: '#FFFFFF', textOnButton: '#FFFFFF',
+  accent: '#F97316', accentHover: '#EA580C', accentSubtle: '#F9731620', accentText: '#F97316', button: '#F97316', buttonHover: '#EA580C',
   openBg: 'rgba(34,197,94,0.12)', openText: '#4ADE80', closedBg: 'rgba(239,68,68,0.12)', closedText: '#F87171',
 }
 
@@ -43,7 +43,8 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
           }}
           className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 text-white px-5 py-3 rounded-2xl font-semibold shadow-2xl"
           style={{
-            backgroundColor: tokens.accent,
+            backgroundColor: tokens.button,
+            color: tokens.textOnButton,
             boxShadow: `0 8px 30px ${tokens.accent}40`,
           }}
         >
@@ -67,7 +68,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'Wave' | 'Orange Money' | 'Cash'>('Wave')
+  const [paymentMethod, setPaymentMethod] = useState<'wave' | 'orange_money' | 'cash'>('wave')
 
   function openWhatsappSafely(url: string, pendingWindow: Window | null) {
     // iOS Safari safe fallback chain
@@ -117,7 +118,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
             quantity: i.quantity,
           })),
           total: totalPrice,
-          notes: `Paiement: ${paymentMethod}`,
+          payment_method: paymentMethod,
         }),
       })
 
@@ -140,7 +141,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
         `Téléphone: ${cleanedCustomerPhone}\n` +
         `Articles:\n${itemsLines}\n\n` +
         `Total: ${totalPrice.toLocaleString('fr-SN')} FCFA\n` +
-        `Paiement: ${paymentMethod}\n` +
+        `Paiement: ${paymentMethod === 'wave' ? 'Wave' : paymentMethod === 'orange_money' ? 'Orange Money' : 'Espèces'}\n` +
         `Heure: ${orderTime}\n\n` +
         `Gérer la commande:\n${manageUrl}`
       )
@@ -169,7 +170,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
           <ShoppingBag className="w-5 h-5" style={{ color: tokens.accent }} />
           <h2 className="font-bold text-sm" style={{ color: tokens.textPrimary }}>Votre panier</h2>
           {totalItems > 0 && (
-            <span className="text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.accent }}>
+            <span className="text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
               {totalItems}
             </span>
           )}
@@ -215,7 +216,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
                   {item.quantity === 1 ? <Trash2 className="w-3 h-3 text-red-400" /> : <Minus className="w-3 h-3" style={{ color: tokens.textSecondary }} />}
                 </button>
                 <span className="text-sm font-bold w-4 text-center" style={{ color: tokens.textPrimary }}>{item.quantity}</span>
-                <button onClick={() => updateQty(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.accent }}>
+                <button onClick={() => updateQty(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
                   <Plus className="w-3 h-3 text-white" />
                 </button>
               </div>
@@ -245,13 +246,13 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
 
           <select
             value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as 'Wave' | 'Orange Money' | 'Cash')}
+            onChange={(e) => setPaymentMethod(e.target.value as 'wave' | 'orange_money' | 'cash')}
             className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
             style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
           >
-            <option value="Wave">Paiement : Wave</option>
-            <option value="Orange Money">Paiement : Orange Money</option>
-            <option value="Cash">Paiement : Cash</option>
+            <option value="wave">Paiement : Wave</option>
+            <option value="orange_money">Paiement : Orange Money</option>
+            <option value="cash">Paiement : Espèces</option>
           </select>
 
           <div className="flex items-center justify-between">

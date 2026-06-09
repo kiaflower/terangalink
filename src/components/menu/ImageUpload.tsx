@@ -65,7 +65,7 @@ export function ImageUpload({ value, onChange, folder = 'menu' }: ImageUploadPro
       >
         {value ? (
           <>
-            <Image src={value} alt="Preview" fill className="object-cover" sizes="300px" unoptiized />
+            <Image src={value} alt="Preview" fill className="object-cover" sizes="300px" unoptimized />
             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
               <p className="text-white text-sm font-semibold">Changer</p>
             </div>

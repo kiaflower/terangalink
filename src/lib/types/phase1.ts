@@ -45,7 +45,7 @@ export interface Subscription {
   updated_at: string
 }
 
-export type SubscriptionPlan = 'mensuel' | 'trimestriel' | 'annuel'
+export type SubscriptionPlan = 'starter' | 'pro'
 export type SubscriptionStatus = 'active' | 'trial' | 'suspended' | 'cancelled'
 
 export interface RestaurantWithOwner extends Restaurant {

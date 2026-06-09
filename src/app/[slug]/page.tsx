@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import RestaurantPageClient from './RestaurantPageClient'
@@ -28,7 +29,7 @@ export default async function RestaurantPage({ params }: Props) {
 
   const { data: restaurant } = await supabase
     .from('restaurants')
-    .select('id, name, slug, description, city, phone, whatsapp_number, address, logo_url, banner_url, cover_url, primary_color, background_color, theme_mode, opening_hours, is_active, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes')
+    .select('id, name, slug, description, cuisine_type, city, phone, whatsapp_number, address, logo_url, banner_url, cover_url, primary_color, background_color, button_color, theme_mode, opening_hours, is_active, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes, facebook_url, instagram_url, tiktok_url, website_url')
     .eq('slug', params.slug)
     .single()
 
@@ -47,11 +48,28 @@ export default async function RestaurantPage({ params }: Props) {
     )
   }
 
-  const { data: subscription } = await supabase
-    .from('subscriptions')
-    .select('plan, status')
-    .eq('restaurant_id', restaurant.id)
-    .single()
+  let subscription: { plan: string; status: string } | null = null
+  try {
+    const adminClient = createAdminClient()
+    const { data } = await adminClient
+      .from('subscriptions')
+      .select('plan, status')
+      .eq('restaurant_id', restaurant.id)
+      .maybeSingle()
+    subscription = data
+  } catch (error) {
+    console.error('Public subscription read failed:', error)
+  }
+
+  try {
+    const adminClient = createAdminClient()
+    await adminClient.from('analytics_events').insert({
+      restaurant_id: restaurant.id,
+      event_type: 'page_view',
+    })
+  } catch {
+    // Analytics must never block public rendering.
+  }
 
   const [{ data: categories }, { data: items }] = await Promise.all([
     supabase.from('menu_categories').select('*').eq('restaurant_id', restaurant.id).eq('is_active', true).order('position'),
@@ -65,7 +83,7 @@ export default async function RestaurantPage({ params }: Props) {
           ...restaurant,
           banner_url: restaurant.banner_url || restaurant.cover_url || null,
           cover_url: restaurant.banner_url || restaurant.cover_url || null,
-          plan: subscription?.plan ?? null,
+          plan: subscription && ['active', 'trial'].includes(subscription.status) ? subscription.plan : 'starter',
         },
         categories: categories ?? [],
         items: items ?? [],

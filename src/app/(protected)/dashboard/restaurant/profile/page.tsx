@@ -16,7 +16,7 @@ export default async function RestaurantProfilePage() {
     .eq('id', user.id)
     .single()
 
-  const restaurant = profile?.restaurant as Record<string, string | boolean | null> | null
+  const restaurant = profile?.restaurant as unknown as Record<string, string | boolean | null> | null
 
   return (
     <div className="p-6 sm:p-8 max-w-2xl">

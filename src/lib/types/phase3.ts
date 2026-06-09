@@ -45,7 +45,7 @@ export interface RestaurantPhase3 {
 export interface RestaurantWithSub extends RestaurantPhase3 {
   subscription?: {
     id: string
-    plan: 'mensuel' | 'trimestriel' | 'annuel'
+    plan: 'starter' | 'pro'
     status: 'active' | 'trial' | 'suspended' | 'cancelled'
   }
   owner?: {
@@ -69,7 +69,7 @@ export interface EditRestaurantForm {
   delivery_zones: string // CSV
   primary_color: string
   background_color: string
-  plan: 'mensuel' | 'trimestriel' | 'annuel'
+  plan: 'starter' | 'pro'
   is_active: boolean
   opening_hours: OpeningHours
 }

@@ -82,6 +82,23 @@ export interface RestaurantPageData {
     description: string | null
     logo_url: string | null
     cover_url: string | null
+    banner_url?: string | null
+    primary_color?: string | null
+    background_color?: string | null
+    button_color?: string | null
+    theme_mode?: 'dark' | 'light' | null
+    whatsapp_number?: string | null
+    opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null
+    delivery_fee?: number | null
+    show_delivery_fee?: boolean | null
+    is_demo?: boolean | null
+    plan?: string
+    latitude?: number | null
+    longitude?: number | null
+    facebook_url?: string | null
+    instagram_url?: string | null
+    tiktok_url?: string | null
+    website_url?: string | null
     phone: string | null
     address: string | null
     city: string | null

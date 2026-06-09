@@ -30,9 +30,8 @@ const CUISINE_OPTIONS = [
 ]
 
 const PLAN_OPTIONS = [
-  { value: 'mensuel', label: 'Mensuel — 15 000 FCFA/mois' },
-  { value: 'trimestriel', label: 'Trimestriel — 40 000 FCFA/3 mois' },
-  { value: 'annuel', label: 'Annuel — 135 000 FCFA/an' },
+  { value: 'starter', label: 'Starter — 9 000 FCFA/mois' },
+  { value: 'pro', label: 'Pro — 15 000 FCFA/mois' },
 ]
 
 export default function CreateAdminPage() {
@@ -47,7 +46,7 @@ export default function CreateAdminPage() {
     restaurant_phone: '',
     restaurant_address: '',
     cuisine_type: '',
-    plan: 'mensuel',
+    plan: 'starter',
   })
 
   const [loading, setLoading] = useState(false)
