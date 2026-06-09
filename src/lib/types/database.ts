@@ -57,6 +57,26 @@ export interface Database {
           is_active: boolean
           is_verified: boolean
           owner_id: string | null
+          banner_url: string | null
+          whatsapp_number: string | null
+          primary_color: string | null
+          background_color: string | null
+          button_color: string | null
+          theme_mode: 'dark' | 'light' | null
+          opening_hours: Json | null
+          delivery_zones: Json | null
+          delivery_fee: number | null
+          show_delivery_fee: boolean | null
+          latitude: number | null
+          longitude: number | null
+          is_demo: boolean | null
+          facebook_url: string | null
+          instagram_url: string | null
+          tiktok_url: string | null
+          website_url: string | null
+          wave_number: string | null
+          orange_money_number: string | null
+          prep_time_minutes: number | null
           created_at: string
           updated_at: string
         }
@@ -74,6 +94,26 @@ export interface Database {
           is_active?: boolean
           is_verified?: boolean
           owner_id?: string | null
+          banner_url?: string | null
+          whatsapp_number?: string | null
+          primary_color?: string | null
+          background_color?: string | null
+          button_color?: string | null
+          theme_mode?: 'dark' | 'light' | null
+          opening_hours?: Json | null
+          delivery_zones?: Json | null
+          delivery_fee?: number | null
+          show_delivery_fee?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          is_demo?: boolean | null
+          facebook_url?: string | null
+          instagram_url?: string | null
+          tiktok_url?: string | null
+          website_url?: string | null
+          wave_number?: string | null
+          orange_money_number?: string | null
+          prep_time_minutes?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -90,6 +130,26 @@ export interface Database {
           is_active?: boolean
           is_verified?: boolean
           owner_id?: string | null
+          banner_url?: string | null
+          whatsapp_number?: string | null
+          primary_color?: string | null
+          background_color?: string | null
+          button_color?: string | null
+          theme_mode?: 'dark' | 'light' | null
+          opening_hours?: Json | null
+          delivery_zones?: Json | null
+          delivery_fee?: number | null
+          show_delivery_fee?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          is_demo?: boolean | null
+          facebook_url?: string | null
+          instagram_url?: string | null
+          tiktok_url?: string | null
+          website_url?: string | null
+          wave_number?: string | null
+          orange_money_number?: string | null
+          prep_time_minutes?: number | null
           updated_at?: string
         }
       }
@@ -97,7 +157,7 @@ export interface Database {
         Row: {
           id: string
           restaurant_id: string
-          plan: 'mensuel' | 'trimestriel' | 'annuel'
+          plan: 'starter' | 'pro'
           status: 'active' | 'trial' | 'suspended' | 'cancelled'
           started_at: string
           ends_at: string | null
@@ -107,7 +167,7 @@ export interface Database {
         Insert: {
           id?: string
           restaurant_id: string
-          plan?: 'mensuel' | 'trimestriel' | 'annuel'
+          plan?: 'starter' | 'pro'
           status?: 'active' | 'trial' | 'suspended' | 'cancelled'
           started_at?: string
           ends_at?: string | null
@@ -115,7 +175,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          plan?: 'mensuel' | 'trimestriel' | 'annuel'
+          plan?: 'starter' | 'pro'
           status?: 'active' | 'trial' | 'suspended' | 'cancelled'
           ends_at?: string | null
           updated_at?: string
@@ -130,7 +190,7 @@ export interface Database {
     }
     Enums: {
       user_role: 'super_admin' | 'restaurant_admin'
-      subscription_plan: 'mensuel' | 'trimestriel' | 'annuel'
+      subscription_plan: 'starter' | 'pro'
       subscription_status: 'active' | 'trial' | 'suspended' | 'cancelled'
     }
   }

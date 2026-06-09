@@ -14,7 +14,7 @@ import {
   ArrowLeft, UserPlus, Trash2, Users, Eye, EyeOff, Key,
 } from 'lucide-react'
 import Link from 'next/link'
-import { PLAN_LABELS, type PlanType, getPlanFeatures } from '@/lib/plans'
+import { PLAN_LABELS, type PlanType, getPlanFeatures, normalizePlan } from '@/lib/plans'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { getInitials } from '@/lib/utils'
 const JOURS = [
@@ -63,12 +63,17 @@ export default function EditRestaurantPage() {
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [primaryColor, setPrimaryColor] = useState('#F97316')
   const [bgColor, setBgColor] = useState('#0A0A0A')
+  const [buttonColor, setButtonColor] = useState('#F97316')
   const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark')
   const [isActive, setIsActive] = useState(true)
   const [openingHours, setOpeningHours] = useState<OpeningHours>({})
   const [deliveryFee, setDeliveryFee] = useState('0')
+  const [facebookUrl, setFacebookUrl] = useState('')
+  const [instagramUrl, setInstagramUrl] = useState('')
+  const [tiktokUrl, setTiktokUrl] = useState('')
+  const [websiteUrl, setWebsiteUrl] = useState('')
   const [showDeliveryFee, setShowDeliveryFee] = useState(false)
-  const [plan, setPlan] = useState<PlanType>('mensuel')
+  const [plan, setPlan] = useState<PlanType>('starter')
   const [subStatus, setSubStatus] = useState('active')
   const [subId, setSubId] = useState<string | null>(null)
 
@@ -119,6 +124,7 @@ export default function EditRestaurantPage() {
     setBannerUrl(r.banner_url || r.cover_url)
     setPrimaryColor(r.primary_color || '#F97316')
     setBgColor(r.background_color || '#0A0A0A')
+    setButtonColor(r.button_color || r.primary_color || '#F97316')
     setThemeMode(r.theme_mode || 'dark')
     setPreviewPrimary(r.primary_color || '#F97316')
     setPreviewBg(r.background_color || '#0A0A0A')
@@ -127,6 +133,10 @@ export default function EditRestaurantPage() {
     setOpeningHours((r.opening_hours as OpeningHours) || {})
     setDeliveryFee(String(r.delivery_fee ?? 0))
     setShowDeliveryFee(!!r.show_delivery_fee)
+    setFacebookUrl(r.facebook_url || '')
+    setInstagramUrl(r.instagram_url || '')
+    setTiktokUrl(r.tiktok_url || '')
+    setWebsiteUrl(r.website_url || '')
 
     const { data: sub } = await supabase
       .from('subscriptions')
@@ -136,7 +146,7 @@ export default function EditRestaurantPage() {
 
     if (sub) {
       setSubId(sub.id)
-      setPlan((sub.plan as PlanType) || 'mensuel')
+      setPlan(normalizePlan(sub.plan))
       setSubStatus(sub.status || 'active')
     }
 
@@ -179,6 +189,11 @@ export default function EditRestaurantPage() {
         primary_color: primaryColor,
         background_color: bgColor,
         theme_mode: themeMode,
+        button_color: buttonColor,
+        facebook_url: facebookUrl || null,
+        instagram_url: instagramUrl || null,
+        tiktok_url: tiktokUrl || null,
+        website_url: websiteUrl || null,
         is_active: isActive,
         opening_hours: openingHours,
         delivery_fee: Number(deliveryFee) || 0,
@@ -187,10 +202,16 @@ export default function EditRestaurantPage() {
     })
 
     if (subId) {
-      await supabase
+      const { error: subError } = await supabase
         .from('subscriptions')
         .update({ plan, status: subStatus })
         .eq('id', subId)
+      if (subError) console.error('subscription update error:', subError)
+    } else {
+      const { error: subError } = await supabase
+        .from('subscriptions')
+        .insert({ restaurant_id: id, plan, status: subStatus })
+      if (subError) console.error('subscription insert error:', subError)
     }
 
     setSaving(false)
@@ -376,7 +397,6 @@ export default function EditRestaurantPage() {
               label="Logo (1:1)"
               value={logoUrl}
               onChange={setLogoUrl}
-              bucket="restaurant-assets"
               folder={`restaurants/${id}/logo`}
               aspect="square"
             />
@@ -384,7 +404,6 @@ export default function EditRestaurantPage() {
               label="Bannière (16:9)"
               value={bannerUrl}
               onChange={setBannerUrl}
-              bucket="restaurant-assets"
               folder={`restaurants/${id}/banner`}
               aspect="banner"
             />
@@ -410,9 +429,8 @@ export default function EditRestaurantPage() {
             value={plan}
             onChange={e => setPlan(e.target.value as PlanType)}
             options={[
-              { value: 'mensuel', label: 'Mensuel' },
-              { value: 'trimestriel', label: 'Trimestriel' },
-              { value: 'annuel', label: 'Annuel' },
+              { value: 'starter', label: 'Starter — 9 000 FCFA/mois' },
+              { value: 'pro', label: 'Pro — 15 000 FCFA/mois' },
             ]}
           />
 
@@ -422,8 +440,9 @@ export default function EditRestaurantPage() {
             onChange={e => setSubStatus(e.target.value)}
             options={[
               { value: 'active', label: 'Actif' },
-              { value: 'past_due', label: 'En retard' },
-              { value: 'canceled', label: 'Annulé' },
+              { value: 'trial', label: 'Essai' },
+              { value: 'suspended', label: 'Suspendu' },
+              { value: 'cancelled', label: 'Annulé' },
             ]}
           />
 
@@ -460,6 +479,21 @@ export default function EditRestaurantPage() {
                 ]}
               />
             </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Boutons</label>
+              <input type="color" value={buttonColor} onChange={e => setButtonColor(e.target.value)}
+                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer" />
+            </div>
+          </div>
+          {plan === 'starter' && (
+            <p className="text-yellow-400 text-xs">Le plan Starter force les couleurs TerangaLink sur le site public. Ces réglages seront conservés mais seulement visibles en Pro.</p>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input label="Facebook" value={facebookUrl} onChange={e => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
+            <Input label="Instagram" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/..." />
+            <Input label="TikTok" value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." />
+            <Input label="Site web" value={websiteUrl} onChange={e => setWebsiteUrl(e.target.value)} placeholder="https://..." />
           </div>
 
           <div
@@ -478,7 +512,7 @@ export default function EditRestaurantPage() {
                   <p className="text-sm font-bold" style={{ color: previewMode === 'dark' ? '#FFFFFF' : '#111827' }}>{name || 'Nom du restaurant'}</p>
                   <p className="text-xs" style={{ color: previewMode === 'dark' ? '#9CA3AF' : '#6B7280' }}>/{slug || 'restaurant-slug'}</p>
                 </div>
-                <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: previewPrimary, color: '#FFFFFF' }}>Commander</button>
+                <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: buttonColor, color: '#FFFFFF' }}>Commander</button>
               </div>
             </div>
           </div>

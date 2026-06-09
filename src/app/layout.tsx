@@ -1,13 +1,8 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
 import './globals.css'
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-geist-sans',
-  display: 'swap',
-  weight: ['400', '500', '600', '700', '800', '900'],
-})
+const inter = GeistSans
 
 export const metadata: Metadata = {
   title: {

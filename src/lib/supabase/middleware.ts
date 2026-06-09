@@ -1,11 +1,12 @@
+type CookieToSet = { name: string; value: string; options?: Record<string, unknown> }
+
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import type { Database } from '@/lib/types/database'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
-  const supabase = createServerClient<Database>(
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -13,7 +14,7 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieToSet[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -52,7 +53,7 @@ export async function updateSession(request: NextRequest) {
   // ─── Auth redirect rules ────────────────────────────────────────────────
 
   // Not logged in — protect all /dashboard routes
-  if (!user && pathname.startsWith('/dashboard')) {
+  if (!user && (pathname.startsWith('/dashboard') || pathname.startsWith('/super-admin') || pathname.startsWith('/restaurant'))) {
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
@@ -68,13 +69,13 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Role guard: restaurant_admin trying to access super-admin routes
-  if (user && role === 'restaurant_admin' && pathname.startsWith('/dashboard/super-admin')) {
+  if (user && role === 'restaurant_admin' && (pathname.startsWith('/dashboard/super-admin') || pathname.startsWith('/super-admin'))) {
     url.pathname = '/dashboard/restaurant'
     return NextResponse.redirect(url)
   }
 
   // Role guard: super_admin trying to access restaurant routes
-  if (user && role === 'super_admin' && pathname.startsWith('/dashboard/restaurant')) {
+  if (user && role === 'super_admin' && (pathname.startsWith('/dashboard/restaurant') || pathname.startsWith('/restaurant'))) {
     url.pathname = '/dashboard/super-admin'
     return NextResponse.redirect(url)
   }

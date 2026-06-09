@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { normalizePlan } from '@/lib/plans'
 
 async function updateRestaurant(request: NextRequest) {
   try {
@@ -58,7 +59,7 @@ async function updateRestaurant(request: NextRequest) {
     if (plan) {
       await supabase
         .from('subscriptions')
-        .update({ plan, updated_at: new Date().toISOString() })
+        .update({ plan: normalizePlan(plan), updated_at: new Date().toISOString() })
         .eq('restaurant_id', id)
     }
 

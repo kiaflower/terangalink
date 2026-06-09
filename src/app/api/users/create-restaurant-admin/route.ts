@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { slugify } from '@/lib/utils'
+import { normalizePlan } from '@/lib/plans'
 
 async function findUserByEmail(adminClient: ReturnType<typeof createAdminClient>, email: string) {
   const target = email.toLowerCase()
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
       restaurant_phone,
       restaurant_address,
       cuisine_type,
-      plan = 'mensuel',
+      plan = 'starter',
     } = body
 
     if (!full_name || !email || !password || !restaurant_name) {
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     const { error: subError } = await adminClient.from('subscriptions').insert({
       restaurant_id: restaurant.id,
-      plan,
+      plan: normalizePlan(plan),
       status: 'trial',
     })
 
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
           restaurant_name: restaurant.name,
           admin_name: full_name,
           password,
-          plan,
+          plan: normalizePlan(plan),
         }),
       })
       console.log(`[WELCOME EMAIL] ✅ Déclenché pour ${email}`)

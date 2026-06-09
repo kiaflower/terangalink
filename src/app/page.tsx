@@ -29,16 +29,12 @@ const features = [
 
 const plans = [
   {
-    name: 'Mensuel', price: '15 000', period: '/mois', description: 'Flexibilité totale', badge: null, popular: false,
-    features: ['1 site de commande', 'Menu illimité', 'QR Code inclus', 'Commandes WhatsApp', 'Support email'],
+    name: 'Starter', price: '9 000', period: '/mois', description: 'L’essentiel pour vendre rapidement sur WhatsApp', badge: null, popular: false,
+    features: ['Site de commande', 'Menu illimité', 'Commandes WhatsApp', 'Dashboard administrateur', 'Suivi des commandes', 'Revenus mensuels', 'Produits les plus commandés', 'Statistiques et analytiques', 'QR Code', 'Support WhatsApp', 'Formation incluse', 'Branding TerangaLink visible'],
   },
   {
-    name: 'Trimestriel', price: '40 000', period: '/3 mois', description: 'Le plus populaire', badge: null, popular: true,
-    features: ['1 site de commande premium', 'Menu illimité', 'QR Code inclus', 'Analytiques', 'Thème personnalisé', 'Support prioritaire'],
-  },
-  {
-    name: 'Annuel', price: '135 000', period: '/an', description: 'Meilleur rapport qualité/prix', badge: 'Économisez -25%', popular: false,
-    features: ['Tout du plan Trimestriel', 'Personnalisation avancée', 'Manager dédié', 'Formations incluses', 'SLA garanti'],
+    name: 'Pro', price: '15 000', period: '/mois', description: 'Personnalisation et image de marque complète', badge: 'Recommandé', popular: true,
+    features: ['Tout Starter', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Couleurs personnalisées', 'Couleurs des boutons', 'Réseaux sociaux visibles', 'Bouton de partage', 'Numéro de téléphone visible', 'Support prioritaire', 'Accompagnement personnalisé', 'Formation incluse'],
   },
 ]
 
@@ -68,7 +64,7 @@ const faqs = [
   { q: "Ai-je besoin de compétences techniques ?", a: "Aucune. Notre tableau de bord est conçu pour être utilisé depuis un smartphone. Tout est visuel et intuitif." },
   { q: "Combien de temps pour être en ligne ?", a: "Moins de 24h. Vous remplissez votre profil, ajoutez votre menu, et vous êtes prêts à recevoir des commandes." },
   { q: "Comment les clients paient-ils ?", a: "Les clients commandent via WhatsApp. Vous gérez le paiement directement avec eux — Wave, Orange Money, cash, comme vous préférez." },
-  { q: "Puis-je annuler à tout moment ?", a: "Oui, sans engagement sur le plan mensuel. Vous pouvez annuler votre abonnement à la fin du mois en cours." },
+  { q: "Puis-je annuler à tout moment ?", a: "Oui, sans engagement sur les offres mensuelles. Vous pouvez annuler votre abonnement à la fin du mois en cours." },
 ]
 
 export default async function HomePage() {
@@ -176,10 +172,10 @@ export default async function HomePage() {
             <h2 className="heading-lg text-white mb-4">Tarifs simples et transparents</h2>
             <p className="text-gray-500 text-lg">En FCFA. Sans frais cachés.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {plans.map(plan => (
               <div key={plan.name} className={`relative rounded-2xl p-6 sm:p-8 flex flex-col ${plan.popular ? 'bg-brand-orange/5 border-2 border-brand-orange/50 shadow-xl shadow-brand-orange/10' : 'bg-surface-50 border border-surface-200'}`}>
-                {plan.popular && <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-orange text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">LE PLUS POPULAIRE</div>}
+                {plan.popular && <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-orange text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">RECOMMANDÉ</div>}
                 {plan.badge && <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">{plan.badge}</div>}
                 <div className="mb-6">
                   <h3 className="text-white font-bold text-xl mb-1">{plan.name}</h3>

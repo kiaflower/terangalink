@@ -38,8 +38,8 @@ BEGIN
 
   -- 3. Create subscription
   INSERT INTO public.subscriptions (restaurant_id, plan, status)
-  VALUES (rid, 'trimestriel', 'active')
-  ON CONFLICT (restaurant_id) DO UPDATE SET plan = 'trimestriel', status = 'active';
+  VALUES (rid, 'pro', 'active')
+  ON CONFLICT (restaurant_id) DO UPDATE SET plan = 'pro', status = 'active';
 
   -- 4. Create categories
   INSERT INTO public.menu_categories (restaurant_id, name, position, is_active)

@@ -105,7 +105,7 @@ export function QRCodeButton({ url, restaurantName, tokens }: QRCodeButtonProps)
             <button
               onClick={handleDownload}
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold transition-colors"
-              style={{ backgroundColor: tokens.accent, color: tokens.textOnAccent }}
+              style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
             >
               <Download className="w-4 h-4" />
               Télécharger le QR Code
