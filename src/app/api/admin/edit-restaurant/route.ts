@@ -9,9 +9,10 @@ async function updateRestaurant(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
 
-    const { data: profile } = await supabase
-      .from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'super_admin') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profile } = await (supabase as any).from('profiles').select('role').eq('id', user.id).single()
+    const p = profile as { role: string } | null
+    if (p?.role !== 'super_admin') {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
@@ -23,6 +24,13 @@ async function updateRestaurant(request: NextRequest) {
       banner_url,
       cover_url,
       plan,
+      primary_color,
+      background_color,
+      button_color,
+      theme_mode,
+      facebook_url,
+      instagram_url,
+      tiktok_url,
       ...rest
     } = body
 
@@ -31,50 +39,111 @@ async function updateRestaurant(request: NextRequest) {
     const normalizedPlan = plan ? normalizePlan(String(plan)) : null
     const isPro = normalizedPlan === 'pro'
 
-    const updatePayload: Record<string, unknown> = {
-      ...rest,
+    // Payload de base : champs garantis présents dans tous les schémas
+    const corePayload: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     }
 
-    if (normalizedPlan && !isPro) {
-      updatePayload.primary_color = DEFAULT_PRIMARY_COLOR
-      updatePayload.background_color = DEFAULT_DARK_BACKGROUND
-      updatePayload.button_color = DEFAULT_BUTTON_COLOR
-      updatePayload.theme_mode = 'dark'
-      updatePayload.facebook_url = null
-      updatePayload.instagram_url = null
-      updatePayload.tiktok_url = null
+    // Champs de base du restaurant
+    const coreFields = ['name', 'slug', 'description', 'city', 'address', 'is_active', 'opening_hours', 'delivery_fee', 'show_delivery_fee']
+    for (const field of coreFields) {
+      if (field in rest) corePayload[field] = rest[field]
     }
+    if ('phone' in rest) corePayload.phone = rest.phone || null
+    if ('whatsapp_number' in rest) corePayload.whatsapp_number = rest.whatsapp_number || null
+    if ('logo_url' in rest) corePayload.logo_url = rest.logo_url || null
 
-    if ('phone' in rest) updatePayload.phone = rest.phone || null
-    if ('whatsapp_number' in rest) updatePayload.whatsapp_number = rest.whatsapp_number || null
-    if ('logo_url' in rest) updatePayload.logo_url = rest.logo_url || null
-
-    if (typeof latitude !== 'undefined') {
-      updatePayload.latitude = latitude ? parseFloat(latitude) : null
-    }
-    if (typeof longitude !== 'undefined') {
-      updatePayload.longitude = longitude ? parseFloat(longitude) : null
-    }
+    if (typeof latitude !== 'undefined') corePayload.latitude = latitude ? parseFloat(latitude) : null
+    if (typeof longitude !== 'undefined') corePayload.longitude = longitude ? parseFloat(longitude) : null
 
     if (typeof banner_url !== 'undefined' || typeof cover_url !== 'undefined') {
       const resolvedBanner = banner_url ?? cover_url ?? null
-      updatePayload.banner_url = resolvedBanner
-      updatePayload.cover_url = resolvedBanner
+      corePayload.banner_url = resolvedBanner
+      corePayload.cover_url = resolvedBanner
     }
 
-    const { error: rErr } = await supabase
+    // Payload thème : uniquement si les colonnes existent (plan fourni = migration faite)
+    if (normalizedPlan) {
+      if (isPro) {
+        corePayload.primary_color = primary_color || DEFAULT_PRIMARY_COLOR
+        corePayload.background_color = background_color || DEFAULT_DARK_BACKGROUND
+        corePayload.button_color = button_color || primary_color || DEFAULT_BUTTON_COLOR
+        corePayload.theme_mode = theme_mode || 'dark'
+        corePayload.facebook_url = facebook_url || null
+        corePayload.instagram_url = instagram_url || null
+        corePayload.tiktok_url = tiktok_url || null
+      } else {
+        // Starter : valeurs TerangaLink par défaut
+        corePayload.primary_color = DEFAULT_PRIMARY_COLOR
+        corePayload.background_color = DEFAULT_DARK_BACKGROUND
+        corePayload.button_color = DEFAULT_BUTTON_COLOR
+        corePayload.theme_mode = 'dark'
+        corePayload.facebook_url = null
+        corePayload.instagram_url = null
+        corePayload.tiktok_url = null
+      }
+    }
+
+    // Mise à jour du restaurant — si erreur colonnes manquantes, réessayer sans les colonnes étendues
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: rErr } = await (supabase as any)
       .from('restaurants')
-      .update(updatePayload)
+      .update(corePayload)
       .eq('id', id)
 
-    if (rErr) throw rErr
+    if (rErr) {
+      // Si l'erreur vient de colonnes manquantes, réessayer avec seulement les colonnes de base
+      if (rErr.code === 'PGRST204' && rErr.message?.includes('column')) {
+        console.warn('Extended columns missing, saving core fields only:', rErr.message)
 
+        const safePayload: Record<string, unknown> = { updated_at: new Date().toISOString() }
+        const safeFields = ['name', 'slug', 'description', 'city', 'address', 'is_active', 'phone', 'whatsapp_number', 'logo_url']
+        for (const field of safeFields) {
+          if (field in corePayload) safePayload[field] = corePayload[field]
+          else if (field in rest) safePayload[field] = rest[field]
+        }
+        if (typeof banner_url !== 'undefined' || typeof cover_url !== 'undefined') {
+          const resolvedBanner = banner_url ?? cover_url ?? null
+          safePayload.cover_url = resolvedBanner
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: safeErr } = await (supabase as any)
+          .from('restaurants')
+          .update(safePayload)
+          .eq('id', id)
+
+        if (safeErr) throw safeErr
+
+        return NextResponse.json({
+          success: true,
+          warning: 'Informations de base sauvegardées. Exécutez la migration SQL pour activer la personnalisation complète.',
+        })
+      }
+      throw rErr
+    }
+
+    // Mise à jour ou création de l'abonnement
     if (normalizedPlan) {
-      await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: existingSub } = await (supabase as any)
         .from('subscriptions')
-        .update({ plan: normalizedPlan, updated_at: new Date().toISOString() })
+        .select('id')
         .eq('restaurant_id', id)
+        .single()
+
+      if (existingSub) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from('subscriptions')
+          .update({ plan: normalizedPlan, updated_at: new Date().toISOString() })
+          .eq('restaurant_id', id)
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from('subscriptions')
+          .insert({ restaurant_id: id, plan: normalizedPlan, status: 'active' })
+      }
     }
 
     return NextResponse.json({ success: true })

@@ -13,16 +13,16 @@ import { canUseFeature, normalizePlan } from '@/lib/plans'
 import type { RestaurantPageData } from '@/lib/types'
 
 type RestaurantFull = RestaurantPageData['restaurant'] & {
-  primary_color?: string
-  background_color?: string
-  theme_mode?: 'dark' | 'light'
-  button_color?: string
+  primary_color?: string | null
+  background_color?: string | null
+  theme_mode?: string | null
+  button_color?: string | null
   facebook_url?: string | null
   instagram_url?: string | null
   tiktok_url?: string | null
-  whatsapp_number?: string
-  opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }>
-  delivery_fee?: number
+  whatsapp_number?: string | null
+  opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null
+  delivery_fee?: number | null
   show_delivery_fee?: boolean
   is_demo?: boolean
   plan?: string
@@ -34,7 +34,7 @@ interface Props {
   data: Omit<RestaurantPageData, 'restaurant'> & { restaurant: RestaurantFull }
 }
 
-function isOpenNow(opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }>): boolean {
+function isOpenNow(opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null): boolean {
   if (!opening_hours || Object.keys(opening_hours).length === 0) return true
   const jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
   const now = new Date()
@@ -53,15 +53,21 @@ function RestaurantInner({ data }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
-  const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'free' : 'starter'))
+  const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'starter' : 'starter'))
   const isPro = plan === 'pro'
+
+  // Fonctionnalités par plan
   const shouldShowTerangaBranding = !restaurant.is_demo && !canUseFeature(plan, 'suppressionBranding')
   const canCall = canUseFeature(plan, 'boutonAppel')
   const canShare = canUseFeature(plan, 'boutonPartage')
+  const canShowSocials = canUseFeature(plan, 'reseauxSociaux')
+  // Téléphone visible publiquement uniquement en Pro
+  const canShowPhone = isPro
 
+  // Thème : Pro = couleurs personnalisées, Starter = thème TerangaLink par défaut
   const themeConfig: RestaurantTheme = isPro ? {
     primary: restaurant.primary_color || DEFAULT_PRIMARY_COLOR,
-    mode: restaurant.theme_mode || 'dark',
+    mode: (restaurant.theme_mode === 'light' ? 'light' : 'dark') as 'dark' | 'light',
     background: restaurant.background_color || undefined,
     button: restaurant.button_color || restaurant.primary_color || DEFAULT_BUTTON_COLOR,
   } : {
@@ -132,9 +138,9 @@ function RestaurantInner({ data }: Props) {
 
       {/* Hero */}
       <div className="relative h-52 sm:h-64 overflow-hidden">
-        {(restaurant as { banner_url?: string; cover_url?: string }).banner_url || restaurant.cover_url ? (
+        {(restaurant.banner_url || restaurant.cover_url) ? (
           <Image
-            src={(restaurant as { banner_url?: string }).banner_url || restaurant.cover_url!}
+            src={restaurant.banner_url || restaurant.cover_url!}
             alt={restaurant.name}
             fill
             className="object-cover"
@@ -147,7 +153,7 @@ function RestaurantInner({ data }: Props) {
         )}
         <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${tokens.bgPage} 0%, ${tokens.bgPage}60 40%, transparent 100%)` }} />
 
-        {/* TerangaLink branding (Starter uniquement) */}
+        {/* TerangaLink branding — Starter uniquement */}
         {shouldShowTerangaBranding && (
           <a href="/" className="absolute top-3 left-4 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
             <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
@@ -157,6 +163,7 @@ function RestaurantInner({ data }: Props) {
           </a>
         )}
 
+        {/* Action buttons top-right */}
         <div className="absolute top-3 right-4 flex items-center gap-2">
           <QRCodeButton url={publicUrl} restaurantName={restaurant.name} tokens={tokens} />
           {canCall && restaurant.phone && (
@@ -213,25 +220,26 @@ function RestaurantInner({ data }: Props) {
 
         {restaurant.description && <p className="text-sm leading-relaxed mb-4" style={{ color: tokens.textSecondary }}>{restaurant.description}</p>}
 
-          {isPro && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url) && (
-            <div className="flex items-center gap-2 mt-4">
-              {restaurant.instagram_url && (
-                <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Instagram">
-                  <Instagram className="w-4 h-4" />
-                </a>
-              )}
-              {restaurant.facebook_url && (
-                <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Facebook">
-                  <Facebook className="w-4 h-4" />
-                </a>
-              )}
-              {restaurant.tiktok_url && (
-                <a href={restaurant.tiktok_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="TikTok">
-                  <Music2 className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-          )}
+        {/* Réseaux sociaux — Pro uniquement */}
+        {canShowSocials && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url) && (
+          <div className="flex items-center gap-2 mb-4">
+            {restaurant.instagram_url && (
+              <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Instagram">
+                <Instagram className="w-4 h-4" />
+              </a>
+            )}
+            {restaurant.facebook_url && (
+              <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Facebook">
+                <Facebook className="w-4 h-4" />
+              </a>
+            )}
+            {restaurant.tiktok_url && (
+              <a href={restaurant.tiktok_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="TikTok">
+                <Music2 className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-3 items-center">
           {restaurant.city && (
@@ -240,7 +248,8 @@ function RestaurantInner({ data }: Props) {
               {restaurant.city}
             </div>
           )}
-          {restaurant.phone && (
+          {/* Téléphone visible uniquement en Pro */}
+          {canShowPhone && restaurant.phone && (
             <a href={`tel:${restaurant.phone}`} className="flex items-center gap-1.5 text-xs transition-colors" style={{ color: tokens.textMuted }}>
               <Phone className="w-3.5 h-3.5" style={{ color: tokens.accent }} />
               {restaurant.phone}
@@ -355,7 +364,7 @@ function RestaurantInner({ data }: Props) {
             )}
           </div>
 
-          {/* Powered by TerangaLink (Starter uniquement) */}
+          {/* Powered by TerangaLink — Starter uniquement */}
           {shouldShowTerangaBranding && (
             <div className="text-center py-6">
               <a

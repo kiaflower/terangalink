@@ -82,11 +82,31 @@ export interface RestaurantPageData {
     description: string | null
     logo_url: string | null
     cover_url: string | null
+    banner_url: string | null
     phone: string | null
+    whatsapp_number: string | null
     address: string | null
     city: string | null
     cuisine_type: string | null
     is_active: boolean
+    is_demo?: boolean
+    plan?: string
+    // Thème
+    primary_color?: string | null
+    background_color?: string | null
+    button_color?: string | null
+    theme_mode?: string | null
+    // Réseaux sociaux (Pro)
+    facebook_url?: string | null
+    instagram_url?: string | null
+    tiktok_url?: string | null
+    // Horaires & livraison
+    opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null
+    delivery_fee?: number | null
+    show_delivery_fee?: boolean
+    // Géolocalisation
+    latitude?: number | null
+    longitude?: number | null
   }
   categories: MenuCategory[]
   items: MenuItem[]
