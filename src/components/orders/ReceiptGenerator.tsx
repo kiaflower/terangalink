@@ -37,6 +37,342 @@ function getPaymentLabel(order: Order): string {
   return 'Espèces'
 }
 
+function buildReceiptHTML(
+  order: Order,
+  restaurantName: string,
+  accentColor: string,
+  restaurantPhone?: string,
+  restaurantAddress?: string,
+): string {
+  const items = order.items as OrderItem[]
+  const orderId = order.id.slice(0, 8).toUpperCase()
+  const paymentLabel = getPaymentLabel(order)
+  const displayNotes = order.notes?.replace(/Paiement\s*:\s*.+/i, '').trim() || ''
+
+  const itemsHTML = items.map(item => `
+    <div class="item-row">
+      <div class="item-name">${item.name}</div>
+      <div class="item-qty">×${item.quantity}</div>
+      <div class="item-price">${(item.price * item.quantity).toLocaleString('fr-SN')} FCFA</div>
+    </div>
+  `).join('')
+
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reçu ${orderId} — ${restaurantName}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+      min-height: 100vh;
+    }
+
+    .receipt {
+      background: #ffffff;
+      width: 400px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+    }
+
+    /* HEADER */
+    .header {
+      background: ${accentColor};
+      padding: 28px 24px 26px;
+      text-align: center;
+    }
+    .header-name {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .header-address {
+      font-size: 11px;
+      color: rgba(255,255,255,0.82);
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .header-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 20px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    /* BODY */
+    .body {
+      padding: 24px 24px 28px;
+    }
+
+    /* SECTION ROW */
+    .section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 16px;
+      border-bottom: 1.5px dashed #e5e5e5;
+      margin-bottom: 16px;
+    }
+    .field-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #c0c0c0;
+      margin-bottom: 5px;
+    }
+    .field-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1a1a1a;
+      line-height: 1.2;
+    }
+    .field-value-sm {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.3;
+    }
+    .field-right {
+      text-align: right;
+    }
+
+    /* ARTICLES */
+    .articles-header {
+      display: flex;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1.5px solid #e5e5e5;
+      margin-bottom: 4px;
+    }
+    .col-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #c0c0c0;
+    }
+    .col-article { flex: 1; }
+    .col-qty { width: 40px; text-align: center; }
+    .col-amount { width: 110px; text-align: right; }
+
+    .items-list { margin-bottom: 16px; }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f2f2f2;
+    }
+    .item-name {
+      flex: 1;
+      font-size: 13px;
+      color: #1a1a1a;
+      line-height: 1.35;
+      padding-right: 8px;
+    }
+    .item-qty {
+      width: 40px;
+      text-align: center;
+      font-size: 13px;
+      color: #aaa;
+      flex-shrink: 0;
+    }
+    .item-price {
+      width: 110px;
+      text-align: right;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a1a;
+      flex-shrink: 0;
+    }
+
+    /* TOTAL */
+    .total-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: ${accentColor}18;
+      border: 1.5px solid ${accentColor};
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+    }
+    .total-label {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+    .total-amount {
+      font-size: 22px;
+      font-weight: 900;
+      color: ${accentColor};
+      line-height: 1;
+    }
+
+    /* PAIEMENT */
+    .payment-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .payment-label-text {
+      font-size: 12px;
+      color: #aaa;
+    }
+    .payment-badge {
+      background: ${accentColor}18;
+      color: ${accentColor};
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 8px;
+      border: 1px solid ${accentColor}55;
+      line-height: 1.4;
+    }
+
+    /* NOTE */
+    .note-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 12px;
+      color: #92400e;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1.5px dashed #e5e5e5;
+      padding-top: 18px;
+      text-align: center;
+    }
+    .footer-thanks {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+    .footer-phone {
+      font-size: 12px;
+      color: #bbb;
+      margin-bottom: 4px;
+    }
+    .footer-brand {
+      font-size: 10px;
+      color: #ccc;
+      margin-top: 8px;
+    }
+    .footer-brand span {
+      color: ${accentColor};
+      font-weight: 700;
+    }
+
+    /* PRINT */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+        display: block;
+      }
+      .receipt {
+        box-shadow: none;
+        border-radius: 0;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="receipt">
+
+    <div class="header">
+      <div class="header-name">${restaurantName}</div>
+      ${restaurantAddress ? `<div class="header-address">${restaurantAddress}</div>` : '<div style="margin-bottom:18px"></div>'}
+      <div class="header-badge">Reçu de commande</div>
+    </div>
+
+    <div class="body">
+
+      <div class="section">
+        <div>
+          <div class="field-label">N° commande</div>
+          <div class="field-value">#${orderId}</div>
+        </div>
+        <div class="field-right">
+          <div class="field-label">Date</div>
+          <div class="field-value-sm">${formatDateTime(order.created_at)}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div>
+          <div class="field-label">Client</div>
+          <div class="field-value">${order.customer_name || '—'}</div>
+        </div>
+        ${order.customer_phone ? `
+        <div class="field-right">
+          <div class="field-label">Téléphone</div>
+          <div class="field-value-sm">${order.customer_phone}</div>
+        </div>` : ''}
+      </div>
+
+      <div class="articles-header">
+        <div class="col-label col-article">Article</div>
+        <div class="col-label col-qty">Qté</div>
+        <div class="col-label col-amount">Montant</div>
+      </div>
+
+      <div class="items-list">
+        ${itemsHTML}
+      </div>
+
+      <div class="total-box">
+        <div class="total-label">Total</div>
+        <div class="total-amount">${order.total.toLocaleString('fr-SN')} FCFA</div>
+      </div>
+
+      <div class="payment-row">
+        <div class="payment-label-text">Mode de paiement :</div>
+        <div class="payment-badge">${paymentLabel}</div>
+      </div>
+
+      ${displayNotes ? `
+      <div class="note-box">
+        <strong>Note :</strong> ${displayNotes}
+      </div>` : ''}
+
+      <div class="footer">
+        <div class="footer-thanks">Merci pour votre commande ! 🙏</div>
+        ${restaurantPhone ? `<div class="footer-phone">${restaurantPhone}</div>` : ''}
+        <div class="footer-brand">Propulsé par <span>TerangaLink</span></div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>`
+}
+
 async function generateAndDownloadPDF(
   order: Order,
   restaurantName: string,
@@ -44,143 +380,64 @@ async function generateAndDownloadPDF(
   restaurantPhone?: string,
   restaurantAddress?: string,
 ) {
+  const html = buildReceiptHTML(order, restaurantName, accentColor, restaurantPhone, restaurantAddress)
+  const orderId = order.id.slice(0, 8).toUpperCase()
+
   const [{ jsPDF }, html2canvas] = await Promise.all([
     import('jspdf'),
     import('html2canvas').then(m => m.default),
   ])
 
-  const items = order.items as OrderItem[]
-  const orderId = order.id.slice(0, 8).toUpperCase()
-  const paymentLabel = getPaymentLabel(order)
-  const displayNotes = order.notes?.replace(/Paiement\s*:\s*.+/i, '').trim() || ''
+  // Créer un iframe caché pour isoler le rendu du reçu
+  const iframe = document.createElement('iframe')
+  iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:432px;height:1px;border:none;visibility:hidden;'
+  document.body.appendChild(iframe)
 
-  // Utiliser des tableaux HTML partout — bien plus stable pour html2canvas
-  const itemsRows = items.map(item => `
-    <tr>
-      <td style="padding:9px 4px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#1a1a1a;">${item.name}</td>
-      <td style="padding:9px 4px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#999;text-align:center;white-space:nowrap;">×${item.quantity}</td>
-      <td style="padding:9px 4px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:700;color:#1a1a1a;text-align:right;white-space:nowrap;">${(item.price * item.quantity).toLocaleString('fr-SN')} FCFA</td>
-    </tr>
-  `).join('')
+  await new Promise<void>(resolve => {
+    iframe.onload = () => resolve()
+    iframe.srcdoc = html
+  })
 
-  const container = document.createElement('div')
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:380px;background:white;'
+  // Attendre que les fonts/images soient chargées
+  await new Promise(r => setTimeout(r, 300))
 
-  container.innerHTML = `
-    <div style="width:380px;background:white;font-family:Arial,Helvetica,sans-serif;">
-
-      <!-- HEADER -->
-      <div style="background:${accentColor};padding:26px 24px 20px;text-align:center;">
-        <div style="font-size:20px;font-weight:900;color:white;margin-bottom:${restaurantAddress ? '4px' : '12px'};">${restaurantName}</div>
-        ${restaurantAddress ? `<div style="font-size:11px;color:rgba(255,255,255,0.75);margin-bottom:12px;">${restaurantAddress}</div>` : ''}
-        <div style="display:inline-block;background:rgba(255,255,255,0.22);color:white;font-size:11px;font-weight:700;padding:3px 14px;border-radius:20px;">Reçu de commande</div>
-      </div>
-
-      <!-- BODY -->
-      <div style="padding:20px 24px;">
-
-        <!-- N° commande + Date -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;padding-bottom:14px;border-bottom:2px dashed #f0f0f0;">
-          <tr>
-            <td style="vertical-align:top;">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#bbb;margin-bottom:3px;">N° commande</div>
-              <div style="font-size:14px;font-weight:800;color:#1a1a1a;">#${orderId}</div>
-            </td>
-            <td style="vertical-align:top;text-align:right;">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#bbb;margin-bottom:3px;">Date</div>
-              <div style="font-size:12px;font-weight:600;color:#1a1a1a;">${formatDateTime(order.created_at)}</div>
-            </td>
-          </tr>
-        </table>
-
-        <!-- Client + Téléphone -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;padding-bottom:14px;border-bottom:2px dashed #f0f0f0;">
-          <tr>
-            <td style="vertical-align:top;">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#bbb;margin-bottom:3px;">Client</div>
-              <div style="font-size:14px;font-weight:600;color:#1a1a1a;">${order.customer_name || '—'}</div>
-            </td>
-            ${order.customer_phone ? `
-            <td style="vertical-align:top;text-align:right;">
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#bbb;margin-bottom:3px;">Téléphone</div>
-              <div style="font-size:12px;font-weight:600;color:#1a1a1a;">${order.customer_phone}</div>
-            </td>` : '<td></td>'}
-          </tr>
-        </table>
-
-        <!-- Articles -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
-          <thead>
-            <tr>
-              <th style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#bbb;padding-bottom:8px;border-bottom:2px solid #f0f0f0;text-align:left;">Article</th>
-              <th style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#bbb;padding-bottom:8px;border-bottom:2px solid #f0f0f0;text-align:center;">Qté</th>
-              <th style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:#bbb;padding-bottom:8px;border-bottom:2px solid #f0f0f0;text-align:right;">Montant</th>
-            </tr>
-          </thead>
-          <tbody>${itemsRows}</tbody>
-        </table>
-
-        <!-- Total -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
-          <tr>
-            <td colspan="3">
-              <div style="background:${accentColor}18;border:1.5px solid ${accentColor};border-radius:12px;padding:13px 16px;">
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="font-size:14px;font-weight:700;color:#1a1a1a;">Total</td>
-                    <td style="font-size:20px;font-weight:900;color:${accentColor};text-align:right;">${order.total.toLocaleString('fr-SN')} FCFA</td>
-                  </tr>
-                </table>
-              </div>
-            </td>
-          </tr>
-        </table>
-
-        <!-- Paiement -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:${displayNotes ? '14px' : '16px'};">
-          <tr>
-            <td style="font-size:12px;color:#999;vertical-align:middle;">Mode de paiement :</td>
-            <td style="text-align:right;">
-              <span style="background:${accentColor}18;color:${accentColor};font-size:12px;font-weight:700;padding:4px 12px;border-radius:8px;border:1px solid ${accentColor}40;">${paymentLabel}</span>
-            </td>
-          </tr>
-        </table>
-
-        ${displayNotes ? `
-        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:11px 14px;font-size:12px;color:#92400e;margin-bottom:16px;">
-          <strong>Note :</strong> ${displayNotes}
-        </div>` : ''}
-
-        <!-- Footer -->
-        <div style="border-top:2px dashed #f0f0f0;padding-top:14px;text-align:center;">
-          <div style="font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:4px;">Merci pour votre commande ! 🙏</div>
-          ${restaurantPhone ? `<div style="font-size:12px;color:#999;margin-bottom:4px;">${restaurantPhone}</div>` : ''}
-          <div style="font-size:10px;color:#ccc;margin-top:8px;">Propulsé par <span style="color:${accentColor};font-weight:700;">TerangaLink</span></div>
-        </div>
-
-      </div>
-    </div>
-  `
-
-  document.body.appendChild(container)
+  const receiptEl = iframe.contentDocument?.querySelector('.receipt') as HTMLElement
+  if (!receiptEl) {
+    document.body.removeChild(iframe)
+    throw new Error('Élément reçu introuvable')
+  }
 
   try {
-    const canvas = await html2canvas(container.firstElementChild as HTMLElement, {
+    const canvas = await html2canvas(receiptEl, {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
-      width: 380,
-      windowWidth: 380,
       logging: false,
+      // Forcer les dimensions exactes du reçu
+      width: receiptEl.offsetWidth,
+      height: receiptEl.offsetHeight,
+      windowWidth: 432,
     })
 
     const imgData = canvas.toDataURL('image/png')
-    const pdfH = (canvas.height / canvas.width) * 380
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [380, pdfH] })
-    pdf.addImage(imgData, 'PNG', 0, 0, 380, pdfH)
-    pdf.save(`recu-${orderId}-${restaurantName.toLowerCase().replace(/\s+/g, '-')}.pdf`)
+    const pdfW = 400
+    const pdfH = (canvas.height / canvas.width) * pdfW
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [pdfW, pdfH] })
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH)
+
+    // Forcer le téléchargement sur mobile (évite que le navigateur ouvre le PDF)
+    const filename = `recu-${orderId}-${restaurantName.toLowerCase().replace(/\s+/g, '-')}.pdf`
+    const blob = pdf.output('blob')
+    const blobUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000)
   } finally {
-    document.body.removeChild(container)
+    document.body.removeChild(iframe)
   }
 }
 
@@ -221,7 +478,6 @@ export function ReceiptGenerator({ order, restaurantName, restaurantPhone, resta
               <X className="w-4 h-4" />
             </button>
 
-            {/* Header modal — couleurs TerangaLink */}
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-brand-orange/15">
                 <FileText className="w-5 h-5 text-brand-orange" />
@@ -232,7 +488,6 @@ export function ReceiptGenerator({ order, restaurantName, restaurantPhone, resta
               </div>
             </div>
 
-            {/* Aperçu */}
             <div className="bg-surface-100 rounded-xl p-4 mb-5 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Client</span>
@@ -252,7 +507,6 @@ export function ReceiptGenerator({ order, restaurantName, restaurantPhone, resta
               </div>
             </div>
 
-            {/* Bouton — couleurs TerangaLink */}
             <button
               onClick={handleDownload}
               disabled={loading}

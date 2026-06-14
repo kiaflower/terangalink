@@ -108,12 +108,14 @@ export default function OrdersPage() {
   async function handleConfirmAndOpen(order: Order) {
     const url = buildConfirmUrl(order)
 
-    // Valider en DB
+    // ⚠️ IMPORTANT : window.open DOIT être appelé de façon synchrone dans le handler
+    // de clic (avant tout await), sinon les navigateurs mobiles bloquent le popup.
+    // On ouvre d'abord WhatsApp, puis on met à jour la DB en arrière-plan.
+    if (url) window.open(url, '_blank')
+
+    // Valider en DB (en arrière-plan — non bloquant pour l'ouverture WhatsApp)
     await supabase.from('orders').update({ status: 'delivered' }).eq('id', order.id)
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'delivered' as OrderStatus } : o))
-
-    // Ouvrir WhatsApp si numéro client dispo
-    if (url) window.open(url, '_blank')
   }
 
   async function annulerCommande(orderId: string) {
