@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedPlan = normalizePlan(plan || 'starter')
-
     const admin = createAdminClient()
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
     // ─── Step 1: Create auth user ──────────────────────────────────────────
     const { data: newUser, error: userError } = await admin.auth.admin.createUser({
@@ -51,9 +51,10 @@ export async function POST(request: NextRequest) {
 
     // ─── Step 2: Determine restaurant ─────────────────────────────────────
     let finalRestaurantId = restaurant_id
+    let finalRestaurantName = restaurant_name
 
     if (create_restaurant && restaurant_name) {
-      // Create new restaurant alongside this admin
+      // Créer un nouveau restaurant avec cet admin
       const slug = slugify(restaurant_name)
       const { data: restaurant, error: restaurantError } = await admin
         .from('restaurants')
@@ -77,17 +78,25 @@ export async function POST(request: NextRequest) {
       }
 
       finalRestaurantId = restaurant.id
+      finalRestaurantName = restaurant.name
 
-      // Create subscription
+      // Créer l'abonnement
       await admin.from('subscriptions').insert({
         restaurant_id: restaurant.id,
         plan: normalizedPlan,
         status: 'active',
       })
+    } else if (restaurant_id && !create_restaurant) {
+      // Admin ajouté à un restaurant existant — récupérer le nom
+      const { data: existingRestaurant } = await admin
+        .from('restaurants')
+        .select('name')
+        .eq('id', restaurant_id)
+        .single()
+      finalRestaurantName = existingRestaurant?.name || 'votre restaurant'
     }
 
     // ─── Step 3: Update or create profile ─────────────────────────────────
-    // Check if trigger already created profile
     const { data: existingProfile } = await admin
       .from('profiles').select('id').eq('id', userId).single()
 
@@ -107,26 +116,43 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Fire welcome email (non-blocking — don't fail if email fails)
+    // ─── Step 4: Email selon le cas ────────────────────────────────────────
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-      await fetch(`${baseUrl}/api/admin/send-welcome`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to_email: email,
-          restaurant_name: create_restaurant ? restaurant_name : 'votre restaurant',
-          admin_name: full_name,
-          password,
-          plan: normalizedPlan,
-        }),
-      })
-    } catch { /* email failure should not block account creation */ }
+      if (create_restaurant) {
+        // Nouveau restaurant → email de bienvenue avec identifiants + plan
+        await fetch(`${baseUrl}/api/admin/send-welcome`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to_email: email,
+            restaurant_name: finalRestaurantName,
+            admin_name: full_name,
+            password,
+            plan: normalizedPlan,
+          }),
+        })
+      } else {
+        // Admin ajouté à restaurant existant → email invitation admin
+        await fetch(`${baseUrl}/api/admin/send-admin-invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to_email: email,
+            admin_name: full_name,
+            restaurant_name: finalRestaurantName,
+            password,
+          }),
+        })
+      }
+    } catch {
+      // L'email ne doit pas bloquer la création du compte
+    }
 
     return NextResponse.json({
       success: true,
       data: { user_id: userId, restaurant_id: finalRestaurantId, email },
     })
+
   } catch (err) {
     console.error('Create admin error:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

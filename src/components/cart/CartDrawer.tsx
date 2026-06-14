@@ -118,7 +118,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
             quantity: i.quantity,
           })),
           total: totalPrice,
-          notes: `Paiement: ${paymentMethod}`,
+          payment_method: paymentMethod === 'Wave' ? 'wave' : paymentMethod === 'Orange Money' ? 'orange_money' : 'cash',
+          notes: null,
         }),
       })
 
@@ -136,14 +137,14 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
       const manageUrl = `${baseUrl.replace(/\/$/, '')}/dashboard/restaurant/orders?order=${order.id}`
 
       const message = encodeURIComponent(
-        `Nouvelle commande TerangaLink\n\n` +
+        `Nouvelle commande — ${state.restaurantName}\n\n` +
         `Client: ${customerName.trim() || 'Client'}\n` +
         `Téléphone: ${cleanedCustomerPhone}\n` +
         `Articles:\n${itemsLines}\n\n` +
         `Total: ${totalPrice.toLocaleString('fr-SN')} FCFA\n` +
         `Paiement: ${paymentMethod}\n` +
         `Heure: ${orderTime}\n\n` +
-        `Gérer la commande:\n${manageUrl}`
+        `🔗 Gérer la commande :\n${manageUrl}`
       )
 
       const restaurantPhone = state.restaurantPhone.replace(/\D/g, '')

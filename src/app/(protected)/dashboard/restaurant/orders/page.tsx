@@ -9,6 +9,8 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { ShoppingBag, Phone, ChevronDown, MessageCircle } from 'lucide-react'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/types'
 import type { Order, OrderStatus } from '@/lib/types'
+import { ReceiptGenerator } from '@/components/orders/ReceiptGenerator'
+import { canUseFeature, normalizePlan } from '@/lib/plans'
 
 export default function OrdersPage() {
   const supabase = createClient()
@@ -18,8 +20,12 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [restaurantName, setRestaurantName] = useState('Restaurant')
+  const [restaurantPhone, setRestaurantPhone] = useState('')
+  const [restaurantAddress, setRestaurantAddress] = useState('')
+  const [restaurantAccent, setRestaurantAccent] = useState('#F97316')
   const [waveNumber, setWaveNumber] = useState('')
   const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
+  const [isPro, setIsPro] = useState(false)
 
   const fetchOrders = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -31,12 +37,9 @@ export default function OrdersPage() {
       .eq('id', user.id)
       .single()
 
-    if (!profile?.restaurant_id) {
-      setLoading(false)
-      return
-    }
+    if (!profile?.restaurant_id) { setLoading(false); return }
 
-    const [{ data: orderData }, { data: restaurant }] = await Promise.all([
+    const [{ data: orderData }, { data: restaurant }, { data: subscription }] = await Promise.all([
       supabase
         .from('orders')
         .select('*')
@@ -44,31 +47,36 @@ export default function OrdersPage() {
         .order('created_at', { ascending: false }),
       supabase
         .from('restaurants')
-        .select('name, phone, wave_number, orange_money_number')
+        .select('name, phone, wave_number, orange_money_number, address, city, button_color, primary_color')
         .eq('id', profile.restaurant_id)
+        .single(),
+      supabase
+        .from('subscriptions')
+        .select('plan')
+        .eq('restaurant_id', profile.restaurant_id)
         .single(),
     ])
 
     setOrders((orderData as Order[]) ?? [])
     setRestaurantName(restaurant?.name || 'Restaurant')
+    setRestaurantPhone(restaurant?.phone || '')
+    setRestaurantAddress([restaurant?.address, restaurant?.city].filter(Boolean).join(', '))
+    setRestaurantAccent(restaurant?.button_color || restaurant?.primary_color || '#F97316')
     setWaveNumber(restaurant?.wave_number || restaurant?.phone || '')
     setOrangeMoneyNumber(restaurant?.orange_money_number || restaurant?.phone || '')
+
+    const plan = normalizePlan((subscription as { plan?: string } | null)?.plan || 'starter')
+    setIsPro(canUseFeature(plan, 'suppressionBranding')) // suppressionBranding = Pro only
 
     setLoading(false)
   }, [supabase])
 
   useEffect(() => {
     fetchOrders()
-
     const channel = supabase
       .channel('orders-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'orders',
-      }, () => { fetchOrders() })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrders())
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
   }, [fetchOrders, supabase])
 
@@ -77,11 +85,11 @@ export default function OrdersPage() {
     if (targetOrderId) setExpandedId(targetOrderId)
   }, [searchParams])
 
-  function buildCustomerConfirmationUrl(order: Order) {
+  function buildConfirmUrl(order: Order) {
     const phone = (order.customer_phone || '').replace(/\D/g, '')
     if (!phone) return null
 
-    const items = (order.items as { name: string; quantity: number; price?: number }[])
+    const items = (order.items as { name: string; quantity: number }[])
       .map(i => `• ${i.name} x${i.quantity}`)
       .join('\n')
 
@@ -93,13 +101,19 @@ export default function OrdersPage() {
       `${items ? `Résumé :\n${items}\n\n` : ''}` +
       `Merci 🙏`
     )
-
     return `https://wa.me/${phone}?text=${message}`
   }
 
-  async function validerCommande(orderId: string) {
-    await supabase.from('orders').update({ status: 'delivered' }).eq('id', orderId)
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'delivered' as OrderStatus } : o))
+  // Confirmer au client = ouvrir WhatsApp + valider la commande en même temps
+  async function handleConfirmAndOpen(order: Order) {
+    const url = buildConfirmUrl(order)
+
+    // Valider en DB
+    await supabase.from('orders').update({ status: 'delivered' }).eq('id', order.id)
+    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'delivered' as OrderStatus } : o))
+
+    // Ouvrir WhatsApp si numéro client dispo
+    if (url) window.open(url, '_blank')
   }
 
   async function annulerCommande(orderId: string) {
@@ -137,8 +151,8 @@ export default function OrdersPage() {
       ) : (
         <div className="space-y-3">
           {orders.map(order => {
-            const confirmUrl = buildCustomerConfirmationUrl(order)
             const dejaValidee = order.status === 'delivered'
+            const annulee = order.status === 'cancelled'
 
             return (
               <div key={order.id} className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
@@ -150,7 +164,7 @@ export default function OrdersPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-white font-semibold text-sm">{order.customer_name || 'Client anonyme'}</p>
                       <Badge variant={ORDER_STATUS_COLORS[order.status] as 'success' | 'warning' | 'info' | 'danger' | 'default'}>
-                        {dejaValidee ? 'Validée' : ORDER_STATUS_LABELS[order.status]}
+                        {ORDER_STATUS_LABELS[order.status]}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-3 mt-1">
@@ -189,13 +203,15 @@ export default function OrdersPage() {
                     )}
 
                     <div className="flex flex-wrap gap-2 pt-1">
+                      {/* Confirmer au client = valide + ouvre WhatsApp */}
                       {order.status === 'pending' && (
                         <>
                           <button
-                            onClick={() => validerCommande(order.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                            onClick={() => handleConfirmAndOpen(order)}
+                            className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
                           >
-                            Valider
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            Confirmer au client
                           </button>
                           <button
                             onClick={() => annulerCommande(order.id)}
@@ -206,16 +222,15 @@ export default function OrdersPage() {
                         </>
                       )}
 
-                      {confirmUrl && (
-                        <a
-                          href={confirmUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                          Confirmer au client
-                        </a>
+                      {/* Reçu PDF — Pro uniquement */}
+                      {isPro && !annulee && (
+                        <ReceiptGenerator
+                          order={order}
+                          restaurantName={restaurantName}
+                          restaurantPhone={restaurantPhone}
+                          restaurantAddress={restaurantAddress}
+                          accentColor={restaurantAccent}
+                        />
                       )}
                     </div>
                   </div>

@@ -43,7 +43,7 @@ function buildOwnerMessage(params: {
     `Total : ${params.total.toLocaleString('fr-SN')} FCFA\n` +
     `Paiement : ${PAYMENT_LABELS[params.paymentMethod]}\n` +
     `Heure : ${formatOrderTime(params.createdAt)}\n\n` +
-    `Gérer la commande\n${params.dashboardUrl}`
+    `🔗 Gérer la commande :\n${params.dashboardUrl}`
   )
 }
 
