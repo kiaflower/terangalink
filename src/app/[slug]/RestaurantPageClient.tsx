@@ -1,14 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home, Instagram, Facebook, Music2 } from 'lucide-react'
+import {
+  MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home,
+  Instagram, Facebook, Music2, UtensilsCrossed, LayoutGrid,
+  Info, Clock, ChevronDown, ChevronUp, ShoppingCart
+} from 'lucide-react'
 import { MenuCard } from '@/components/restaurant/MenuCard'
 import { CartDrawer, CartButton } from '@/components/cart/CartDrawer'
-import { CartProvider } from '@/lib/hooks/useCart'
+import { CartProvider, useCart } from '@/lib/hooks/useCart'
 import { QRCodeButton } from '@/components/restaurant/QRCodeButton'
-import { GoogleMap } from '@/components/restaurant/GoogleMap'
-import { DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR, generateThemeTokens, themeToStyle, type RestaurantTheme } from '@/lib/theme'
+import {
+  DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR,
+  generateThemeTokens, themeToStyle, type RestaurantTheme
+} from '@/lib/theme'
 import { canUseFeature, normalizePlan } from '@/lib/plans'
 import type { RestaurantPageData } from '@/lib/types'
 
@@ -28,11 +34,19 @@ type RestaurantFull = RestaurantPageData['restaurant'] & {
   plan?: string
   latitude?: number | null
   longitude?: number | null
+  prep_time_minutes?: number | null
+  email?: string | null
 }
 
 interface Props {
   data: Omit<RestaurantPageData, 'restaurant'> & { restaurant: RestaurantFull }
 }
+
+const DAYS_FR: Record<string, string> = {
+  lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi',
+  jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi', dimanche: 'Dimanche'
+}
+const DAYS_ORDER = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
 
 function isOpenNow(opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null): boolean {
   if (!opening_hours || Object.keys(opening_hours).length === 0) return true
@@ -48,23 +62,62 @@ function isOpenNow(opening_hours?: Record<string, { ouverture?: string; fermetur
   return cur >= oh * 60 + om && cur < fh * 60 + fm
 }
 
+// Bouton panier dans la navbar (doit être dans CartProvider)
+function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeTokens> }) {
+  const { totalItems } = useCart()
+  const [open, setOpen] = useState(false)
+
+  if (totalItems === 0) return null
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm transition-all"
+        style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
+      >
+        <ShoppingCart className="w-4 h-4" />
+        <span>Mon panier</span>
+        <span
+          className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+          style={{ backgroundColor: 'rgba(255,255,255,0.25)' }}
+        >
+          {totalItems}
+        </span>
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div
+            className="relative w-full sm:w-[400px] max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl"
+            style={{ backgroundColor: tokens.bgCard }}
+          >
+            <CartDrawer onClose={() => setOpen(false)} tokens={tokens} />
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 function RestaurantInner({ data }: Props) {
   const { restaurant, categories, items } = data
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showAllMenu, setShowAllMenu] = useState(false)
+
+  const MENU_PREVIEW = 8
 
   const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'starter' : 'starter'))
   const isPro = plan === 'pro'
 
-  // Fonctionnalités par plan
   const shouldShowTerangaBranding = !restaurant.is_demo && !canUseFeature(plan, 'suppressionBranding')
   const canCall = canUseFeature(plan, 'boutonAppel')
   const canShare = canUseFeature(plan, 'boutonPartage')
   const canShowSocials = canUseFeature(plan, 'reseauxSociaux')
-  // Téléphone visible publiquement uniquement en Pro
   const canShowPhone = isPro
 
-  // Thème : Pro = couleurs personnalisées, Starter = thème TerangaLink par défaut
+  // Thème — identique à l'original, ne pas toucher
   const themeConfig: RestaurantTheme = isPro ? {
     primary: restaurant.primary_color || DEFAULT_PRIMARY_COLOR,
     mode: (restaurant.theme_mode === 'light' ? 'light' : 'dark') as 'dark' | 'light',
@@ -85,16 +138,10 @@ function RestaurantInner({ data }: Props) {
   async function handleShare() {
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: restaurant.name,
-          text: `Commandez chez ${restaurant.name}`,
-          url: publicUrl,
-        })
-      } catch {
-        // cancelled
-      }
+        await navigator.share({ title: restaurant.name, text: `Commandez chez ${restaurant.name}`, url: publicUrl })
+      } catch { }
     } else {
-      try { await navigator.clipboard.writeText(publicUrl) } catch {}
+      try { await navigator.clipboard.writeText(publicUrl) } catch { }
       setCopied(true)
       setTimeout(() => setCopied(false), 2500)
     }
@@ -103,41 +150,126 @@ function RestaurantInner({ data }: Props) {
   const filteredItems = activeCategory ? items.filter(i => i.category_id === activeCategory) : items
   const availableItems = filteredItems.filter(i => i.is_available)
   const unavailableItems = filteredItems.filter(i => !i.is_available)
+  const displayedAvailable = showAllMenu ? availableItems : availableItems.slice(0, MENU_PREVIEW)
+  const hasMore = !activeCategory && availableItems.length > MENU_PREVIEW
+
+  const demoBannerH = restaurant.is_demo ? 36 : 0
+  const prepTime = restaurant.prep_time_minutes ? `${restaurant.prep_time_minutes} min` : '20 - 35 min'
+
+  // Patch body background + text color pour overrider globals.css (thème desktop)
+  useEffect(() => {
+    const prevBg = document.body.style.backgroundColor
+    const prevColor = document.body.style.color
+    document.body.style.backgroundColor = tokens.bgPage
+    document.body.style.color = tokens.textPrimary
+    return () => {
+      document.body.style.backgroundColor = prevBg
+      document.body.style.color = prevColor
+    }
+  }, [tokens.bgPage, tokens.textPrimary])
 
   return (
-    <div style={style} className="min-h-screen">
-      {/* Demo top banner */}
+    <div style={{ ...style, color: tokens.textPrimary }} className="min-h-screen w-full">
+
+      {/* ── Demo banner ── */}
       {restaurant.is_demo && (
         <div
-          className="fixed top-0 left-0 right-0 z-[70] text-white px-3 py-1.5 backdrop-blur-sm"
-          style={{ backgroundColor: `${tokens.accent}CC` }}
+          className="fixed top-0 left-0 right-0 z-[70] text-white px-3 backdrop-blur-sm flex items-center"
+          style={{ backgroundColor: `${tokens.accent}CC`, height: demoBannerH }}
         >
-          <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 text-[11px] sm:text-xs">
-            <a
-              href="/"
-              className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold transition-colors"
-              style={{ backgroundColor: 'rgba(0,0,0,0.22)' }}
-            >
-              <Home className="w-3.5 h-3.5" />
-              Accueil
+          <div className="max-w-6xl mx-auto w-full flex items-center justify-between gap-2 text-[11px] sm:text-xs">
+            <a href="/" className="inline-flex items-center gap-1 rounded-full px-2 py-1 font-semibold" style={{ backgroundColor: 'rgba(0,0,0,0.22)' }}>
+              <Home className="w-3.5 h-3.5" />Accueil
             </a>
-
             <span className="opacity-95 whitespace-nowrap">Démo TerangaLink</span>
-
-            <a
-              href="https://wa.me/221777777777?text=Bonjour%2C%20j%E2%80%99ai%20d%C3%A9couvert%20TerangaLink%20et%20je%20souhaiterais%20cr%C3%A9er%20un%20site%20pour%20mon%20restaurant."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline underline-offset-2 whitespace-nowrap"
-            >
+            <a href="https://wa.me/221777777777?text=Bonjour%2C%20j%E2%80%99ai%20d%C3%A9couvert%20TerangaLink%20et%20je%20souhaiterais%20cr%C3%A9er%20un%20site%20pour%20mon%20restaurant." target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2 whitespace-nowrap">
               Créer mon site
             </a>
           </div>
         </div>
       )}
 
-      {/* Hero */}
-      <div className="relative h-52 sm:h-64 overflow-hidden">
+      {/* ── NAVBAR ── */}
+      <nav
+        className="sticky z-[60]"
+        style={{
+          top: demoBannerH,
+          height: 64,
+          backgroundColor: tokens.bgCard,
+          borderBottom: `1px solid ${tokens.border}`,
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
+
+          {/* Logo + nom */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: tokens.bgCardHover }}>
+              {restaurant.logo_url ? (
+                <Image src={restaurant.logo_url} alt={restaurant.name} width={36} height={36} className="object-cover w-full h-full" unoptimized />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-base font-black" style={{ color: tokens.accent }}>
+                  {restaurant.name.charAt(0)}
+                </div>
+              )}
+            </div>
+            <span className="font-bold text-sm truncate hidden sm:block" style={{ color: tokens.textPrimary }}>{restaurant.name}</span>
+          </div>
+
+          {/* Liens navigation — desktop */}
+          <div className="hidden md:flex items-center gap-6">
+            {[
+              { label: 'Catégories', id: 'categories' },
+              { label: 'Menu', id: 'menu' },
+              { label: 'À propos de nous', id: 'apropos' },
+            ].map(({ label, id }) => (
+              <button
+                key={id}
+                onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="text-sm font-medium transition-colors"
+                style={{ color: tokens.textSecondary }}
+                onMouseEnter={e => (e.currentTarget.style.color = tokens.button)}
+                onMouseLeave={e => (e.currentTarget.style.color = tokens.textSecondary)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Actions droite */}
+          <div className="flex items-center gap-2">
+            <QRCodeButton url={publicUrl} restaurantName={restaurant.name} tokens={tokens} />
+            {canCall && restaurant.phone && (
+              <button
+                onClick={() => { window.location.href = `tel:${restaurant.phone}` }}
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary }}
+                aria-label="Appeler"
+              >
+                <PhoneCall className="w-4 h-4" />
+              </button>
+            )}
+            {canShare && (
+              <div className="relative">
+                <button onClick={handleShare} className="w-9 h-9 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary }}>
+                  <Share2 className="w-4 h-4" />
+                </button>
+                {copied && (
+                  <span className="absolute -bottom-9 right-0 text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg" style={{ backgroundColor: tokens.bgCard, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}>
+                    Lien copié !
+                  </span>
+                )}
+              </div>
+            )}
+            {/* Panier desktop dans la navbar */}
+            <div className="hidden sm:block">
+              <NavCartButton tokens={tokens} />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── HERO BANNER ── */}
+      <div className="relative w-full h-64 sm:h-80 lg:h-96 overflow-hidden">
         {(restaurant.banner_url || restaurant.cover_url) ? (
           <Image
             src={restaurant.banner_url || restaurant.cover_url!}
@@ -151,243 +283,342 @@ function RestaurantInner({ data }: Props) {
         ) : (
           <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${tokens.accent}25 0%, ${tokens.bgPage} 100%)` }} />
         )}
-        <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${tokens.bgPage} 0%, ${tokens.bgPage}60 40%, transparent 100%)` }} />
 
-        {/* TerangaLink branding — Starter uniquement */}
+        {/* Overlay gradient sombre vers le bas */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 55%, transparent 100%)' }} />
+
+        {/* Branding TerangaLink Starter */}
         {shouldShowTerangaBranding && (
-          <a href="/" className="absolute top-3 left-4 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
+          <a href="/" className="absolute top-4 left-4 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
             <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
               <Zap className="w-3 h-3" />
             </div>
-            <span className="text-xs font-semibold" style={{ color: tokens.textPrimary, opacity: 0.7 }}>TerangaLink</span>
+            <span className="text-xs font-semibold text-white/80">TerangaLink</span>
           </a>
         )}
 
-        {/* Action buttons top-right */}
-        <div className="absolute top-3 right-4 flex items-center gap-2">
-          <QRCodeButton url={publicUrl} restaurantName={restaurant.name} tokens={tokens} />
-          {canCall && restaurant.phone && (
-            <a
-              href={`tel:${restaurant.phone}`}
-              className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-              style={{ backgroundColor: 'rgba(0,0,0,0.35)', color: 'white' }}
+        {/* Contenu texte — bas gauche */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 sm:px-8 pb-6">
+          <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1">{restaurant.name}</h1>
+          {restaurant.description && (
+            <p className="text-white/75 text-sm mb-4 max-w-lg line-clamp-2">{restaurant.description}</p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {/* Ouvert / Fermé */}
+            <div
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ backgroundColor: ouvert ? tokens.openBg : tokens.closedBg, color: ouvert ? tokens.openText : tokens.closedText }}
             >
-              <PhoneCall className="w-4 h-4" />
-            </a>
-          )}
-          {canShare && (
-            <div className="relative">
-              <button
-                onClick={handleShare}
-                className="w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors"
-                style={{ backgroundColor: 'rgba(0,0,0,0.35)', color: 'white' }}
-              >
-                <Share2 className="w-4 h-4" />
-              </button>
-              {copied && (
-                <span
-                  className="absolute -bottom-9 right-0 text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg"
-                  style={{ backgroundColor: tokens.bgCard, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
-                >
-                  Lien copié !
-                </span>
-              )}
+              <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ouvert ? tokens.openText : tokens.closedText }} />
+              {ouvert ? 'Ouvert maintenant' : 'Fermé'}
             </div>
-          )}
+            {/* Temps de préparation */}
+            <div
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              {prepTime}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Restaurant info */}
-      <div className="px-4 sm:px-6 -mt-12 relative z-10 mb-5">
-        <div className="flex items-end gap-4 mb-3">
-          <div
-            className="w-20 h-20 rounded-2xl border-4 flex-shrink-0 overflow-hidden shadow-xl"
-            style={{ borderColor: tokens.bgPage, backgroundColor: tokens.bgCard }}
-          >
-            {restaurant.logo_url ? (
-              <Image src={restaurant.logo_url} alt={restaurant.name} width={80} height={80} className="object-cover w-full h-full" unoptimized />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-2xl font-black" style={{ color: tokens.accent }}>
-                {restaurant.name.charAt(0)}
+      {/* ── CONTENU PRINCIPAL ── */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-8 lg:pb-8">
+        <div className="flex gap-8">
+
+          {/* Colonne principale */}
+          <div className="flex-1 min-w-0">
+
+            {/* ── SECTION CATÉGORIES ── */}
+            <section id="categories" className="mb-8 scroll-mt-20">
+              <div className="flex items-center gap-2 mb-4">
+                <LayoutGrid className="w-5 h-5" style={{ color: tokens.accent }} />
+                <h2 className="text-lg font-bold" style={{ color: tokens.textPrimary }}>Catégories</h2>
               </div>
-            )}
-          </div>
-          <div className="pb-2">
-            <h1 className="font-black text-xl leading-tight" style={{ color: tokens.textPrimary }}>{restaurant.name}</h1>
-            {restaurant.cuisine_type && <p className="text-sm mt-0.5" style={{ color: tokens.textMuted }}>{restaurant.cuisine_type}</p>}
-          </div>
-        </div>
 
-        {restaurant.description && <p className="text-sm leading-relaxed mb-4" style={{ color: tokens.textSecondary }}>{restaurant.description}</p>}
-
-        {/* Réseaux sociaux — Pro uniquement */}
-        {canShowSocials && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url) && (
-          <div className="flex items-center gap-2 mb-4">
-            {restaurant.instagram_url && (
-              <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Instagram">
-                <Instagram className="w-4 h-4" />
-              </a>
-            )}
-            {restaurant.facebook_url && (
-              <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="Facebook">
-                <Facebook className="w-4 h-4" />
-              </a>
-            )}
-            {restaurant.tiktok_url && (
-              <a href={restaurant.tiktok_url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full flex items-center justify-center transition-colors" style={{ backgroundColor: tokens.bgCard, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }} aria-label="TikTok">
-                <Music2 className="w-4 h-4" />
-              </a>
-            )}
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-3 items-center">
-          {restaurant.city && (
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: tokens.textMuted }}>
-              <MapPin className="w-3.5 h-3.5" style={{ color: tokens.accent }} />
-              {restaurant.city}
-            </div>
-          )}
-          {/* Téléphone visible uniquement en Pro */}
-          {canShowPhone && restaurant.phone && (
-            <a href={`tel:${restaurant.phone}`} className="flex items-center gap-1.5 text-xs transition-colors" style={{ color: tokens.textMuted }}>
-              <Phone className="w-3.5 h-3.5" style={{ color: tokens.accent }} />
-              {restaurant.phone}
-            </a>
-          )}
-          <div
-            className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-            style={{ backgroundColor: ouvert ? tokens.openBg : tokens.closedBg, color: ouvert ? tokens.openText : tokens.closedText }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ouvert ? tokens.openText : tokens.closedText }} />
-            {ouvert ? 'Ouvert maintenant' : 'Fermé'}
-          </div>
-          {restaurant.show_delivery_fee && (restaurant.delivery_fee ?? 0) > 0 && (
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: tokens.textMuted }}>
-              <Truck className="w-3.5 h-3.5" style={{ color: tokens.accent }} />
-              Livraison : {(restaurant.delivery_fee ?? 0).toLocaleString('fr-SN')} FCFA
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Category bar */}
-      {categories.length > 0 && (
-        <div
-          className="sticky top-0 z-20 py-3"
-          style={{ backgroundColor: `${tokens.bgPage}f0`, backdropFilter: 'blur(12px)', borderBottom: `1px solid ${tokens.border}` }}
-        >
-          <div className="flex gap-2 overflow-x-auto px-4 sm:px-6" style={{ scrollbarWidth: 'none' }}>
-            <button
-              onClick={() => setActiveCategory(null)}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
-              style={activeCategory === null
-                ? { backgroundColor: tokens.button, color: tokens.textOnButton }
-                : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
-            >
-              Tout
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap"
-                style={activeCategory === cat.id
-                  ? { backgroundColor: tokens.button, color: tokens.textOnButton }
-                  : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Main content */}
-      <div className="flex gap-6 px-4 sm:px-6 pt-6 max-w-6xl mx-auto pb-32 lg:pb-8">
-        <div className="flex-1 min-w-0">
-          {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="text-5xl mb-4">🍽️</div>
-              <h3 className="font-bold text-lg mb-2" style={{ color: tokens.textPrimary }}>Menu en cours de préparation</h3>
-              <p className="text-sm" style={{ color: tokens.textMuted }}>Revenez bientôt !</p>
-            </div>
-          ) : (
-            <>
-              {availableItems.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-                  {availableItems.map(item => (
-                    <MenuCard
-                      key={item.id}
-                      item={item}
-                      restaurantId={restaurant.id}
-                      restaurantSlug={restaurant.slug}
-                      restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
-                      restaurantName={restaurant.name}
-                      tokens={tokens}
-                    />
-                  ))}
-                </div>
-              )}
-              {unavailableItems.length > 0 && (
-                <div style={{ opacity: 0.45 }}>
-                  <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: tokens.textMuted }}>
-                    Indisponibles
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {unavailableItems.map(item => (
-                      <MenuCard
-                        key={item.id}
-                        item={item}
-                        restaurantId={restaurant.id}
-                        restaurantSlug={restaurant.slug}
-                        restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
-                        restaurantName={restaurant.name}
-                        tokens={tokens}
-                      />
+              {categories.length > 0 && (
+                <div
+                  className="sticky z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3"
+                  style={{
+                    top: demoBannerH + 64,
+                    backgroundColor: `${tokens.bgPage}f0`,
+                    backdropFilter: 'blur(12px)',
+                    borderBottom: `1px solid ${tokens.border}`,
+                  }}
+                >
+                  <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                    <button
+                      onClick={() => setActiveCategory(null)}
+                      className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
+                      style={activeCategory === null
+                        ? { backgroundColor: tokens.button, color: tokens.textOnButton }
+                        : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
+                    >
+                      Tout
+                    </button>
+                    {categories.map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all whitespace-nowrap"
+                        style={activeCategory === cat.id
+                          ? { backgroundColor: tokens.button, color: tokens.textOnButton }
+                          : { backgroundColor: tokens.bgCard, color: tokens.textMuted, border: `1px solid ${tokens.border}` }}
+                      >
+                        {cat.name}
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
-            </>
-          )}
+            </section>
 
-          <div className="mt-10 space-y-3 pt-8" style={{ borderTop: `1px solid ${tokens.border}` }}>
-            {restaurant.address && (
-              <GoogleMap
-                address={restaurant.address}
-                city={restaurant.city || undefined}
-                latitude={restaurant.latitude ?? null}
-                longitude={restaurant.longitude ?? null}
-                tokens={tokens}
-              />
+            {/* ── SECTION MENU ── */}
+            <section id="menu" className="mb-10 scroll-mt-20">
+              <div className="flex items-center gap-2 mb-4">
+                <UtensilsCrossed className="w-5 h-5" style={{ color: tokens.accent }} />
+                <h2 className="text-lg font-bold" style={{ color: tokens.textPrimary }}>Menu</h2>
+              </div>
+
+              {items.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <div className="text-5xl mb-4">🍽️</div>
+                  <h3 className="font-bold text-lg mb-2" style={{ color: tokens.textPrimary }}>Menu en cours de préparation</h3>
+                  <p className="text-sm" style={{ color: tokens.textMuted }}>Revenez bientôt !</p>
+                </div>
+              ) : (
+                <>
+                  {displayedAvailable.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
+                      {displayedAvailable.map(item => (
+                        <MenuCard
+                          key={item.id}
+                          item={item}
+                          restaurantId={restaurant.id}
+                          restaurantSlug={restaurant.slug}
+                          restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
+                          restaurantName={restaurant.name}
+                          tokens={tokens}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {hasMore && (
+                    <div className="flex justify-center mt-2 mb-4">
+                      <button
+                        onClick={() => {
+                          if (showAllMenu) {
+                            setShowAllMenu(false)
+                            document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })
+                          } else {
+                            setShowAllMenu(true)
+                          }
+                        }}
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all"
+                        style={{ border: `1.5px solid ${tokens.button}`, color: tokens.button, backgroundColor: 'transparent' }}
+                      >
+                        {showAllMenu
+                          ? <><ChevronUp className="w-4 h-4" />Réduire</>
+                          : <><ChevronDown className="w-4 h-4" />Voir tout le menu ({availableItems.length} plats)</>
+                        }
+                      </button>
+                    </div>
+                  )}
+
+                  {showAllMenu && unavailableItems.length > 0 && (
+                    <div style={{ opacity: 0.45 }}>
+                      <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: tokens.textMuted }}>Indisponibles</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        {unavailableItems.map(item => (
+                          <MenuCard
+                            key={item.id}
+                            item={item}
+                            restaurantId={restaurant.id}
+                            restaurantSlug={restaurant.slug}
+                            restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
+                            restaurantName={restaurant.name}
+                            tokens={tokens}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+
+            {/* ── SECTION LIVRAISON ── */}
+            {restaurant.show_delivery_fee && (restaurant.delivery_fee ?? 0) > 0 && (
+              <section id="livraison" className="mb-10 scroll-mt-20">
+                <div
+                  className="rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  style={{ border: `1.5px solid ${tokens.border}`, backgroundColor: tokens.bgCard }}
+                >
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-1" style={{ color: tokens.textPrimary }}>Livraison rapide à votre porte</h3>
+                    <p className="text-sm mb-4" style={{ color: tokens.textSecondary }}>
+                      Nous livrons chez vous rapidement et en toute sécurité.
+                    </p>
+                    <div
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+                      style={{ backgroundColor: tokens.bgBadge, border: `1px solid ${tokens.border}`, color: tokens.textPrimary }}
+                    >
+                      <Truck className="w-4 h-4" style={{ color: tokens.accent }} />
+                      Frais de livraison — {(restaurant.delivery_fee ?? 0).toLocaleString('fr-SN')} FCFA
+                    </div>
+                  </div>
+                  <div className="text-6xl select-none" aria-hidden>🛵</div>
+                </div>
+              </section>
             )}
+
+            {/* ── SECTION À PROPOS ── */}
+            <section id="apropos" className="mb-10 scroll-mt-20" style={{ borderTop: `1px solid ${tokens.border}`, paddingTop: 32 }}>
+              <div className="flex items-center gap-2 mb-6">
+                <Info className="w-5 h-5" style={{ color: tokens.accent }} />
+                <h2 className="text-lg font-bold" style={{ color: tokens.textPrimary }}>À propos de nous</h2>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* Colonne 1 — Infos */}
+                <div>
+                  {restaurant.description && (
+                    <p className="text-sm leading-relaxed mb-4" style={{ color: tokens.textSecondary }}>{restaurant.description}</p>
+                  )}
+                  <div className="space-y-3">
+                    {restaurant.address && (() => {
+                      const fullAddress = `${restaurant.address}${restaurant.city ? `, ${restaurant.city}` : ''}, Sénégal`
+                      const mapsUrl = restaurant.latitude && restaurant.longitude
+                        ? `https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
+                      return (
+                        <a
+                          href={mapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-start gap-2 text-sm transition-opacity hover:opacity-75"
+                          style={{ color: tokens.textSecondary }}
+                        >
+                          <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: tokens.accent }} />
+                          <span className="underline underline-offset-2">{restaurant.address}{restaurant.city ? `, ${restaurant.city}` : ''}</span>
+                        </a>
+                      )
+                    })()}
+                    {restaurant.phone && (
+                      <a href={`tel:${restaurant.phone}`} className="flex items-center gap-2 text-sm hover:opacity-75" style={{ color: tokens.textSecondary }}>
+                        <Phone className="w-4 h-4 flex-shrink-0" style={{ color: tokens.accent }} />
+                        {restaurant.phone}
+                      </a>
+                    )}
+                    {restaurant.email && (
+                      <div className="flex items-center gap-2 text-sm" style={{ color: tokens.textSecondary }}>
+                        <span style={{ color: tokens.accent }}>✉</span>
+                        {restaurant.email}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Colonne 2 — Horaires : toujours afficher les 7 jours */}
+                {(() => {
+                  const normalizedHours: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> = {}
+                  if (restaurant.opening_hours) {
+                    Object.entries(restaurant.opening_hours).forEach(([k, v]) => {
+                      normalizedHours[k.toLowerCase().trim()] = v
+                    })
+                  }
+                  return (
+                    <div>
+                      <h3 className="font-bold text-sm mb-3" style={{ color: tokens.textPrimary }}>Horaires d&apos;ouverture</h3>
+                      <div className="space-y-2">
+                        {DAYS_ORDER.map(day => {
+                          const h = normalizedHours[day]
+                          const isFerme = !h || h.ferme
+                          const hasHours = !isFerme && h?.ouverture && h?.fermeture
+                          return (
+                            <div key={day} className="flex justify-between items-center text-sm">
+                              <span style={{ color: tokens.textSecondary }}>{DAYS_FR[day]}</span>
+                              <span style={{ color: isFerme ? tokens.textMuted : tokens.textPrimary }}>
+                                {isFerme ? 'Fermé' : hasHours ? `${h!.ouverture} - ${h!.fermeture}` : '—'}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Colonne 3 — Réseaux sociaux (Pro uniquement) */}
+                {canShowSocials && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url) && (
+                  <div>
+                    <h3 className="font-bold text-sm mb-3" style={{ color: tokens.textPrimary }}>Suivez-nous</h3>
+                    <div className="flex items-center gap-3">
+                      {restaurant.instagram_url && (
+                        <a href={restaurant.instagram_url} target="_blank" rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }}>
+                          <Instagram className="w-4 h-4" />
+                        </a>
+                      )}
+                      {restaurant.facebook_url && (
+                        <a href={restaurant.facebook_url} target="_blank" rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }}>
+                          <Facebook className="w-4 h-4" />
+                        </a>
+                      )}
+                      {restaurant.tiktok_url && (
+                        <a href={restaurant.tiktok_url} target="_blank" rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }}>
+                          <Music2 className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </section>
+
           </div>
 
-          {/* Powered by TerangaLink — Starter uniquement */}
-          {shouldShowTerangaBranding && (
-            <div className="text-center py-6">
-              <a
-                href="/"
-                className="text-xs transition-opacity hover:opacity-100"
-                style={{ color: tokens.textMuted, opacity: 0.8 }}
-              >
-                Propulsé par TerangaLink
-              </a>
+          {/* ── PANIER DESKTOP ── */}
+          <div className="hidden lg:block w-[340px] flex-shrink-0">
+            <div
+              className="sticky rounded-2xl overflow-hidden max-h-[calc(100vh-6rem)]"
+              style={{ top: demoBannerH + 64 + 16, backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+            >
+              <CartDrawer inline tokens={tokens} />
             </div>
-          )}
-        </div>
-
-        {/* Desktop cart */}
-        <div className="hidden lg:block w-[340px] flex-shrink-0">
-          <div className="sticky top-20 rounded-2xl overflow-hidden max-h-[calc(100vh-6rem)]" style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}>
-            <CartDrawer inline tokens={tokens} />
           </div>
+
         </div>
       </div>
 
-      {/* Floating cart button mobile */}
+      {/* ── FOOTER ── */}
+      <footer className="py-4 px-4" style={{ backgroundColor: '#000000' }}>
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs" style={{ color: '#6B7280' }}>
+          {shouldShowTerangaBranding ? (
+            <>
+              <span>© {new Date().getFullYear()} TerangaLink. Tous droits réservés.</span>
+              <a href="/" className="font-semibold hover:opacity-80 transition-opacity" style={{ color: tokens.button }}>
+                Propulsé par TerangaLink
+              </a>
+            </>
+          ) : (
+            <span>© {new Date().getFullYear()} {restaurant.name}</span>
+          )}
+        </div>
+      </footer>
+
+      {/* Bouton panier flottant mobile */}
       <CartButton tokens={tokens} />
+
     </div>
   )
 }
