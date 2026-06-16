@@ -42,11 +42,18 @@ export interface Subscription {
   started_at: string
   ends_at: string | null
   created_at: string
+  trial_start_date: string | null
+  trial_end_date: string | null
+  subscription_start_date: string | null
+  next_payment_due_date: string | null
+  last_payment_date: string | null
+  amount_paid: number | null
+  notes_admin: string | null
   updated_at: string
 }
 
 export type SubscriptionPlan = 'starter' | 'pro'
-export type SubscriptionStatus = 'active' | 'trial' | 'suspended' | 'cancelled'
+export type SubscriptionStatus = 'active' | 'trial' | 'overdue' | 'suspended' | 'cancelled'
 
 export interface RestaurantWithOwner extends Restaurant {
   owner?: Profile

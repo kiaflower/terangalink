@@ -21,6 +21,13 @@ export async function POST(request: NextRequest) {
     const { error } = await admin.auth.admin.updateUserById(user_id, { password: new_password })
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Sauvegarder le mot de passe pour affichage dans le super-admin
+    await admin.from('profiles').update({
+      temp_password: new_password,
+      updated_at: new Date().toISOString(),
+    }).eq('id', user_id)
+
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })

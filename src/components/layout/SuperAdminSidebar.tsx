@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, Store, Users, Settings, LogOut, Zap } from 'lucide-react'
+import { LayoutDashboard, Store, Users, Settings, LogOut, Zap, CreditCard } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 
 // "Créer admin" removed — admin creation is now inside each restaurant page
 const navItems = [
   { label: "Vue d'ensemble", href: '/dashboard/super-admin', icon: LayoutDashboard, exact: true },
   { label: 'Restaurants', href: '/dashboard/super-admin/restaurants', icon: Store },
+  { label: 'Abonnements', href: '/dashboard/super-admin/subscriptions', icon: CreditCard },
   { label: 'Utilisateurs', href: '/dashboard/super-admin/users', icon: Users },
   { label: 'Paramètres', href: '/dashboard/super-admin/settings', icon: Settings },
 ]

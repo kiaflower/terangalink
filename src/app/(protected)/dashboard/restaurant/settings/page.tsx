@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, Truck, Phone, Save, CheckCircle, AlertCircle, Loader2, Wallet, Timer } from 'lucide-react'
+import { Clock, Truck, Phone, Save, CheckCircle, AlertCircle, Loader2, Wallet, Timer, Lock, Eye, EyeOff } from 'lucide-react'
 
 const JOURS = [
   { key: 'lundi', label: 'Lundi' },
@@ -26,16 +26,24 @@ export default function SettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [restaurantId, setRestaurantId] = useState<string | null>(null)
 
-  // Existing fields
+  // Paramètres restaurant
   const [whatsapp, setWhatsapp] = useState('')
   const [openingHours, setOpeningHours] = useState<OpeningHours>({})
   const [deliveryFee, setDeliveryFee] = useState('0')
   const [showDeliveryFee, setShowDeliveryFee] = useState(false)
-
-  // New fields
   const [waveNumber, setWaveNumber] = useState('')
   const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
   const [prepTime, setPrepTime] = useState(25)
+
+  // Changement de mot de passe
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrent, setShowCurrent] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [pwdSaving, setPwdSaving] = useState(false)
+  const [pwdMessage, setPwdMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const loadData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -100,6 +108,57 @@ export default function SettingsPage() {
     setTimeout(() => setMessage(null), 3000)
   }
 
+  async function handleChangePassword() {
+    setPwdMessage(null)
+
+    if (!newPassword || newPassword.length < 8) {
+      setPwdMessage({ type: 'error', text: 'Le nouveau mot de passe doit faire au moins 8 caractères.' })
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwdMessage({ type: 'error', text: 'Les mots de passe ne correspondent pas.' })
+      return
+    }
+
+    setPwdSaving(true)
+
+    // Vérifier l'ancien mot de passe en tentant une reconnexion
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user?.email) { setPwdSaving(false); return }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    })
+
+    if (signInError) {
+      setPwdSaving(false)
+      setPwdMessage({ type: 'error', text: 'Mot de passe actuel incorrect.' })
+      return
+    }
+
+    // Changer le mot de passe
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+
+    if (error) {
+      setPwdSaving(false)
+      setPwdMessage({ type: 'error', text: error.message })
+      return
+    }
+
+    // Sauvegarder le nouveau mot de passe pour le super-admin
+    await supabase.from('profiles').update({
+      temp_password: newPassword,
+    }).eq('id', user.id)
+
+    setPwdSaving(false)
+    setPwdMessage({ type: 'success', text: 'Mot de passe mis à jour avec succès !' })
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+    setTimeout(() => setPwdMessage(null), 4000)
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center min-h-64"><Loader2 className="w-8 h-8 animate-spin text-brand-orange" /></div>
   }
@@ -145,13 +204,8 @@ export default function SettingsPage() {
                   Numéro Wave
                 </span>
               </label>
-              <input
-                type="text"
-                value={waveNumber}
-                onChange={e => setWaveNumber(e.target.value)}
-                placeholder="77 123 45 67"
-                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
-              />
+              <input type="text" value={waveNumber} onChange={e => setWaveNumber(e.target.value)} placeholder="77 123 45 67"
+                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
             </div>
             <div>
               <label className="text-gray-400 text-xs block mb-1.5">
@@ -160,13 +214,8 @@ export default function SettingsPage() {
                   Numéro Orange Money
                 </span>
               </label>
-              <input
-                type="text"
-                value={orangeMoneyNumber}
-                onChange={e => setOrangeMoneyNumber(e.target.value)}
-                placeholder="76 123 45 67"
-                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
-              />
+              <input type="text" value={orangeMoneyNumber} onChange={e => setOrangeMoneyNumber(e.target.value)} placeholder="76 123 45 67"
+                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
             </div>
           </div>
         </div>
@@ -180,18 +229,13 @@ export default function SettingsPage() {
           <p className="text-gray-500 text-xs mb-4">Durée estimée communiquée au client lors de la confirmation de commande.</p>
           <div className="flex flex-wrap gap-2">
             {PREP_TIMES.map(t => (
-              <button
-                key={t}
-                onClick={() => setPrepTime(t)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${prepTime === t ? 'bg-brand-orange text-white' : 'bg-surface-100 text-gray-400 hover:text-white border border-surface-300'}`}
-              >
+              <button key={t} onClick={() => setPrepTime(t)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${prepTime === t ? 'bg-brand-orange text-white' : 'bg-surface-100 text-gray-400 hover:text-white border border-surface-300'}`}>
                 {t} min
               </button>
             ))}
           </div>
-          <p className="text-gray-500 text-xs mt-3">
-            Sélectionné : <span className="text-brand-orange font-semibold">{prepTime} minutes</span>
-          </p>
+          <p className="text-gray-500 text-xs mt-3">Sélectionné : <span className="text-brand-orange font-semibold">{prepTime} minutes</span></p>
         </div>
 
         {/* ── WhatsApp ── */}
@@ -202,13 +246,8 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="text-gray-400 text-xs block mb-1.5">Numéro WhatsApp (ex: 221771234567)</label>
-            <input
-              type="text"
-              value={whatsapp}
-              onChange={e => setWhatsapp(e.target.value)}
-              placeholder="221771234567"
-              className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
-            />
+            <input type="text" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="221771234567"
+              className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
             <p className="text-gray-600 text-xs mt-1">Format international sans + ni espaces. Les commandes client arrivent sur ce numéro.</p>
           </div>
         </div>
@@ -221,25 +260,14 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-4">
             <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showDeliveryFee}
-                onChange={e => setShowDeliveryFee(e.target.checked)}
-                className="w-4 h-4 accent-brand-orange"
-              />
+              <input type="checkbox" checked={showDeliveryFee} onChange={e => setShowDeliveryFee(e.target.checked)} className="w-4 h-4 accent-brand-orange" />
               <span className="text-gray-300 text-sm">Afficher les frais de livraison sur la page du restaurant</span>
             </label>
             {showDeliveryFee && (
               <div>
                 <label className="text-gray-400 text-xs block mb-1.5">Frais de livraison (FCFA)</label>
-                <input
-                  type="number"
-                  value={deliveryFee}
-                  onChange={e => setDeliveryFee(e.target.value)}
-                  placeholder="2000"
-                  min="0"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
-                />
+                <input type="number" value={deliveryFee} onChange={e => setDeliveryFee(e.target.value)} placeholder="2000" min="0"
+                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
               </div>
             )}
           </div>
@@ -259,29 +287,16 @@ export default function SettingsPage() {
                 <div key={key} className="flex items-center gap-3 flex-wrap">
                   <span className="text-gray-400 text-sm w-24 flex-shrink-0">{label}</span>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={!ferme}
-                      onChange={e => updateHours(key, 'ferme', !e.target.checked)}
-                      className="w-4 h-4 accent-brand-orange"
-                    />
+                    <input type="checkbox" checked={!ferme} onChange={e => updateHours(key, 'ferme', !e.target.checked)} className="w-4 h-4 accent-brand-orange" />
                     <span className="text-xs text-gray-500">Ouvert</span>
                   </label>
                   {!ferme ? (
                     <>
-                      <input
-                        type="time"
-                        value={h?.ouverture || '08:00'}
-                        onChange={e => updateHours(key, 'ouverture', e.target.value)}
-                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28"
-                      />
+                      <input type="time" value={h?.ouverture || '08:00'} onChange={e => updateHours(key, 'ouverture', e.target.value)}
+                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28" />
                       <span className="text-gray-600 text-xs">→</span>
-                      <input
-                        type="time"
-                        value={h?.fermeture || '22:00'}
-                        onChange={e => updateHours(key, 'fermeture', e.target.value)}
-                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28"
-                      />
+                      <input type="time" value={h?.fermeture || '22:00'} onChange={e => updateHours(key, 'fermeture', e.target.value)}
+                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28" />
                     </>
                   ) : (
                     <span className="text-xs text-red-400">Fermé</span>
@@ -289,6 +304,80 @@ export default function SettingsPage() {
                 </div>
               )
             })}
+          </div>
+        </div>
+
+        {/* ── Sécurité — Changer mot de passe ── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Lock className="w-4 h-4 text-brand-orange" />
+            <h2 className="text-white font-semibold text-sm">Sécurité</h2>
+          </div>
+          <p className="text-gray-500 text-xs mb-4">Changez votre mot de passe de connexion.</p>
+
+          {pwdMessage && (
+            <div className={`flex items-center gap-3 p-3 rounded-xl mb-4 text-sm ${pwdMessage.type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
+              {pwdMessage.type === 'success' ? <CheckCircle className="w-4 h-4 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 flex-shrink-0" />}
+              {pwdMessage.text}
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Mot de passe actuel</label>
+              <div className="relative">
+                <input
+                  type={showCurrent ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 pr-11 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                />
+                <button type="button" onClick={() => setShowCurrent(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                  {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Nouveau mot de passe</label>
+              <div className="relative">
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Minimum 8 caractères"
+                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 pr-11 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                />
+                <button type="button" onClick={() => setShowNew(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                  {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1.5">Confirmer le nouveau mot de passe</label>
+              <div className="relative">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 pr-11 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                />
+                <button type="button" onClick={() => setShowConfirm(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={handleChangePassword}
+              disabled={pwdSaving || !currentPassword || !newPassword || !confirmPassword}
+              className="w-full flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 mt-1"
+            >
+              {pwdSaving ? <><Loader2 className="w-4 h-4 animate-spin" />Mise à jour...</> : <><Lock className="w-4 h-4" />Mettre à jour le mot de passe</>}
+            </button>
           </div>
         </div>
 

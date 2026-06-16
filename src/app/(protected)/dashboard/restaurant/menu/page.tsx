@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/Badge'
 import { ImageUpload } from '@/components/menu/ImageUpload'
 import { EmptyState, SkeletonRow } from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/utils'
-import { PlusCircle, Pencil, Trash2, UtensilsCrossed, ToggleLeft, ToggleRight } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2, UtensilsCrossed, ToggleLeft, ToggleRight, Tag, GripVertical, Check, X as XIcon } from 'lucide-react'
 import type { MenuItem, MenuCategory } from '@/lib/types'
 
 export default function MenuPage() {
@@ -31,6 +31,9 @@ export default function MenuPage() {
   const [catName, setCatName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [editingCatId, setEditingCatId] = useState<string | null>(null)
+  const [editingCatName, setEditingCatName] = useState('')
+  const [catSaving, setCatSaving] = useState(false)
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -124,6 +127,27 @@ export default function MenuPage() {
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_available: !i.is_available } : i))
   }
 
+  async function deleteCategory(id: string) {
+    if (!confirm('Supprimer cette catégorie ? Les plats associés perdront leur catégorie.')) return
+    await supabase.from('menu_categories').delete().eq('id', id)
+    setCategories(prev => prev.filter(c => c.id !== id))
+    setItems(prev => prev.map(i => i.category_id === id ? { ...i, category_id: null } : i))
+  }
+
+  async function startEditCat(cat: MenuCategory) {
+    setEditingCatId(cat.id)
+    setEditingCatName(cat.name)
+  }
+
+  async function saveEditCat(id: string) {
+    if (!editingCatName.trim()) return
+    setCatSaving(true)
+    await supabase.from('menu_categories').update({ name: editingCatName.trim() }).eq('id', id)
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, name: editingCatName.trim() } : c))
+    setEditingCatId(null)
+    setCatSaving(false)
+  }
+
   async function saveCategory() {
     if (!catName.trim() || !restaurantId) return
     setSaving(true)
@@ -151,15 +175,72 @@ export default function MenuPage() {
           <h1 className="text-2xl font-bold text-white">Menu</h1>
           <p className="text-gray-500 text-sm mt-1">{items.length} plat(s) · {categories.length} catégorie(s)</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => setCatModal(true)}>
-            + Catégorie
-          </Button>
-          <Button size="sm" onClick={openCreate}>
-            <PlusCircle className="w-4 h-4" />
-            Ajouter un plat
-          </Button>
+        <Button size="sm" onClick={openCreate}>
+          <PlusCircle className="w-4 h-4" />
+          Ajouter un plat
+        </Button>
+      </div>
+
+      {/* ── Gestion des catégories ── */}
+      <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-brand-orange" />
+            <h2 className="text-white font-semibold text-sm">Catégories</h2>
+            <span className="text-gray-500 text-xs">({categories.length})</span>
+          </div>
+          <button
+            onClick={() => setCatModal(true)}
+            className="flex items-center gap-1.5 text-brand-orange hover:text-brand-orange-dark text-xs font-semibold transition-colors"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            Nouvelle catégorie
+          </button>
         </div>
+
+        {categories.length === 0 ? (
+          <p className="text-gray-500 text-sm text-center py-3">Aucune catégorie — vos plats apparaissent tous ensemble.</p>
+        ) : (
+          <div className="space-y-2">
+            {categories.map(cat => {
+              const count = items.filter(i => i.category_id === cat.id).length
+              const isEditing = editingCatId === cat.id
+              return (
+                <div key={cat.id} className="flex items-center gap-3 bg-surface-100 border border-surface-200 rounded-xl px-4 py-2.5">
+                  <GripVertical className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                  {isEditing ? (
+                    <>
+                      <input
+                        autoFocus
+                        value={editingCatName}
+                        onChange={e => setEditingCatName(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') saveEditCat(cat.id); if (e.key === 'Escape') setEditingCatId(null) }}
+                        className="flex-1 bg-surface-50 border border-surface-300 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                      />
+                      <button onClick={() => saveEditCat(cat.id)} disabled={catSaving} className="p-1.5 text-green-400 hover:text-green-300 transition-colors">
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => setEditingCatId(null)} className="p-1.5 text-gray-500 hover:text-white transition-colors">
+                        <XIcon className="w-4 h-4" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-white text-sm font-medium">{cat.name}</span>
+                      <span className="text-gray-500 text-xs">{count} plat{count > 1 ? 's' : ''}</span>
+                      <button onClick={() => startEditCat(cat)} className="p-1.5 text-gray-500 hover:text-white transition-colors">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => deleteCategory(cat.id)} className="p-1.5 text-gray-500 hover:text-red-400 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Content */}
