@@ -11,12 +11,16 @@ import { MenuCard } from '@/components/restaurant/MenuCard'
 import { CartDrawer, CartButton } from '@/components/cart/CartDrawer'
 import { CartProvider, useCart } from '@/lib/hooks/useCart'
 import { QRCodeButton } from '@/components/restaurant/QRCodeButton'
+import { ProductModal } from '@/components/restaurant/ProductModal'
+import { PromoBanners } from '@/components/restaurant/PromoBanners'
+import { FullMenuDisplay } from '@/components/restaurant/FullMenuDisplay'
 import {
   DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR,
   generateThemeTokens, themeToStyle, type RestaurantTheme
 } from '@/lib/theme'
-import { canUseFeature, normalizePlan } from '@/lib/plans'
-import type { RestaurantPageData } from '@/lib/types'
+import { canUseFeature, normalizePlan, isPremiumPlan } from '@/lib/plans'
+import type { RestaurantPageData, MenuItem } from '@/lib/types'
+import type { Banner } from '@/components/restaurant/PromoBanners'
 
 type RestaurantFull = RestaurantPageData['restaurant'] & {
   primary_color?: string | null
@@ -36,6 +40,10 @@ type RestaurantFull = RestaurantPageData['restaurant'] & {
   longitude?: number | null
   prep_time_minutes?: number | null
   email?: string | null
+  // Premium
+  banners?: Banner[]
+  full_menu_image_url?: string | null
+  show_full_menu?: boolean
 }
 
 interface Props {
@@ -62,7 +70,6 @@ function isOpenNow(opening_hours?: Record<string, { ouverture?: string; fermetur
   return cur >= oh * 60 + om && cur < fh * 60 + fm
 }
 
-// Bouton panier dans la navbar (doit être dans CartProvider)
 function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeTokens> }) {
   const { totalItems } = useCart()
   const [open, setOpen] = useState(false)
@@ -105,11 +112,13 @@ function RestaurantInner({ data }: Props) {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [showAllMenu, setShowAllMenu] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null)
 
   const MENU_PREVIEW = 8
 
   const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'starter' : 'starter'))
   const isPro = plan === 'pro'
+  const isPremium = isPremiumPlan(plan)
 
   const shouldShowTerangaBranding = !restaurant.is_demo && !canUseFeature(plan, 'suppressionBranding')
   const canCall = canUseFeature(plan, 'boutonAppel')
@@ -117,8 +126,8 @@ function RestaurantInner({ data }: Props) {
   const canShowSocials = canUseFeature(plan, 'reseauxSociaux')
   const canShowPhone = isPro
 
-  // Thème — identique à l'original, ne pas toucher
-  const themeConfig: RestaurantTheme = isPro ? {
+  // Thème
+  const themeConfig: RestaurantTheme = isPro || isPremium ? {
     primary: restaurant.primary_color || DEFAULT_PRIMARY_COLOR,
     mode: (restaurant.theme_mode === 'light' ? 'light' : 'dark') as 'dark' | 'light',
     background: restaurant.background_color || undefined,
@@ -147,7 +156,20 @@ function RestaurantInner({ data }: Props) {
     }
   }
 
-  const filteredItems = activeCategory ? items.filter(i => i.category_id === activeCategory) : items
+  // Tri Premium : items épinglés en premier dans leur catégorie
+  const sortedItems = isPremium
+    ? [...items].sort((a, b) => {
+        if (a.category_id !== b.category_id) return 0
+        const pinA = a.is_pinned ? 0 : 1
+        const pinB = b.is_pinned ? 0 : 1
+        if (pinA !== pinB) return pinA - pinB
+        return a.position - b.position
+      })
+    : items
+
+  const filteredItems = activeCategory
+    ? sortedItems.filter(i => i.category_id === activeCategory)
+    : sortedItems
   const availableItems = filteredItems.filter(i => i.is_available)
   const unavailableItems = filteredItems.filter(i => !i.is_available)
   const displayedAvailable = showAllMenu ? availableItems : availableItems.slice(0, MENU_PREVIEW)
@@ -156,7 +178,6 @@ function RestaurantInner({ data }: Props) {
   const demoBannerH = restaurant.is_demo ? 36 : 0
   const prepTime = restaurant.prep_time_minutes ? `${restaurant.prep_time_minutes} min` : '20 - 35 min'
 
-  // Patch body background + text color pour overrider globals.css (thème desktop)
   useEffect(() => {
     const prevBg = document.body.style.backgroundColor
     const prevColor = document.body.style.color
@@ -192,16 +213,9 @@ function RestaurantInner({ data }: Props) {
       {/* ── NAVBAR ── */}
       <nav
         className="sticky z-[60]"
-        style={{
-          top: demoBannerH,
-          height: 64,
-          backgroundColor: tokens.bgCard,
-          borderBottom: `1px solid ${tokens.border}`,
-        }}
+        style={{ top: demoBannerH, height: 64, backgroundColor: tokens.bgCard, borderBottom: `1px solid ${tokens.border}` }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
-
-          {/* Logo + nom */}
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: tokens.bgCardHover }}>
               {restaurant.logo_url ? (
@@ -215,7 +229,6 @@ function RestaurantInner({ data }: Props) {
             <span className="font-bold text-sm truncate hidden sm:block" style={{ color: tokens.textPrimary }}>{restaurant.name}</span>
           </div>
 
-          {/* Liens navigation — desktop */}
           <div className="hidden md:flex items-center gap-6">
             {[
               { label: 'Catégories', id: 'categories' },
@@ -235,7 +248,6 @@ function RestaurantInner({ data }: Props) {
             ))}
           </div>
 
-          {/* Actions droite */}
           <div className="flex items-center gap-2">
             <QRCodeButton url={publicUrl} restaurantName={restaurant.name} tokens={tokens} />
             {canCall && restaurant.phone && (
@@ -260,7 +272,6 @@ function RestaurantInner({ data }: Props) {
                 )}
               </div>
             )}
-            {/* Panier desktop dans la navbar */}
             <div className="hidden sm:block">
               <NavCartButton tokens={tokens} />
             </div>
@@ -283,11 +294,8 @@ function RestaurantInner({ data }: Props) {
         ) : (
           <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${tokens.accent}25 0%, ${tokens.bgPage} 100%)` }} />
         )}
-
-        {/* Overlay gradient sombre vers le bas */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 55%, transparent 100%)' }} />
 
-        {/* Branding TerangaLink Starter */}
         {shouldShowTerangaBranding && (
           <a href="/" className="absolute top-4 left-4 flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity">
             <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
@@ -297,14 +305,12 @@ function RestaurantInner({ data }: Props) {
           </a>
         )}
 
-        {/* Contenu texte — bas gauche */}
         <div className="absolute bottom-0 left-0 right-0 px-5 sm:px-8 pb-6">
           <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1">{restaurant.name}</h1>
           {restaurant.description && (
             <p className="text-white/75 text-sm mb-4 max-w-lg line-clamp-2">{restaurant.description}</p>
           )}
           <div className="flex flex-wrap gap-2">
-            {/* Ouvert / Fermé */}
             <div
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
               style={{ backgroundColor: ouvert ? tokens.openBg : tokens.closedBg, color: ouvert ? tokens.openText : tokens.closedText }}
@@ -312,7 +318,6 @@ function RestaurantInner({ data }: Props) {
               <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: ouvert ? tokens.openText : tokens.closedText }} />
               {ouvert ? 'Ouvert maintenant' : 'Fermé'}
             </div>
-            {/* Temps de préparation */}
             <div
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
               style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }}
@@ -330,6 +335,20 @@ function RestaurantInner({ data }: Props) {
 
           {/* Colonne principale */}
           <div className="flex-1 min-w-0">
+
+            {/* ── BANNIÈRES (Phase 7 — Premium) ── */}
+            {isPremium && restaurant.banners && restaurant.banners.length > 0 && (
+              <PromoBanners banners={restaurant.banners} tokens={tokens} />
+            )}
+
+            {/* ── MENU COMPLET IMAGE (Phase 8 — Premium) ── */}
+            {isPremium && (
+              <FullMenuDisplay
+                menuImageUrl={restaurant.full_menu_image_url ?? null}
+                enabled={restaurant.show_full_menu ?? false}
+                tokens={tokens}
+              />
+            )}
 
             {/* ── SECTION CATÉGORIES ── */}
             <section id="categories" className="mb-8 scroll-mt-20">
@@ -401,6 +420,8 @@ function RestaurantInner({ data }: Props) {
                           restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
                           restaurantName={restaurant.name}
                           tokens={tokens}
+                          isPremium={isPremium}
+                          onOpenProduct={setSelectedProduct}
                         />
                       ))}
                     </div>
@@ -441,6 +462,8 @@ function RestaurantInner({ data }: Props) {
                             restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
                             restaurantName={restaurant.name}
                             tokens={tokens}
+                            isPremium={isPremium}
+                            onOpenProduct={setSelectedProduct}
                           />
                         ))}
                       </div>
@@ -483,7 +506,6 @@ function RestaurantInner({ data }: Props) {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {/* Colonne 1 — Infos */}
                 <div>
                   {restaurant.description && (
                     <p className="text-sm leading-relaxed mb-4" style={{ color: tokens.textSecondary }}>{restaurant.description}</p>
@@ -495,13 +517,9 @@ function RestaurantInner({ data }: Props) {
                         ? `https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`
                         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
                       return (
-                        <a
-                          href={mapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
                           className="flex items-start gap-2 text-sm transition-opacity hover:opacity-75"
-                          style={{ color: tokens.textSecondary }}
-                        >
+                          style={{ color: tokens.textSecondary }}>
                           <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: tokens.accent }} />
                           <span className="underline underline-offset-2">{restaurant.address}{restaurant.city ? `, ${restaurant.city}` : ''}</span>
                         </a>
@@ -522,7 +540,6 @@ function RestaurantInner({ data }: Props) {
                   </div>
                 </div>
 
-                {/* Colonne 2 — Horaires : toujours afficher les 7 jours */}
                 {(() => {
                   const normalizedHours: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> = {}
                   if (restaurant.opening_hours) {
@@ -552,7 +569,6 @@ function RestaurantInner({ data }: Props) {
                   )
                 })()}
 
-                {/* Colonne 3 — Réseaux sociaux (Pro uniquement) */}
                 {canShowSocials && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url) && (
                   <div>
                     <h3 className="font-bold text-sm mb-3" style={{ color: tokens.textPrimary }}>Suivez-nous</h3>
@@ -582,7 +598,6 @@ function RestaurantInner({ data }: Props) {
                   </div>
                 )}
               </div>
-
             </section>
 
           </div>
@@ -593,7 +608,7 @@ function RestaurantInner({ data }: Props) {
               className="sticky rounded-2xl overflow-hidden max-h-[calc(100vh-6rem)]"
               style={{ top: demoBannerH + 64 + 16, backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
             >
-              <CartDrawer inline tokens={tokens} />
+              <CartDrawer inline tokens={tokens} isPremium={isPremium} />
             </div>
           </div>
 
@@ -616,8 +631,22 @@ function RestaurantInner({ data }: Props) {
         </div>
       </footer>
 
-      {/* Bouton panier flottant mobile */}
+      {/* Panier mobile flottant */}
       <CartButton tokens={tokens} />
+
+      {/* ── POPUP PRODUIT (Phase 1 + 2 + 3 + 4 + 6) ── */}
+      {selectedProduct && (
+        <ProductModal
+          item={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          restaurantId={restaurant.id}
+          restaurantSlug={restaurant.slug}
+          restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
+          restaurantName={restaurant.name}
+          tokens={tokens}
+          isPremium={isPremium}
+        />
+      )}
 
     </div>
   )

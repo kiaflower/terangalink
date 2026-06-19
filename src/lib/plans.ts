@@ -1,33 +1,33 @@
 /**
  * TerangaLink Subscription System
- * Plans publics: starter | pro
- *
- * Les anciens plans de durée (mensuel, trimestriel, annuel) restent acceptés en
- * entrée pour ne pas casser les restaurants existants, mais toute la logique
- * applicative les normalise vers Starter ou Pro.
+ * Plans: starter | pro | premium
  */
 
-export type PlanType = 'starter' | 'pro'
-export type LegacyPlanType = 'mensuel' | 'trimestriel' | 'annuel' | 'enterprise' | 'premium' | 'free' | 'demo' | 'gratuit' | 'trial'
+export type PlanType = 'starter' | 'pro' | 'premium'
+export type LegacyPlanType = 'mensuel' | 'trimestriel' | 'annuel' | 'enterprise' | 'free' | 'demo' | 'gratuit' | 'trial'
 
 export const PLAN_LABELS: Record<PlanType, string> = {
   starter: 'Starter',
   pro: 'Pro',
+  premium: 'Premium',
 }
 
 export const PLAN_PRICES: Record<PlanType, number> = {
   starter: 9000,
   pro: 15000,
+  premium: 25000,
 }
 
 export const PLAN_PERIODS: Record<PlanType, string> = {
   starter: '/mois',
   pro: '/mois',
+  premium: '/mois',
 }
 
 export const PLAN_OPTIONS: { value: PlanType; label: string }[] = [
   { value: 'starter', label: 'Starter — 9 000 FCFA/mois' },
   { value: 'pro', label: 'Pro — 15 000 FCFA/mois' },
+  { value: 'premium', label: 'Premium — 25 000 FCFA/mois' },
 ]
 
 export interface PlanFeatures {
@@ -52,8 +52,12 @@ export interface PlanFeatures {
   suppressionBranding: boolean
   supportPrioritaire: boolean
   accompagnementPersonnalise: boolean
-
-  // Compatibilité avec les feature gates existants.
+  // Premium
+  variantesProduits: boolean
+  gestionStock: boolean
+  precommandes: boolean
+  codePromo: boolean
+  // Compatibilité feature gates existants
   maxPlats: number | 'illimité'
   maxAdmins: number
   brandingPersonnalise: boolean
@@ -87,6 +91,10 @@ export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
     suppressionBranding: false,
     supportPrioritaire: false,
     accompagnementPersonnalise: false,
+    variantesProduits: false,
+    gestionStock: false,
+    precommandes: false,
+    codePromo: false,
     maxPlats: 'illimité',
     maxAdmins: 1,
     brandingPersonnalise: false,
@@ -118,8 +126,47 @@ export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
     suppressionBranding: true,
     supportPrioritaire: true,
     accompagnementPersonnalise: true,
+    variantesProduits: false,
+    gestionStock: false,
+    precommandes: false,
+    codePromo: false,
     maxPlats: 'illimité',
     maxAdmins: 5,
+    brandingPersonnalise: true,
+    analyticsAvances: true,
+    qrCodePremium: true,
+    boutonAppel: true,
+    boutonPartage: true,
+    managerDedie: true,
+  },
+  premium: {
+    siteCommande: true,
+    menuIllimite: true,
+    commandesWhatsapp: true,
+    dashboardAdministrateur: true,
+    suiviCommandes: true,
+    revenusMensuels: true,
+    produitsPlusCommandes: true,
+    statistiquesAnalytiques: true,
+    qrCode: true,
+    supportWhatsapp: true,
+    formationIncluse: true,
+    brandingTerangaVisible: false,
+    couleursTerangaParDefaut: false,
+    modeClairSombre: true,
+    couleursPersonnalisees: true,
+    couleurBoutonsPersonnalisee: true,
+    elementsVisuelsPersonnalises: true,
+    reseauxSociaux: true,
+    suppressionBranding: true,
+    supportPrioritaire: true,
+    accompagnementPersonnalise: true,
+    variantesProduits: true,
+    gestionStock: true,
+    precommandes: true,
+    codePromo: true,
+    maxPlats: 'illimité',
+    maxAdmins: 10,
     brandingPersonnalise: true,
     analyticsAvances: true,
     qrCodePremium: true,
@@ -140,7 +187,7 @@ const LEGACY_PLAN_MAP: Record<string, PlanType> = {
   pro: 'pro',
   annuel: 'pro',
   enterprise: 'pro',
-  premium: 'pro',
+  premium: 'premium',
 }
 
 export function getPlanFeatures(plan: string): PlanFeatures {
@@ -156,6 +203,10 @@ export function isProPlan(plan: string): boolean {
   return normalizePlan(plan) === 'pro'
 }
 
+export function isPremiumPlan(plan: string): boolean {
+  return normalizePlan(plan) === 'premium'
+}
+
 export function canUseFeature(plan: string, feature: keyof PlanFeatures): boolean {
   const features = getPlanFeatures(plan)
   return !!features[feature]
@@ -164,6 +215,7 @@ export function canUseFeature(plan: string, feature: keyof PlanFeatures): boolea
 export function getUpgradeRequired(feature: keyof PlanFeatures): PlanType | null {
   if (PLAN_FEATURES.starter[feature]) return null
   if (PLAN_FEATURES.pro[feature]) return 'pro'
+  if (PLAN_FEATURES.premium[feature]) return 'premium'
   return null
 }
 

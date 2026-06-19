@@ -46,17 +46,18 @@ export function Modal({
         onClick={onClose}
       />
 
-      {/* Panel */}
+      {/* Panel — hauteur max + flex column pour scroll interne */}
       <div
         className={cn(
           'relative w-full bg-surface-50 border border-surface-200 rounded-2xl shadow-2xl',
-          'animate-fade-in',
+          'flex flex-col animate-fade-in',
+          'max-h-[90vh]',
           sizes[size]
         )}
       >
-        {/* Header */}
+        {/* Header — fixe en haut */}
         {(title || description) && (
-          <div className="flex items-start justify-between p-6 border-b border-surface-200">
+          <div className="flex items-start justify-between p-6 border-b border-surface-200 flex-shrink-0">
             <div>
               {title && (
                 <h2 className="text-white font-semibold text-lg">{title}</h2>
@@ -74,8 +75,8 @@ export function Modal({
           </div>
         )}
 
-        {/* Content */}
-        <div className="p-6">{children}</div>
+        {/* Content — scrollable */}
+        <div className="p-6 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   )

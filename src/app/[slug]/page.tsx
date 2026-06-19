@@ -37,6 +37,9 @@ interface RestaurantRow {
   latitude: number | null
   longitude: number | null
   cuisine_type: string | null
+  // Premium
+  full_menu_image_url: string | null
+  show_full_menu: boolean
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -59,7 +62,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RestaurantPage({ params }: Props) {
   const supabase = await createClient()
 
-  // Sélection des colonnes de base garanties présentes en base
   const { data: baseData, error: baseError } = await supabase
     .from('restaurants')
     .select('id, name, slug, description, city, phone, address, logo_url, cover_url, is_active, cuisine_type')
@@ -91,24 +93,21 @@ export default async function RestaurantPage({ params }: Props) {
     )
   }
 
-  // Sélection des colonnes étendues (ajoutées via migration) — on gère l'absence gracieusement
+  // Colonnes étendues (graceful fallback si migration pas encore appliquée)
   let extended: Partial<RestaurantRow> = {}
   try {
     const { data: extData } = await supabase
       .from('restaurants')
-      .select('whatsapp_number, banner_url, primary_color, background_color, theme_mode, button_color, facebook_url, instagram_url, tiktok_url, opening_hours, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes, latitude, longitude')
+      .select('whatsapp_number, banner_url, primary_color, background_color, theme_mode, button_color, facebook_url, instagram_url, tiktok_url, opening_hours, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes, latitude, longitude, full_menu_image_url, show_full_menu')
       .eq('id', base.id)
       .single()
 
-    if (extData) {
-      extended = extData as Partial<RestaurantRow>
-    }
+    if (extData) extended = extData as Partial<RestaurantRow>
   } catch {
-    // Les colonnes étendues n'existent pas encore — on continue avec les valeurs par défaut
     console.warn('Extended columns not yet available — run migration SQL')
   }
 
-  // Récupération du plan d'abonnement
+  // Plan
   const { data: subscriptionData } = await supabase
     .from('subscriptions')
     .select('plan, status')
@@ -117,11 +116,58 @@ export default async function RestaurantPage({ params }: Props) {
 
   const subscription = subscriptionData as { plan: string; status: string } | null
   const plan = subscription?.plan ?? 'starter'
+  const isPremium = plan === 'premium'
 
+  // Catégories + items
   const [{ data: categoriesData }, { data: itemsData }] = await Promise.all([
     supabase.from('menu_categories').select('*').eq('restaurant_id', base.id).eq('is_active', true).order('position'),
     supabase.from('menu_items').select('*').eq('restaurant_id', base.id).order('position'),
   ])
+
+  // Variantes (Premium uniquement)
+  let variantsByItemId: Record<string, import('@/lib/types').MenuItemVariant[]> = {}
+  if (isPremium && itemsData && itemsData.length > 0) {
+    try {
+      const itemIds = (itemsData as { id: string }[]).map(i => i.id)
+      const { data: variantsData } = await supabase
+        .from('menu_item_variants')
+        .select('*')
+        .in('menu_item_id', itemIds)
+        .order('position')
+
+      if (variantsData) {
+        for (const v of variantsData as import('@/lib/types').MenuItemVariant[]) {
+          if (!variantsByItemId[v.menu_item_id]) variantsByItemId[v.menu_item_id] = []
+          variantsByItemId[v.menu_item_id].push(v)
+        }
+      }
+    } catch {
+      console.warn('menu_item_variants table not yet available')
+    }
+  }
+
+  // Items enrichis avec variantes
+  const enrichedItems = (itemsData as import('@/lib/types').MenuItem[] ?? []).map(item => ({
+    ...item,
+    variants: variantsByItemId[item.id] ?? [],
+  }))
+
+  // Bannières (Premium uniquement)
+  let banners: import('@/components/restaurant/PromoBanners').Banner[] = []
+  if (isPremium) {
+    try {
+      const { data: bannersData } = await supabase
+        .from('banners')
+        .select('*')
+        .eq('restaurant_id', base.id)
+        .eq('is_active', true)
+        .order('position')
+
+      if (bannersData) banners = bannersData as import('@/components/restaurant/PromoBanners').Banner[]
+    } catch {
+      console.warn('banners table not yet available')
+    }
+  }
 
   const restaurant: RestaurantRow = {
     ...base,
@@ -144,14 +190,16 @@ export default async function RestaurantPage({ params }: Props) {
     prep_time_minutes: extended.prep_time_minutes ?? null,
     latitude: extended.latitude ?? null,
     longitude: extended.longitude ?? null,
+    full_menu_image_url: extended.full_menu_image_url ?? null,
+    show_full_menu: extended.show_full_menu ?? false,
   }
 
   return (
     <RestaurantPageClient
       data={{
-        restaurant: { ...restaurant, plan },
+        restaurant: { ...restaurant, plan, banners },
         categories: (categoriesData as never[]) ?? [],
-        items: (itemsData as never[]) ?? [],
+        items: enrichedItems,
       }}
     />
   )

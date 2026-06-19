@@ -53,7 +53,7 @@ function buildReceiptHTML(
 
   const itemsHTML = items.map(item => `
     <div style="margin-bottom:8px;">
-      <div style="font-size:13px;font-weight:700;color:#111;">${item.name}</div>
+      <div style="font-size:13px;font-weight:700;color:#111;">${item.name}${(item as OrderItem).variant_name ? ` — ${(item as OrderItem).variant_name}` : ''}</div>
       <div style="font-size:12px;color:#666;margin-top:2px;">${item.quantity} x ${item.price.toLocaleString('fr-SN')} = ${(item.price * item.quantity).toLocaleString('fr-SN')} FCFA</div>
     </div>
   `).join('')

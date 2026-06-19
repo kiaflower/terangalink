@@ -25,8 +25,20 @@ export interface MenuItem {
   position: number
   created_at: string
   updated_at: string
+  // Stock (Premium)
+  stock_enabled?: boolean
+  stock_quantity?: number | null
+  stock_low_threshold?: number
+  // Précommandes (Premium)
+  preorder_enabled?: boolean
+  preorder_open_at?: string | null
+  preorder_close_at?: string | null
+  preorder_delivery_date?: string | null
+  preorder_max_qty?: number | null
+  preorder_reserved?: number
   // joined
   category?: MenuCategory
+  variants?: MenuItemVariant[]
 }
 
 export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
@@ -38,6 +50,8 @@ export interface OrderItem {
   price: number
   quantity: number
   image_url?: string | null
+  variant_id?: string | null
+  variant_name?: string | null
 }
 
 export interface Order {
@@ -50,6 +64,37 @@ export interface Order {
   payment_method: PaymentMethod | null
   status: OrderStatus
   notes: string | null
+  promo_code_id: string | null
+  discount_amount: number
+  created_at: string
+  updated_at: string
+}
+
+
+// ─── Premium Types ────────────────────────────────────────────────────────────
+
+export interface MenuItemVariant {
+  id: string
+  menu_item_id: string
+  restaurant_id: string
+  name: string
+  price: number
+  position: number
+  created_at: string
+}
+
+export interface PromoCode {
+  id: string
+  restaurant_id: string
+  code: string
+  discount_type: 'fixed' | 'percent'
+  discount_value: number
+  min_order_amount: number | null
+  starts_at: string | null
+  expires_at: string | null
+  max_uses: number | null
+  used_count: number
+  is_active: boolean
   created_at: string
   updated_at: string
 }
@@ -62,6 +107,9 @@ export interface CartItem {
   price: number
   quantity: number
   image_url?: string | null
+  variant_id?: string | null
+  variant_name?: string | null
+  preorder_delivery_date?: string | null
 }
 
 export interface CartState {

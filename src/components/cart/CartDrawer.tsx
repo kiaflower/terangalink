@@ -1,14 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { ShoppingBag, X, Plus, Minus, Trash2, MessageCircle } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { ShoppingBag, X, Plus, Minus, Trash2, MessageCircle, Tag, Loader2, XCircle } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 import { formatCurrency } from '@/lib/utils'
 import Image from 'next/image'
 import type { ThemeTokens } from '@/lib/theme'
 import { useSettings } from '@/lib/hooks/useSettings'
 
-interface Props { onClose?: () => void; inline?: boolean; tokens?: ThemeTokens }
+interface Props {
+  onClose?: () => void
+  inline?: boolean
+  tokens?: ThemeTokens
+  isPremium?: boolean
+}
 
 const DEFAULT_TOKENS: ThemeTokens = {
   bgPage: '#0A0A0A', bgCard: '#141414', bgCardHover: '#1C1C1C', bgInput: '#1C1C1C', bgBadge: '#1C1C1C',
@@ -17,6 +22,62 @@ const DEFAULT_TOKENS: ThemeTokens = {
   accent: '#F97316', accentHover: '#EA580C', accentSubtle: '#F9731620', accentText: '#F97316', button: '#F97316', buttonHover: '#EA580C',
   openBg: 'rgba(34,197,94,0.12)', openText: '#4ADE80', closedBg: 'rgba(239,68,68,0.12)', closedText: '#F87171',
 }
+
+// ─── Promo hook ───────────────────────────────────────────────────────────────
+
+interface AppliedPromo {
+  code: string
+  discount_type: 'fixed' | 'percent'
+  discount_value: number
+  promo_code_id: string
+}
+
+function usePromoCode(restaurantId: string | null) {
+  const [code, setCode] = useState('')
+  const [applied, setApplied] = useState<AppliedPromo | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const apply = useCallback(async () => {
+    if (!code.trim() || !restaurantId) return
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/promo?code=${encodeURIComponent(code.trim())}&restaurant_id=${restaurantId}`)
+      const json = await res.json()
+      if (!res.ok || !json.data) {
+        setError(json.error || 'Code invalide')
+        return
+      }
+      setApplied({
+        code: json.data.code,
+        discount_type: json.data.discount_type,
+        discount_value: json.data.discount_value,
+        promo_code_id: json.data.id,
+      })
+    } catch {
+      setError('Erreur de vérification')
+    } finally {
+      setLoading(false)
+    }
+  }, [code, restaurantId])
+
+  const remove = useCallback(() => {
+    setApplied(null)
+    setCode('')
+    setError(null)
+  }, [])
+
+  return { code, setCode, applied, loading, error, apply, remove }
+}
+
+function computeDiscount(total: number, promo: AppliedPromo | null): number {
+  if (!promo) return 0
+  if (promo.discount_type === 'fixed') return Math.min(promo.discount_value, total)
+  return Math.round((total * promo.discount_value) / 100)
+}
+
+// ─── Cart Item display ────────────────────────────────────────────────────────
 
 export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }) {
   const { totalItems } = useCart()
@@ -31,22 +92,13 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
               await fetch('/api/analytics/track', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  restaurant_id: 'demo',
-                  event_type: 'open_cart',
-                }),
+                body: JSON.stringify({ restaurant_id: 'demo', event_type: 'open_cart' }),
               })
-            } catch {
-              // ignore analytics failure
-            }
+            } catch { /* ignore */ }
             setOpen(true)
           }}
           className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 text-white px-5 py-3 rounded-2xl font-semibold shadow-2xl"
-          style={{
-            backgroundColor: tokens.button,
-            color: tokens.textOnButton,
-            boxShadow: `0 8px 30px ${tokens.button}40`,
-          }}
+          style={{ backgroundColor: tokens.button, color: tokens.textOnButton, boxShadow: `0 8px 30px ${tokens.button}40` }}
         >
           <ShoppingBag className="w-4 h-4" />
           Voir le panier ({totalItems})
@@ -57,12 +109,10 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
   )
 }
 
-export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }: Props) {
+export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, isPremium = false }: Props) {
   const { state, updateQty, clearCart, totalItems, totalPrice } = useCart()
   const settings = useSettings()
-  const baseUrl = typeof window !== 'undefined'
-    ? window.location.origin
-    : settings.platform_url
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : settings.platform_url
 
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -70,22 +120,16 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
   const [customerPhone, setCustomerPhone] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'Wave' | 'Orange Money' | 'Cash'>('Wave')
 
-  function openWhatsappSafely(url: string, pendingWindow: Window | null) {
-    // iOS Safari safe fallback chain
-    if (pendingWindow && !pendingWindow.closed) {
-      try {
-        pendingWindow.location.href = url
-        return
-      } catch {
-        // continue fallback
-      }
-    }
+  const promo = usePromoCode(state.restaurantId)
+  const discount = computeDiscount(totalPrice, promo.applied)
+  const finalTotal = totalPrice - discount
 
-    const popup = window.open(url, '_blank')
-    if (!popup) {
-      // last-resort fallback (works better on iOS Safari)
-      window.location.href = url
+  function openWhatsappSafely(url: string, pendingWindow: Window | null) {
+    if (pendingWindow && !pendingWindow.closed) {
+      try { pendingWindow.location.href = url; return } catch { /* continue */ }
     }
+    const popup = window.open(url, '_blank')
+    if (!popup) window.location.href = url
   }
 
   async function handleOrderViaWhatsApp() {
@@ -99,8 +143,6 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
 
     setSubmitting(true)
     setSubmitError(null)
-
-    // Open immediately in click context (anti popup-block)
     const pendingWindow = window.open('about:blank', '_blank')
 
     try {
@@ -116,10 +158,14 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
             name: i.name,
             price: i.price,
             quantity: i.quantity,
+            variant_id: i.variant_id ?? null,
+            variant_name: i.variant_name ?? null,
           })),
-          total: totalPrice,
+          total: finalTotal,
           payment_method: paymentMethod === 'Wave' ? 'wave' : paymentMethod === 'Orange Money' ? 'orange_money' : 'cash',
           notes: null,
+          promo_code_id: promo.applied?.promo_code_id ?? null,
+          discount_amount: discount,
         }),
       })
 
@@ -129,28 +175,53 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
       }
 
       const order = payload.data as { id: string; created_at: string }
-      const itemsLines = state.items
-        .map(i => `• ${i.name} x${i.quantity} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`)
-        .join('\n')
+
+      // Detect preorder (any item with preorder_delivery_date)
+      const preorderItem = state.items.find(i => i.preorder_delivery_date)
+      const isPreorder = !!preorderItem
+      const deliveryText = preorderItem?.preorder_delivery_date ?? ''
+
+      // Build WhatsApp message with variants + promo
+      const itemsLines = state.items.map(i => {
+        const variantPart = i.variant_name ? ` — ${i.variant_name}` : ''
+        return `• ${i.name}${variantPart} ×${i.quantity} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`
+      }).join('\n')
+
+      const promoLine = promo.applied
+        ? `\nCode promo : ${promo.applied.code} (−${formatCurrency(discount)})`
+        : ''
 
       const orderTime = new Date(order.created_at || Date.now()).toLocaleString('fr-SN')
       const manageUrl = `${baseUrl.replace(/\/$/, '')}/dashboard/restaurant/orders?order=${order.id}`
 
-      const message = encodeURIComponent(
-        `Nouvelle commande — ${state.restaurantName}\n\n` +
-        `Client: ${customerName.trim() || 'Client'}\n` +
-        `Téléphone: ${cleanedCustomerPhone}\n` +
-        `Articles:\n${itemsLines}\n\n` +
-        `Total: ${totalPrice.toLocaleString('fr-SN')} FCFA\n` +
-        `Paiement: ${paymentMethod}\n` +
-        `Heure: ${orderTime}\n\n` +
-        `🔗 Gérer la commande :\n${manageUrl}`
-      )
+      let message: string
+      if (isPreorder) {
+        message = encodeURIComponent(
+          `📅 Nouvelle précommande — ${state.restaurantName}\n\n` +
+          `Client : ${customerName.trim() || 'Client'}\n` +
+          `Téléphone : ${cleanedCustomerPhone}\n\n` +
+          `Articles :\n${itemsLines}${promoLine}\n\n` +
+          `Livraison : ${deliveryText}\n\n` +
+          `Total : ${formatCurrency(finalTotal)}\n` +
+          `Paiement : ${paymentMethod}\n` +
+          `Heure : ${orderTime}\n\n` +
+          `🔗 Gérer la commande :\n${manageUrl}`
+        )
+      } else {
+        message = encodeURIComponent(
+          `🍽 Nouvelle commande — ${state.restaurantName}\n\n` +
+          `Client : ${customerName.trim() || 'Client'}\n` +
+          `Téléphone : ${cleanedCustomerPhone}\n` +
+          `Articles :\n${itemsLines}${promoLine}\n\n` +
+          `Total : ${formatCurrency(finalTotal)}\n` +
+          `Paiement : ${paymentMethod}\n` +
+          `Heure : ${orderTime}\n\n` +
+          `🔗 Gérer la commande :\n${manageUrl}`
+        )
+      }
 
       const restaurantPhone = state.restaurantPhone.replace(/\D/g, '')
-      const url = `https://wa.me/${restaurantPhone}?text=${message}`
-
-      openWhatsappSafely(url, pendingWindow)
+      openWhatsappSafely(`https://wa.me/${restaurantPhone}?text=${message}`, pendingWindow)
 
       clearCart()
       onClose?.()
@@ -171,7 +242,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
           <ShoppingBag className="w-5 h-5" style={{ color: tokens.accent }} />
           <h2 className="font-bold text-sm" style={{ color: tokens.textPrimary }}>Votre panier</h2>
           {totalItems > 0 && (
-            <span className="text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
+            <span className="text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
               {totalItems}
             </span>
           )}
@@ -192,13 +264,15 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {state.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 text-2xl" style={{ backgroundColor: tokens.bgCardHover }}>🛒</div>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 text-2xl"
+              style={{ backgroundColor: tokens.bgCardHover }}>🛒</div>
             <p className="font-semibold text-sm mb-1" style={{ color: tokens.textPrimary }}>Panier vide</p>
             <p className="text-xs" style={{ color: tokens.textMuted }}>Ajoutez des plats pour commander</p>
           </div>
         ) : (
           state.items.map(item => (
-            <div key={item.id} className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: tokens.bgCardHover }}>
+            <div key={item.id} className="flex items-center gap-3 rounded-xl p-3"
+              style={{ backgroundColor: tokens.bgCardHover }}>
               {item.image_url && (
                 <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                   <Image src={item.image_url} alt={item.name} fill className="object-cover" sizes="48px" unoptimized />
@@ -206,6 +280,10 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate" style={{ color: tokens.textPrimary }}>{item.name}</p>
+                {/* Affichage variante */}
+                {item.variant_name && (
+                  <p className="text-xs" style={{ color: tokens.textMuted }}>{item.variant_name}</p>
+                )}
                 <p className="text-xs font-semibold" style={{ color: tokens.accentText }}>{formatCurrency(item.price)}</p>
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -214,10 +292,17 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
                   className="w-6 h-6 rounded-full flex items-center justify-center transition-colors"
                   style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
                 >
-                  {item.quantity === 1 ? <Trash2 className="w-3 h-3 text-red-400" /> : <Minus className="w-3 h-3" style={{ color: tokens.textSecondary }} />}
+                  {item.quantity === 1
+                    ? <Trash2 className="w-3 h-3 text-red-400" />
+                    : <Minus className="w-3 h-3" style={{ color: tokens.textSecondary }} />
+                  }
                 </button>
                 <span className="text-sm font-bold w-4 text-center" style={{ color: tokens.textPrimary }}>{item.quantity}</span>
-                <button onClick={() => updateQty(item.id, item.quantity + 1)} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}>
+                <button
+                  onClick={() => updateQty(item.id, item.quantity + 1)}
+                  className="w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
+                >
                   <Plus className="w-3 h-3" />
                 </button>
               </div>
@@ -256,9 +341,72 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS }:
             <option value="Cash">Paiement : Cash</option>
           </select>
 
-          <div className="flex items-center justify-between">
-            <span className="text-sm" style={{ color: tokens.textSecondary }}>Total</span>
-            <span className="font-bold text-lg" style={{ color: tokens.textPrimary }}>{formatCurrency(totalPrice)}</span>
+          {/* ── Code promo (Premium uniquement) ── */}
+          {isPremium && (
+            <div>
+              {!promo.applied ? (
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: tokens.textMuted }} />
+                    <input
+                      value={promo.code}
+                      onChange={e => promo.setCode(e.target.value.toUpperCase())}
+                      onKeyDown={e => e.key === 'Enter' && promo.apply()}
+                      placeholder="Code promo"
+                      className="w-full rounded-xl pl-8 pr-3 py-2.5 text-sm focus:outline-none uppercase"
+                      style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+                    />
+                  </div>
+                  <button
+                    onClick={promo.apply}
+                    disabled={promo.loading || !promo.code.trim()}
+                    className="px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                    style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
+                  >
+                    {promo.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Appliquer'}
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl"
+                  style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-3.5 h-3.5 text-green-400" />
+                    <span className="text-sm font-semibold text-green-400">{promo.applied.code}</span>
+                    <span className="text-xs" style={{ color: tokens.textMuted }}>
+                      {promo.applied.discount_type === 'percent'
+                        ? `−${promo.applied.discount_value}%`
+                        : `−${formatCurrency(promo.applied.discount_value)}`}
+                    </span>
+                  </div>
+                  <button onClick={promo.remove}>
+                    <XCircle className="w-4 h-4 text-green-400 opacity-70 hover:opacity-100" />
+                  </button>
+                </div>
+              )}
+              {promo.error && (
+                <p className="text-xs text-red-400 mt-1 px-1">{promo.error}</p>
+              )}
+            </div>
+          )}
+
+          {/* Totaux */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm" style={{ color: tokens.textSecondary }}>Sous-total</span>
+              <span className="text-sm font-medium" style={{ color: tokens.textPrimary }}>{formatCurrency(totalPrice)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-green-400">Réduction</span>
+                <span className="text-sm font-semibold text-green-400">−{formatCurrency(discount)}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between pt-1" style={{ borderTop: `1px solid ${tokens.border}` }}>
+              <span className="font-bold text-sm" style={{ color: tokens.textPrimary }}>Total</span>
+              <span className="font-black text-lg" style={{ color: tokens.textPrimary }}>{formatCurrency(finalTotal)}</span>
+            </div>
           </div>
 
           {state.restaurantPhone ? (
