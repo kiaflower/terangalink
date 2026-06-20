@@ -210,17 +210,19 @@ export default function MenuPage() {
     if (isPremium && itemId) {
       await supabase.from('menu_item_variants').delete().eq('menu_item_id', itemId)
       if (variants.length > 0) {
-        await supabase.from('menu_item_variants').insert(
-          variants
-            .filter(v => v.name.trim())
-            .map((v, i) => ({
-              menu_item_id: itemId,
-              restaurant_id: restaurantId,
-              name: v.name.trim(),
-              price: parseInt(v.price) || 0,
-              position: i,
-            }))
-        )
+       await supabase
+  .from('menu_item_variants')
+  .insert(
+    variants
+      .filter(v => v.name.trim())
+      .map((v, i) => ({
+        menu_item_id: itemId,
+        restaurant_id: restaurantId,
+        name: v.name.trim(),
+        price: parseInt(v.price) || 0,
+        position: i
+      }))
+  )
       }
     }
 

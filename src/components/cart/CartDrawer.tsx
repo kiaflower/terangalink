@@ -28,7 +28,7 @@ const DEFAULT_TOKENS: ThemeTokens = {
 interface AppliedPromo {
   code: string
   discount_type: 'fixed' | 'percent'
-  discount_value: number
+  value: number
   promo_code_id: string
 }
 
@@ -52,7 +52,7 @@ function usePromoCode(restaurantId: string | null) {
       setApplied({
         code: json.data.code,
         discount_type: json.data.discount_type,
-        discount_value: json.data.discount_value,
+        value: json.data.value,
         promo_code_id: json.data.id,
       })
     } catch {
@@ -73,8 +73,8 @@ function usePromoCode(restaurantId: string | null) {
 
 function computeDiscount(total: number, promo: AppliedPromo | null): number {
   if (!promo) return 0
-  if (promo.discount_type === 'fixed') return Math.min(promo.discount_value, total)
-  return Math.round((total * promo.discount_value) / 100)
+  if (promo.discount_type === 'fixed') return Math.min(promo.value, total)
+  return Math.round((total * promo.value) / 100)
 }
 
 // ─── Cart Item display ────────────────────────────────────────────────────────
@@ -376,8 +376,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
                     <span className="text-sm font-semibold text-green-400">{promo.applied.code}</span>
                     <span className="text-xs" style={{ color: tokens.textMuted }}>
                       {promo.applied.discount_type === 'percent'
-                        ? `−${promo.applied.discount_value}%`
-                        : `−${formatCurrency(promo.applied.discount_value)}`}
+                        ? `−${promo.applied.value}%`
+                        : `−${formatCurrency(promo.applied.value)}`}
                     </span>
                   </div>
                   <button onClick={promo.remove}>

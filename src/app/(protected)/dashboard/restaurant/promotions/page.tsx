@@ -20,7 +20,7 @@ import type { PromoCode } from '@/lib/types'
 interface PromoForm {
   code: string
   discount_type: 'fixed' | 'percent'
-  discount_value: string
+  value: string
   min_order_amount: string
   expires_at: string
   max_uses: string
@@ -30,7 +30,7 @@ interface PromoForm {
 const EMPTY_FORM: PromoForm = {
   code: '',
   discount_type: 'percent',
-  discount_value: '',
+  value: '',
   min_order_amount: '',
   expires_at: '',
   max_uses: '',
@@ -106,7 +106,7 @@ export default function PromotionsPage() {
     setForm({
       code: code.code,
       discount_type: code.discount_type,
-      discount_value: String(code.discount_value),
+      value: String(code.value),
       min_order_amount: code.min_order_amount != null ? String(code.min_order_amount) : '',
       expires_at: code.expires_at ? code.expires_at.slice(0, 16) : '',
       max_uses: code.max_uses != null ? String(code.max_uses) : '',
@@ -124,21 +124,34 @@ export default function PromotionsPage() {
 
     const codeClean = form.code.trim().toUpperCase()
     if (!codeClean) { setError('Le code est requis.'); return }
-    const value = parseFloat(form.discount_value)
+    const value = parseFloat(form.value)
     if (!value || value <= 0) { setError('La valeur de réduction doit être > 0.'); return }
     if (form.discount_type === 'percent' && value > 100) { setError('Le pourcentage ne peut pas dépasser 100.'); return }
 
     setSaving(true)
     const payload = {
-      restaurant_id: restaurantId,
-      code: codeClean,
-      discount_type: form.discount_type,
-      discount_value: value,
-      min_order_amount: form.min_order_amount ? parseFloat(form.min_order_amount) : null,
-      expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
-      max_uses: form.max_uses ? parseInt(form.max_uses) : null,
-      is_active: form.is_active,
-    }
+  restaurant_id: restaurantId,
+  code: codeClean,
+
+  type: form.discount_type,          // ← ajouter ceci
+  discount_type: form.discount_type,
+
+  value: value,
+
+  min_order_amount: form.min_order_amount
+    ? parseFloat(form.min_order_amount)
+    : null,
+
+  expires_at: form.expires_at
+    ? new Date(form.expires_at).toISOString()
+    : null,
+
+  max_uses: form.max_uses
+    ? parseInt(form.max_uses)
+    : null,
+
+  is_active: form.is_active,
+}
 
     let err
     if (editing) {
@@ -178,8 +191,8 @@ export default function PromotionsPage() {
 
   function discountLabel(code: PromoCode) {
     return code.discount_type === 'percent'
-      ? `−${code.discount_value}%`
-      : `−${formatCurrency(code.discount_value)}`
+      ? `−${code.value}%`
+      : `−${formatCurrency(code.value)}`
   }
 
   function isExpired(code: PromoCode) {
@@ -256,7 +269,7 @@ export default function PromotionsPage() {
                       <span>Expire {new Date(code.expires_at).toLocaleDateString('fr-SN', { dateStyle: 'medium' })}</span>
                     )}
                     <span>
-                      {code.used_count} utilisation{code.used_count !== 1 ? 's' : ''}
+                      {code.uses_count} utilisation{code.uses_count !== 1 ? 's' : ''}
                       {code.max_uses != null ? ` / ${code.max_uses}` : ''}
                     </span>
                   </div>
@@ -338,8 +351,8 @@ export default function PromotionsPage() {
             </label>
             <Input
               type="number"
-              value={form.discount_value}
-              onChange={e => setForm(f => ({ ...f, discount_value: e.target.value }))}
+              value={form.value}
+              onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
               placeholder={form.discount_type === 'percent' ? '10' : '2000'}
               min="0"
             />

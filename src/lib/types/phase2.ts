@@ -22,6 +22,7 @@ export interface MenuItem {
   price: number // FCFA
   image_url: string | null
   is_available: boolean
+  is_featured: boolean
   position: number
   created_at: string
   updated_at: string
@@ -88,12 +89,12 @@ export interface PromoCode {
   restaurant_id: string
   code: string
   discount_type: 'fixed' | 'percent'
-  discount_value: number
+  value: number
   min_order_amount: number | null
   starts_at: string | null
   expires_at: string | null
   max_uses: number | null
-  used_count: number
+  uses_count: number
   is_active: boolean
   created_at: string
   updated_at: string

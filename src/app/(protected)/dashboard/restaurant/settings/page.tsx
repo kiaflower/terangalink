@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Clock, Truck, Phone, Save, CheckCircle, AlertCircle, Loader2, Wallet, Timer, Lock, Eye, EyeOff, Crown, ImageIcon, ToggleLeft, ToggleRight, X } from 'lucide-react'
+import { Clock, Truck, Phone, Save, CheckCircle, AlertCircle, Loader2, Wallet, Timer, Lock, Eye, EyeOff, ToggleLeft, ToggleRight } from 'lucide-react'
 import { getPlanFeatures } from '@/lib/plans'
 
 const JOURS = [
@@ -28,11 +28,6 @@ export default function SettingsPage() {
   const [restaurantId, setRestaurantId] = useState<string | null>(null)
   const [plan, setPlan] = useState<string>('starter')
   const isPremium = getPlanFeatures(plan).variantesProduits
-
-  // Menu complet (Premium)
-  const [showFullMenu, setShowFullMenu] = useState(false)
-  const [fullMenuImageUrl, setFullMenuImageUrl] = useState('')
-  const [fullMenuUploading, setFullMenuUploading] = useState(false)
 
   // Paramètres restaurant
   const [whatsapp, setWhatsapp] = useState('')
@@ -62,7 +57,7 @@ export default function SettingsPage() {
 
     const { data: r } = await supabase
       .from('restaurants')
-      .select('whatsapp_number, opening_hours, delivery_fee, show_delivery_fee, wave_number, orange_money_number, prep_time_minutes, show_full_menu, full_menu_image_url')
+      .select('whatsapp_number, opening_hours, delivery_fee, show_delivery_fee, wave_number, orange_money_number, prep_time_minutes')
       .eq('id', profile.restaurant_id)
       .single()
 
@@ -74,8 +69,6 @@ export default function SettingsPage() {
       setWaveNumber(r.wave_number || '')
       setOrangeMoneyNumber(r.orange_money_number || '')
       setPrepTime(r.prep_time_minutes || 25)
-      setShowFullMenu((r as { show_full_menu?: boolean }).show_full_menu || false)
-      setFullMenuImageUrl((r as { full_menu_image_url?: string }).full_menu_image_url || '')
     }
 
     // Plan
@@ -116,8 +109,6 @@ export default function SettingsPage() {
       wave_number: waveNumber || null,
       orange_money_number: orangeMoneyNumber || null,
       prep_time_minutes: prepTime,
-      show_full_menu: showFullMenu,
-      full_menu_image_url: fullMenuImageUrl || null,
     }).eq('id', restaurantId)
 
     setSaving(false)
@@ -325,69 +316,6 @@ export default function SettingsPage() {
               )
             })}
           </div>
-        </div>
-
-        {/* ── Menu complet (Premium) ── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <ImageIcon className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">Menu complet</h2>
-            {!isPremium && (
-              <span className="flex items-center gap-1 text-xs font-semibold text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">
-                <Crown className="w-3 h-3" /> Premium
-              </span>
-            )}
-          </div>
-          <p className="text-gray-500 text-xs mb-4">Affichez une image de votre menu complet en haut de votre page, avant les catégories.</p>
-
-          {!isPremium ? (
-            <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4 text-center">
-              <p className="text-yellow-400 text-sm font-medium">Disponible avec le plan Premium</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Toggle */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-300">Afficher le menu complet</span>
-                <button onClick={() => setShowFullMenu(v => !v)}>
-                  {showFullMenu
-                    ? <ToggleRight className="w-6 h-6 text-brand-orange" />
-                    : <ToggleLeft className="w-6 h-6 text-gray-500" />}
-                </button>
-              </div>
-
-              {/* URL image */}
-              {showFullMenu && (
-                <div>
-                  <label className="text-gray-400 text-xs block mb-1.5">URL de l&apos;image du menu complet</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      value={fullMenuImageUrl}
-                      onChange={e => setFullMenuImageUrl(e.target.value)}
-                      placeholder="https://..."
-                      className="flex-1 bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
-                    />
-                    {fullMenuImageUrl && (
-                      <button
-                        onClick={() => setFullMenuImageUrl('')}
-                        className="p-3 rounded-xl bg-surface-100 border border-surface-300 text-gray-400 hover:text-red-400 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                  {fullMenuImageUrl && (
-                    <div className="mt-3 rounded-xl overflow-hidden border border-surface-200 max-h-48">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={fullMenuImageUrl} alt="Aperçu menu" className="w-full object-contain max-h-48" />
-                    </div>
-                  )}
-                  <p className="text-gray-600 text-xs mt-1.5">Utilisez une URL d&apos;image hébergée (Supabase Storage, Cloudinary, etc.)</p>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* ── Sécurité — Changer mot de passe ── */}

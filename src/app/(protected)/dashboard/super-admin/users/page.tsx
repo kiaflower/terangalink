@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import Link from 'next/link'
-import { UserPlus, Users, Key, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { UserPlus, Users, Key, Eye, EyeOff, CheckCircle, Trash2 } from 'lucide-react'
 import { formatDate, getInitials } from '@/lib/utils'
 import type { Profile } from '@/lib/types'
 
@@ -26,6 +26,16 @@ export default function UsersPage() {
     supabase.from('profiles').select('*').order('created_at', { ascending: false })
       .then(({ data }) => { setProfiles(data ?? []); setLoading(false) })
   }, [supabase])
+
+  async function handleDeleteUser(p: Profile) {
+    if (!confirm(`Supprimer définitivement ${p.email} ? Cette action est irréversible.`)) return
+    await fetch('/api/admin/remove-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile_id: p.id, action: 'delete' }),
+    })
+    setProfiles(prev => prev.filter(u => u.id !== p.id))
+  }
 
   function openReset(p: Profile) {
     setSelectedUser(p)
@@ -122,12 +132,20 @@ export default function UsersPage() {
                     <td className="px-5 py-4 text-gray-500 text-xs hidden lg:table-cell">{formatDate(p.created_at)}</td>
                     <td className="px-5 py-4">
                       {p.role !== 'super_admin' && (
-                        <button
-                          onClick={() => openReset(p)}
-                          className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                        >
-                          <Key className="w-3 h-3" />Mot de passe
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openReset(p)}
+                            className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                          >
+                            <Key className="w-3 h-3" />Mot de passe
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(p)}
+                            className="inline-flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />Supprimer
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>

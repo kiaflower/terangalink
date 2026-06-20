@@ -232,7 +232,11 @@ export default function EditRestaurantPage() {
 
   async function handleDeleteAdmin(adminId: string) {
     if (!confirm('Supprimer cet administrateur ?')) return
-    await supabase.from('profiles').delete().eq('id', adminId)
+    await fetch('/api/admin/remove-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile_id: adminId, action: 'delete' }),
+    })
     setAdmins(prev => prev.filter(a => a.id !== adminId))
   }
 

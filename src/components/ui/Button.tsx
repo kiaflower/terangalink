@@ -59,7 +59,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-        {children}
+        {!loading && children}
       </button>
     )
   }
