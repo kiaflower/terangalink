@@ -28,7 +28,7 @@ const DEFAULT_TOKENS: ThemeTokens = {
 interface AppliedPromo {
   code: string
   discount_type: 'fixed' | 'percent'
-  value: number
+  discount_value: number
   promo_code_id: string
 }
 
@@ -52,7 +52,7 @@ function usePromoCode(restaurantId: string | null) {
       setApplied({
         code: json.data.code,
         discount_type: json.data.discount_type,
-        value: json.data.value,
+        discount_value: json.data.value,
         promo_code_id: json.data.id,
       })
     } catch {
@@ -73,8 +73,8 @@ function usePromoCode(restaurantId: string | null) {
 
 function computeDiscount(total: number, promo: AppliedPromo | null): number {
   if (!promo) return 0
-  if (promo.discount_type === 'fixed') return Math.min(promo.value, total)
-  return Math.round((total * promo.value) / 100)
+  if (promo.discount_type === 'fixed') return Math.min(promo.discount_value, total)
+  return Math.round((total * promo.discount_value) / 100)
 }
 
 // ─── Cart Item display ────────────────────────────────────────────────────────
@@ -175,53 +175,65 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
       }
 
       const order = payload.data as { id: string; created_at: string }
+      const orderNumber: string = payload.order_number || order.id.slice(0, 8).toUpperCase()
+      const shortUrl: string = payload.short_url || `${baseUrl}/c/${orderNumber}`
 
       // Detect preorder (any item with preorder_delivery_date)
       const preorderItem = state.items.find(i => i.preorder_delivery_date)
       const isPreorder = !!preorderItem
       const deliveryText = preorderItem?.preorder_delivery_date ?? ''
 
-      // Build WhatsApp message with variants + promo
+      // Build items lines with variants
       const itemsLines = state.items.map(i => {
-        const variantPart = i.variant_name ? ` — ${i.variant_name}` : ''
-        return `• ${i.name}${variantPart} ×${i.quantity} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`
+        const variantPart = i.variant_name ? ` (${i.variant_name})` : ''
+        return `• ${i.quantity}× ${i.name}${variantPart} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`
       }).join('\n')
 
       const promoLine = promo.applied
         ? `\nCode promo : ${promo.applied.code} (−${formatCurrency(discount)})`
         : ''
 
-      const orderTime = new Date(order.created_at || Date.now()).toLocaleString('fr-SN')
-      const manageUrl = `${baseUrl.replace(/\/$/, '')}/dashboard/restaurant/orders?order=${order.id}`
+      // Fix Invalid Date: parse safely
+      const rawDate = order.created_at
+      const parsedDate = rawDate ? new Date(rawDate) : new Date()
+      const orderTime = isNaN(parsedDate.getTime())
+        ? new Date().toLocaleString('fr-SN', { timeZone: 'Africa/Dakar' })
+        : new Intl.DateTimeFormat('fr-SN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Dakar' }).format(parsedDate)
 
       let message: string
       if (isPreorder) {
         message = encodeURIComponent(
-          `📅 Nouvelle précommande — ${state.restaurantName}\n\n` +
+          `📅 Précommande ${orderNumber} — ${state.restaurantName}\n\n` +
           `Client : ${customerName.trim() || 'Client'}\n` +
-          `Téléphone : ${cleanedCustomerPhone}\n\n` +
+          `Tél : ${cleanedCustomerPhone}\n\n` +
           `Articles :\n${itemsLines}${promoLine}\n\n` +
           `Livraison : ${deliveryText}\n\n` +
           `Total : ${formatCurrency(finalTotal)}\n` +
           `Paiement : ${paymentMethod}\n` +
           `Heure : ${orderTime}\n\n` +
-          `🔗 Gérer la commande :\n${manageUrl}`
+          `🔗 Voir la commande :\n${shortUrl}`
         )
       } else {
         message = encodeURIComponent(
-          `🍽 Nouvelle commande — ${state.restaurantName}\n\n` +
+          `🍽 Commande ${orderNumber} — ${state.restaurantName}\n\n` +
           `Client : ${customerName.trim() || 'Client'}\n` +
-          `Téléphone : ${cleanedCustomerPhone}\n` +
+          `Tél : ${cleanedCustomerPhone}\n\n` +
           `Articles :\n${itemsLines}${promoLine}\n\n` +
           `Total : ${formatCurrency(finalTotal)}\n` +
           `Paiement : ${paymentMethod}\n` +
           `Heure : ${orderTime}\n\n` +
-          `🔗 Gérer la commande :\n${manageUrl}`
+          `🔗 Voir la commande :\n${shortUrl}`
         )
       }
 
-      const restaurantPhone = state.restaurantPhone.replace(/\D/g, '')
-      openWhatsappSafely(`https://wa.me/${restaurantPhone}?text=${message}`, pendingWindow)
+      const restaurantPhone = (payload.whatsapp_url
+        ? payload.whatsapp_url.split('wa.me/')[1]?.split('?')[0]
+        : state.restaurantPhone.replace(/\D/g, '')) || state.restaurantPhone.replace(/\D/g, '')
+
+      openWhatsappSafely(
+        payload.whatsapp_url || `https://wa.me/${restaurantPhone}?text=${message}`,
+        pendingWindow
+      )
 
       clearCart()
       onClose?.()
@@ -283,6 +295,12 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
                 {/* Affichage variante */}
                 {item.variant_name && (
                   <p className="text-xs" style={{ color: tokens.textMuted }}>{item.variant_name}</p>
+                )}
+                {/* Badge précommande avec date de livraison */}
+                {item.preorder_delivery_date && (
+                  <p className="text-xs font-semibold mt-0.5" style={{ color: tokens.accent }}>
+                    📅 Précommande · Livraison : {item.preorder_delivery_date}
+                  </p>
                 )}
                 <p className="text-xs font-semibold" style={{ color: tokens.accentText }}>{formatCurrency(item.price)}</p>
               </div>
@@ -376,8 +394,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
                     <span className="text-sm font-semibold text-green-400">{promo.applied.code}</span>
                     <span className="text-xs" style={{ color: tokens.textMuted }}>
                       {promo.applied.discount_type === 'percent'
-                        ? `−${promo.applied.value}%`
-                        : `−${formatCurrency(promo.applied.value)}`}
+                        ? `−${promo.applied.discount_value}%`
+                        : `−${formatCurrency(promo.applied.discount_value)}`}
                     </span>
                   </div>
                   <button onClick={promo.remove}>
@@ -408,6 +426,21 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
               <span className="font-black text-lg" style={{ color: tokens.textPrimary }}>{formatCurrency(finalTotal)}</span>
             </div>
           </div>
+
+          {/* Récapitulatif précommande si applicable */}
+          {state.items.some(i => i.preorder_delivery_date) && (
+            <div
+              className="rounded-xl px-3 py-2.5 text-sm"
+              style={{ backgroundColor: `${tokens.accent}15`, border: `1px solid ${tokens.accent}40` }}
+            >
+              <p className="font-semibold mb-1" style={{ color: tokens.accent }}>📅 Commande en précommande</p>
+              {Array.from(new Set(state.items.filter(i => i.preorder_delivery_date).map(i => i.preorder_delivery_date))).map(date => (
+                <p key={date} className="text-xs" style={{ color: tokens.textSecondary }}>
+                  Livraison prévue : <span className="font-semibold" style={{ color: tokens.textPrimary }}>{date}</span>
+                </p>
+              ))}
+            </div>
+          )}
 
           {state.restaurantPhone ? (
             <button

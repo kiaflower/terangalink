@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/Badge'
 import { SkeletonRow, EmptyState } from '@/components/ui/Loading'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { ShoppingBag, Phone, ChevronDown, MessageCircle } from 'lucide-react'
+import { ShoppingBag, Phone, ChevronDown, MessageCircle, Search } from 'lucide-react'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/types'
 import type { Order, OrderStatus } from '@/lib/types'
 import { ReceiptGenerator } from '@/components/orders/ReceiptGenerator'
@@ -26,6 +26,7 @@ export default function OrdersPage() {
   const [waveNumber, setWaveNumber] = useState('')
   const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
   const [isPro, setIsPro] = useState(false)
+  const [search, setSearch] = useState('')
 
   const fetchOrders = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -66,7 +67,7 @@ export default function OrdersPage() {
     setOrangeMoneyNumber(restaurant?.orange_money_number || restaurant?.phone || '')
 
     const plan = normalizePlan((subscription as { plan?: string } | null)?.plan || 'starter')
-    setIsPro(canUseFeature(plan, 'suppressionBranding')) // suppressionBranding = Pro only
+    setIsPro(canUseFeature(plan, 'suppressionBranding'))
 
     setLoading(false)
   }, [supabase])
@@ -85,6 +86,16 @@ export default function OrdersPage() {
     if (targetOrderId) setExpandedId(targetOrderId)
   }, [searchParams])
 
+  const filteredOrders = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return orders
+    return orders.filter(o =>
+      (o.order_number || '').toLowerCase().includes(q) ||
+      (o.customer_name || '').toLowerCase().includes(q) ||
+      (o.customer_phone || '').toLowerCase().includes(q)
+    )
+  }, [orders, search])
+
   function buildConfirmUrl(order: Order) {
     const phone = (order.customer_phone || '').replace(/\D/g, '')
     if (!phone) return null
@@ -93,8 +104,10 @@ export default function OrdersPage() {
       .map(i => `• ${i.name} x${i.quantity}`)
       .join('\n')
 
+    const numStr = order.order_number ? ` (${order.order_number})` : ''
+
     const message = encodeURIComponent(
-      `Bonjour ${order.customer_name || ''}, votre commande a bien été validée par ${restaurantName}.\n` +
+      `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n` +
       `Temps de préparation estimé : 25 min.\n` +
       `Paiement Wave : ${waveNumber || 'À confirmer'}\n` +
       `Paiement Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
@@ -104,16 +117,9 @@ export default function OrdersPage() {
     return `https://wa.me/${phone}?text=${message}`
   }
 
-  // Confirmer au client = ouvrir WhatsApp + valider la commande en même temps
   async function handleConfirmAndOpen(order: Order) {
     const url = buildConfirmUrl(order)
-
-    // ⚠️ IMPORTANT : window.open DOIT être appelé de façon synchrone dans le handler
-    // de clic (avant tout await), sinon les navigateurs mobiles bloquent le popup.
-    // On ouvre d'abord WhatsApp, puis on met à jour la DB en arrière-plan.
     if (url) window.open(url, '_blank')
-
-    // Valider en DB (en arrière-plan — non bloquant pour l'ouverture WhatsApp)
     await supabase.from('orders').update({ status: 'delivered' }).eq('id', order.id)
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'delivered' as OrderStatus } : o))
   }
@@ -142,17 +148,28 @@ export default function OrdersPage() {
         </div>
       </div>
 
+      {/* Barre de recherche */}
+      <div className="relative mb-5">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Rechercher par numéro, nom ou téléphone..."
+          className="w-full bg-surface-50 border border-surface-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+        />
+      </div>
+
       {loading ? (
         <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)}</div>
-      ) : orders.length === 0 ? (
+      ) : filteredOrders.length === 0 ? (
         <EmptyState
           icon={<ShoppingBag className="w-7 h-7" />}
-          title="Aucune commande"
-          description="Les commandes reçues via WhatsApp apparaîtront ici."
+          title={search ? 'Aucun résultat' : 'Aucune commande'}
+          description={search ? `Aucune commande correspondant à "${search}"` : 'Les commandes reçues via WhatsApp apparaîtront ici.'}
         />
       ) : (
         <div className="space-y-3">
-          {orders.map(order => {
+          {filteredOrders.map(order => {
             const dejaValidee = order.status === 'delivered'
             const annulee = order.status === 'cancelled'
 
@@ -165,6 +182,11 @@ export default function OrdersPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-white font-semibold text-sm">{order.customer_name || 'Client anonyme'}</p>
+                      {order.order_number && (
+                        <span className="text-xs font-mono text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded-full">
+                          {order.order_number}
+                        </span>
+                      )}
                       <Badge variant={ORDER_STATUS_COLORS[order.status] as 'success' | 'warning' | 'info' | 'danger' | 'default'}>
                         {ORDER_STATUS_LABELS[order.status]}
                       </Badge>
@@ -190,13 +212,22 @@ export default function OrdersPage() {
                 {expandedId === order.id && (
                   <div className="border-t border-surface-200 px-5 py-4 space-y-4">
                     <div className="space-y-2">
-                      {(order.items as { name: string; quantity: number; price: number }[]).map((item, i) => (
+                      {(order.items as { name: string; quantity: number; price: number; variant_name?: string }[]).map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
-                          <span className="text-gray-300">{item.name} × {item.quantity}</span>
+                          <span className="text-gray-300">
+                            {item.name}{item.variant_name ? ` (${item.variant_name})` : ''} × {item.quantity}
+                          </span>
                           <span className="text-white">{formatCurrency(item.price * item.quantity)}</span>
                         </div>
                       ))}
                     </div>
+
+                    {(order as Order & { discount_amount?: number }).discount_amount ? (
+                      <div className="flex justify-between text-sm text-green-400">
+                        <span>Réduction</span>
+                        <span>−{formatCurrency((order as Order & { discount_amount?: number }).discount_amount!)}</span>
+                      </div>
+                    ) : null}
 
                     {order.notes && (
                       <div className="bg-surface-100 rounded-xl p-3 text-sm text-gray-400">
@@ -205,7 +236,6 @@ export default function OrdersPage() {
                     )}
 
                     <div className="flex flex-wrap gap-2 pt-1">
-                      {/* Confirmer au client = valide + ouvre WhatsApp */}
                       {order.status === 'pending' && (
                         <>
                           <button
@@ -224,7 +254,6 @@ export default function OrdersPage() {
                         </>
                       )}
 
-                      {/* Reçu PDF — Pro uniquement */}
                       {isPro && !annulee && (
                         <ReceiptGenerator
                           order={order}

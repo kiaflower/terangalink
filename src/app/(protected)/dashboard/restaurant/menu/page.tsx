@@ -51,6 +51,7 @@ export default function MenuPage() {
   const [plan, setPlan] = useState<string>('starter')
   const isPremium = getPlanFeatures(plan).variantesProduits
 
+
   // Menu complet (Premium)
   const [showFullMenu, setShowFullMenu] = useState(false)
   const [fullMenuImageUrl, setFullMenuImageUrl] = useState<string | null>(null)
@@ -67,6 +68,11 @@ export default function MenuPage() {
     name: '', description: '', price: '', category_id: '',
     is_available: true, image_url: '' as string | null,
   })
+
+  // Produit mis en avant (Premium)
+  const [isFeatured, setIsFeatured] = useState(false)
+  const [featuredLabel, setFeaturedLabel] = useState<'Best Seller' | 'Nouveau' | 'Promotion' | 'Recommandé' | null>(null)
+  const [isPinned, setIsPinned] = useState(false)
 
   // Variantes (Premium)
   const [variants, setVariants] = useState<{ id?: string; name: string; price: string }[]>([])
@@ -138,6 +144,9 @@ export default function MenuPage() {
     setEditingItem(null)
     setForm({ name: '', description: '', price: '', category_id: '', is_available: true, image_url: null })
     setVariants([])
+    setIsFeatured(false)
+    setFeaturedLabel(null)
+    setIsPinned(false)
     setStockEnabled(false); setStockQty(''); setStockThreshold('5')
     setPreorderEnabled(false); setPreorderOpenAt(''); setPreorderCloseAt(''); setPreorderDelivery(''); setPreorderMaxQty('')
     setError(null)
@@ -156,6 +165,9 @@ export default function MenuPage() {
       image_url: item.image_url,
     })
     setVariants((item.variants ?? []).map(v => ({ id: v.id, name: v.name, price: String(v.price) })))
+    setIsFeatured(item.is_featured ?? false)
+    setFeaturedLabel((item.featured_label as typeof featuredLabel) ?? null)
+    setIsPinned(item.is_pinned ?? false)
     setStockEnabled(item.stock_enabled ?? false)
     setStockQty(item.stock_quantity != null ? String(item.stock_quantity) : '')
     setStockThreshold(String(item.stock_low_threshold ?? 5))
@@ -196,6 +208,10 @@ export default function MenuPage() {
       preorder_close_at: isPremium && preorderEnabled && preorderCloseAt ? new Date(preorderCloseAt).toISOString() : null,
       preorder_delivery_date: isPremium && preorderEnabled ? preorderDelivery || null : null,
       preorder_max_qty: isPremium && preorderEnabled && preorderMaxQty ? parseInt(preorderMaxQty) : null,
+      // Mis en avant
+      is_featured: isPremium ? isFeatured : false,
+      featured_label: isPremium && isFeatured ? featuredLabel : null,
+      is_pinned: isPremium ? isPinned : false,
     }
 
     let itemId = editingItem?.id
@@ -210,19 +226,17 @@ export default function MenuPage() {
     if (isPremium && itemId) {
       await supabase.from('menu_item_variants').delete().eq('menu_item_id', itemId)
       if (variants.length > 0) {
-       await supabase
-  .from('menu_item_variants')
-  .insert(
-    variants
-      .filter(v => v.name.trim())
-      .map((v, i) => ({
-        menu_item_id: itemId,
-        restaurant_id: restaurantId,
-        name: v.name.trim(),
-        price: parseInt(v.price) || 0,
-        position: i
-      }))
-  )
+        await supabase.from('menu_item_variants').insert(
+          variants
+            .filter(v => v.name.trim())
+            .map((v, i) => ({
+              menu_item_id: itemId,
+              restaurant_id: restaurantId,
+              name: v.name.trim(),
+              price: parseInt(v.price) || 0,
+              position: i,
+            }))
+        )
       }
     }
 
@@ -326,7 +340,6 @@ export default function MenuPage() {
           <p className="text-gray-500 text-xs mb-4">
             Affiche une image de votre menu complet juste après la bannière, avant les catégories. Cliquable pour zoomer.
           </p>
-
           {showFullMenu && (
             <div className="space-y-3">
               <ImageUpload
@@ -562,6 +575,58 @@ export default function MenuPage() {
                   <div className="flex items-start gap-2 bg-blue-500/10 rounded-lg p-3">
                     <AlertTriangle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-blue-300">Le produit sera commandable uniquement entre les dates d'ouverture et fermeture. Un compte à rebours sera affiché sur votre site.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── PREMIUM : Produit mis en avant ── */}
+          {isPremium && (
+            <div className="border border-surface-200 rounded-xl p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 cursor-pointer">
+                  <Crown className="w-4 h-4 text-yellow-400" />
+                  Produit mis en avant
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsFeatured(v => !v)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isFeatured ? 'bg-brand-orange' : 'bg-surface-300'}`}
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${isFeatured ? 'translate-x-4' : 'translate-x-1'}`} />
+                </button>
+              </div>
+              {isFeatured && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-gray-400 block mb-1.5">Badge d&apos;affichage</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['Best Seller', 'Nouveau', 'Promotion', 'Recommandé'] as const).map(label => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => setFeaturedLabel(featuredLabel === label ? null : label)}
+                          className={`text-xs font-semibold py-2 px-3 rounded-lg border transition-colors ${
+                            featuredLabel === label
+                              ? 'bg-brand-orange/20 border-brand-orange text-brand-orange'
+                              : 'bg-surface-100 border-surface-300 text-gray-400 hover:border-gray-400'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-gray-400">Épingler en tête de liste</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsPinned(v => !v)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isPinned ? 'bg-brand-orange' : 'bg-surface-300'}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${isPinned ? 'translate-x-4' : 'translate-x-1'}`} />
+                    </button>
                   </div>
                 </div>
               )}

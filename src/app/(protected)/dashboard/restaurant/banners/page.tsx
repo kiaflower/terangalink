@@ -108,16 +108,16 @@ export default function BannersPage() {
 
     setSaving(true)
     const payload = {
-  restaurant_id: restaurantId,
-  title: form.text.trim(),
-  icon: form.icon.trim() || null,
-  bg_color: form.bg_color || null,
-  starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
-  ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
-  is_active: form.is_active,
-  position: parseInt(form.position) || 0,
-  updated_at: new Date().toISOString(),
-}
+      restaurant_id: restaurantId,
+      text: form.text.trim(),
+      icon: form.icon.trim() || null,
+      bg_color: form.bg_color || null,
+      starts_at: form.starts_at ? new Date(form.starts_at).toISOString() : null,
+      ends_at: form.ends_at ? new Date(form.ends_at).toISOString() : null,
+      is_active: form.is_active,
+      position: parseInt(form.position) || 0,
+      updated_at: new Date().toISOString(),
+    }
 
     let err
     if (editing) {

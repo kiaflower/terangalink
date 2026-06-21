@@ -23,6 +23,8 @@ export interface MenuItem {
   image_url: string | null
   is_available: boolean
   is_featured: boolean
+  featured_label?: 'Best Seller' | 'Nouveau' | 'Promotion' | 'Recommandé' | null
+  is_pinned?: boolean
   position: number
   created_at: string
   updated_at: string
@@ -53,10 +55,12 @@ export interface OrderItem {
   image_url?: string | null
   variant_id?: string | null
   variant_name?: string | null
+  preorder_delivery_date?: string | null
 }
 
 export interface Order {
   id: string
+  order_number?: string
   restaurant_id: string
   customer_name: string | null
   customer_phone: string | null
@@ -89,12 +93,12 @@ export interface PromoCode {
   restaurant_id: string
   code: string
   discount_type: 'fixed' | 'percent'
-  value: number
+  discount_value: number
   min_order_amount: number | null
   starts_at: string | null
   expires_at: string | null
   max_uses: number | null
-  uses_count: number
+  used_count: number
   is_active: boolean
   created_at: string
   updated_at: string

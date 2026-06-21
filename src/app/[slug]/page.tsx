@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import RestaurantPageClient from './RestaurantPageClient'
@@ -107,15 +108,18 @@ export default async function RestaurantPage({ params }: Props) {
     console.warn('Extended columns not yet available — run migration SQL')
   }
 
-  // Plan
-  const { data: subscriptionData } = await supabase
+  // Plan — utilise le client admin pour bypasser le RLS (visiteurs non connectés)
+  const adminClient = createAdminClient()
+  const { data: subscriptionData } = await adminClient
     .from('subscriptions')
     .select('plan, status')
     .eq('restaurant_id', base.id)
     .single()
 
   const subscription = subscriptionData as { plan: string; status: string } | null
-  const plan = subscription?.plan ?? 'starter'
+  // On n'applique le plan payant que si l'abonnement est actif ou en période d'essai
+  const isActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trialing'
+  const plan = (subscription?.plan && isActiveSubscription) ? subscription.plan : 'starter'
   const isPremium = plan === 'premium'
 
   // Catégories + items

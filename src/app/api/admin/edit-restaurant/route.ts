@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizePlan } from '@/lib/plans'
 import { DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR } from '@/lib/theme'
 
@@ -31,20 +32,22 @@ async function updateRestaurant(request: NextRequest) {
       facebook_url,
       instagram_url,
       tiktok_url,
+      sub_id,
+      sub_status,
       ...rest
     } = body
 
     if (!id) return NextResponse.json({ error: 'id requis' }, { status: 400 })
 
     const normalizedPlan = plan ? normalizePlan(String(plan)) : null
-    const isPro = normalizedPlan === 'pro'
+    // Thème personnalisé et réseaux sociaux disponibles pour Pro ET Premium
+    const hasAdvancedTheme = normalizedPlan === 'pro' || normalizedPlan === 'premium'
 
-    // Payload de base : champs garantis présents dans tous les schémas
+    // Payload de base
     const corePayload: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     }
 
-    // Champs de base du restaurant
     const coreFields = ['name', 'slug', 'description', 'city', 'address', 'is_active', 'opening_hours', 'delivery_fee', 'show_delivery_fee']
     for (const field of coreFields) {
       if (field in rest) corePayload[field] = rest[field]
@@ -62,9 +65,9 @@ async function updateRestaurant(request: NextRequest) {
       corePayload.cover_url = resolvedBanner
     }
 
-    // Payload thème : uniquement si les colonnes existent (plan fourni = migration faite)
+    // Thème : sauvegardé pour Pro ET Premium, remis par défaut pour Starter
     if (normalizedPlan) {
-      if (isPro) {
+      if (hasAdvancedTheme) {
         corePayload.primary_color = primary_color || DEFAULT_PRIMARY_COLOR
         corePayload.background_color = background_color || DEFAULT_DARK_BACKGROUND
         corePayload.button_color = button_color || primary_color || DEFAULT_BUTTON_COLOR
@@ -84,9 +87,12 @@ async function updateRestaurant(request: NextRequest) {
       }
     }
 
-    // Mise à jour du restaurant — si erreur colonnes manquantes, réessayer sans les colonnes étendues
+    // Client admin pour bypasser le RLS (super admin modifie n'importe quel restaurant)
+    const adminClient = createAdminClient()
+
+    // Mise à jour du restaurant
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: rErr } = await (supabase as any)
+    const { error: rErr } = await (adminClient as any)
       .from('restaurants')
       .update(corePayload)
       .eq('id', id)
@@ -108,7 +114,7 @@ async function updateRestaurant(request: NextRequest) {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: safeErr } = await (supabase as any)
+        const { error: safeErr } = await (adminClient as any)
           .from('restaurants')
           .update(safePayload)
           .eq('id', id)
@@ -123,27 +129,41 @@ async function updateRestaurant(request: NextRequest) {
       throw rErr
     }
 
-    // Mise à jour ou création de l'abonnement
+    // Mise à jour ou création de l'abonnement via admin client (bypasse RLS)
     if (normalizedPlan) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: existingSub } = await (supabase as any)
+      const { data: existingSub } = await (adminClient as any)
         .from('subscriptions')
         .select('id')
         .eq('restaurant_id', id)
         .single()
 
+      const subUpdate: Record<string, unknown> = {
+        plan: normalizedPlan,
+        updated_at: new Date().toISOString(),
+      }
+      // Mettre à jour le statut si fourni
+      if (sub_status) subUpdate.status = sub_status
+
       if (existingSub) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
+        await (adminClient as any)
           .from('subscriptions')
-          .update({ plan: normalizedPlan, updated_at: new Date().toISOString() })
+          .update(subUpdate)
           .eq('restaurant_id', id)
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
+        await (adminClient as any)
           .from('subscriptions')
-          .insert({ restaurant_id: id, plan: normalizedPlan, status: 'active' })
+          .insert({ restaurant_id: id, plan: normalizedPlan, status: sub_status || 'active' })
       }
+    } else if (sub_id && sub_status) {
+      // Mise à jour du statut uniquement (sans changement de plan)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (adminClient as any)
+        .from('subscriptions')
+        .update({ status: sub_status, updated_at: new Date().toISOString() })
+        .eq('id', sub_id)
     }
 
     return NextResponse.json({ success: true })

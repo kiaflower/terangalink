@@ -17,6 +17,8 @@ export async function GET(req: NextRequest) {
   const paymentLabel = searchParams.get('paymentLabel') || 'Especes'
   const accentColor = searchParams.get('accentColor') || '#F97316'
   const itemsRaw = searchParams.get('items') || '[]'
+  const isPreorder = searchParams.get('isPreorder') === 'true'
+  const preorderDate = searchParams.get('preorderDate') || ''
   const items: { name: string; quantity: number; price: number }[] = JSON.parse(decodeURIComponent(itemsRaw))
 
   return new ImageResponse(
@@ -59,12 +61,29 @@ export async function GET(req: NextRequest) {
               letterSpacing: 2,
             }}
           >
-            RECU DE COMMANDE
+            {isPreorder ? 'PRÉCOMMANDE' : 'RECU DE COMMANDE'}
           </div>
         </div>
 
         {/* BODY */}
         <div style={{ padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+          {/* Bloc précommande */}
+          {isPreorder && (
+            <div style={{
+              display: 'flex', flexDirection: 'column',
+              paddingBottom: 20, borderBottom: '1px solid #eee',
+              backgroundColor: `${accentColor}12`,
+              borderRadius: 8, padding: '14px 16px', marginBottom: 20,
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: accentColor, marginBottom: 4 }}>📅 PRÉCOMMANDE</div>
+              {preorderDate && (
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#333' }}>
+                  Livraison prévue : {preorderDate}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* N° commande */}
           <div style={{ display: 'flex', flexDirection: 'column', paddingBottom: 20, borderBottom: '1px solid #eee' }}>

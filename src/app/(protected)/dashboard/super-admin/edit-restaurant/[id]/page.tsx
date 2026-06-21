@@ -215,15 +215,11 @@ export default function EditRestaurantPage() {
         opening_hours: openingHours,
         delivery_fee: Number(deliveryFee) || 0,
         show_delivery_fee: showDeliveryFee,
+        // Statut abonnement — géré côté serveur via admin client
+        sub_id: subId,
+        sub_status: subStatus,
       }),
     })
-
-    if (subId) {
-      await supabase
-        .from('subscriptions')
-        .update({ status: subStatus })
-        .eq('id', subId)
-    }
 
     setSaving(false)
     setSuccess(true)

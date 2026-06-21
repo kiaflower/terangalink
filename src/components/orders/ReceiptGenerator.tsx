@@ -49,6 +49,11 @@ function buildReceiptHTML(
   const paymentLabel = getPaymentLabel(order)
   const displayNotes = order.notes?.replace(/Paiement\s*:\s*.+/i, '').trim() || ''
 
+  // Détection précommande
+  const preorderItem = items.find(i => i.preorder_delivery_date)
+  const isPreorder = !!preorderItem
+  const preorderDate = preorderItem?.preorder_delivery_date ?? null
+
   const dashes = '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -'
 
   const itemsHTML = items.map(item => `
@@ -74,7 +79,7 @@ function buildReceiptHTML(
   <div style="background:${accentColor};width:400px;padding:32px 28px 28px;">
     <div style="font-size:26px;font-weight:900;color:#ffffff;text-align:center;margin-bottom:6px;">${restaurantName}</div>
     ${restaurantAddress ? `<div style="font-size:11px;color:rgba(255,255,255,0.85);text-align:center;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;">${restaurantAddress}</div>` : `<div style="margin-bottom:18px;"></div>`}
-    <div style="font-size:10px;font-weight:700;color:#ffffff;text-align:center;letter-spacing:2px;opacity:0.9;">— RECU DE COMMANDE —</div>
+    <div style="font-size:10px;font-weight:700;color:#ffffff;text-align:center;letter-spacing:2px;opacity:0.9;">— ${isPreorder ? 'RECU DE PRÉCOMMANDE' : 'RECU DE COMMANDE'} —</div>
   </div>
 
   <!-- BODY -->
@@ -82,6 +87,14 @@ function buildReceiptHTML(
 
     <!-- Tirets séparateurs en texte — jamais de border CSS -->
     <div style="font-size:9px;color:#ccc;letter-spacing:2px;margin-bottom:14px;">${dashes}</div>
+
+    ${isPreorder ? `
+    <div style="margin-bottom:14px;background:${accentColor}15;border:1px solid ${accentColor}40;border-radius:8px;padding:10px 14px;">
+      <div style="font-size:12px;font-weight:700;color:${accentColor};margin-bottom:4px;">📅 PRÉCOMMANDE</div>
+      ${preorderDate ? `<div style="font-size:11px;color:#555;">Livraison prévue : <strong>${preorderDate}</strong></div>` : ''}
+    </div>
+    <div style="font-size:9px;color:#ccc;letter-spacing:2px;margin-bottom:14px;">${dashes}</div>
+    ` : ''}
 
     <div style="margin-bottom:14px;">
       <div style="font-size:9px;font-weight:700;color:#aaa;letter-spacing:2px;margin-bottom:5px;">N° COMMANDE</div>
@@ -153,6 +166,11 @@ export function ReceiptGenerator({
   const [loading, setLoading] = useState(false)
   const orderId = order.id.slice(0, 8).toUpperCase()
   const items = order.items as OrderItem[]
+
+  // Détection précommande depuis les items
+  const preorderItem = items.find(i => i.preorder_delivery_date)
+  const isPreorder = !!preorderItem
+  const preorderDate = preorderItem?.preorder_delivery_date ?? null
 
   async function handleDownload() {
     setLoading(true)
@@ -235,6 +253,12 @@ export function ReceiptGenerator({
 
             <div className="px-5 py-4">
               <div className="bg-surface-100 rounded-xl p-4 mb-4 space-y-2">
+                {isPreorder && (
+                  <div className="flex justify-between text-sm pb-2 border-b border-surface-200">
+                    <span className="text-brand-orange font-semibold">📅 Précommande</span>
+                    {preorderDate && <span className="text-white font-medium text-xs">{preorderDate}</span>}
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Client</span>
                   <span className="text-white font-medium">{order.customer_name || '-'}</span>
