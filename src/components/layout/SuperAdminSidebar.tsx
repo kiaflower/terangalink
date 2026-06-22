@@ -24,9 +24,7 @@ export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
       {!mobile && (
         <div className="p-6 border-b border-surface-200">
           <Link href="/dashboard/super-admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
+            <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
             <span className="font-bold text-white text-lg">TerangaLink</span>
           </Link>
           <span className="mt-2 inline-block text-xs font-semibold text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded-full">

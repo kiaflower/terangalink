@@ -36,9 +36,7 @@ export function LandingNav() {
       <div className="container-app">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-sm">TL</span>
-            </div>
+            <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
             <span className="font-bold text-white text-xl">TerangaLink</span>
           </Link>
 

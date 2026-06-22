@@ -45,9 +45,7 @@ export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {
       {!mobile && (
         <div className="p-6 border-b border-surface-200">
           <Link href="/dashboard/restaurant" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
+            <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
             <span className="font-bold text-white text-lg">TerangaLink</span>
           </Link>
         </div>

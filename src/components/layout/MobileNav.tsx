@@ -17,9 +17,7 @@ export function MobileNav({ children }: MobileNavProps) {
       {/* Top bar */}
       <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-surface-50 border-b border-surface-200 sticky top-0 z-30">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-brand-orange rounded-lg flex items-center justify-center">
-            <Zap className="w-3.5 h-3.5 text-white" />
-          </div>
+          <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-7 h-7 rounded-lg object-cover" />
           <span className="font-bold text-white">TerangaLink</span>
         </Link>
         <button

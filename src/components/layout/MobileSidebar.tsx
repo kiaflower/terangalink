@@ -65,9 +65,7 @@ export function MobileSidebar({ children }: MobileSidebarProps) {
       >
         <div className="flex items-center justify-between p-4 border-b border-surface-200 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-brand-orange rounded-lg flex items-center justify-center">
-              <span className="text-white text-xs font-black">TL</span>
-            </div>
+            <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-7 h-7 rounded-lg object-cover" />
             <span className="font-bold text-white text-sm">TerangaLink</span>
           </div>
           <button

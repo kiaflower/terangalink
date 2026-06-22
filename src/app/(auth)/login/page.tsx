@@ -55,9 +55,7 @@ export default function LoginPage() {
     <div className="animate-fade-in">
       {/* Logo */}
       <div className="flex items-center gap-2.5 justify-center mb-8">
-        <div className="w-10 h-10 bg-brand-orange rounded-xl flex items-center justify-center shadow-lg shadow-brand-orange/30">
-          <Zap className="w-5 h-5 text-white" />
-        </div>
+        <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-10 h-10 rounded-xl object-cover" />
         <span className="font-bold text-white text-2xl">TerangaLink</span>
       </div>
 
