@@ -44,6 +44,7 @@ export default function NewRestaurantPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [emailFailed, setEmailFailed] = useState(false)
 
   function handleRestNameChange(val: string) {
     setRestName(val)
@@ -95,6 +96,29 @@ export default function NewRestaurantPage() {
       return
     }
 
+    // Envoyer l'email de bienvenue depuis le frontend
+    if (data.success) {
+      try {
+        const emailRes = await fetch('/api/admin/send-welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to_email: adminEmail,
+            restaurant_name: restName,
+            admin_name: adminName,
+            password: adminPassword,
+            plan,
+          }),
+        })
+        if (!emailRes.ok) {
+          const emailData = await emailRes.json()
+          console.error('[EMAIL] Échec send-welcome:', emailData.error)
+        }
+      } catch (e) {
+        console.error('[EMAIL] Erreur réseau send-welcome:', e)
+      }
+    }
+
     if (data.data?.restaurant_id && restSlug && restSlug !== slugify(restName)) {
       await fetch('/api/admin/edit-restaurant', {
         method: 'POST',
@@ -111,6 +135,12 @@ export default function NewRestaurantPage() {
     }
 
     setSuccess(true)
+    if (data.email_error) {
+      setEmailFailed(true)
+      console.warn('[EMAIL] Non envoyé:', data.email_error)
+    }
+    // Vérification email frontend aussi
+    if (!data.email_sent && !data.email_error) setEmailFailed(true)
     setTimeout(() => router.push('/dashboard/super-admin/restaurants'), 2500)
   }
 
@@ -123,6 +153,12 @@ export default function NewRestaurantPage() {
           </div>
           <h2 className="text-white text-xl font-bold mb-2">Restaurant créé avec succès !</h2>
           <p className="text-gray-500 text-sm">Le restaurant et son administrateur sont prêts. Redirection...</p>
+          {emailFailed && (
+            <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 text-sm text-yellow-400 max-w-sm">
+              ⚠️ L&apos;email de bienvenue n&apos;a pas pu être envoyé à <strong>{adminEmail}</strong>.<br />
+              Vérifiez la configuration SMTP dans Paramètres.
+            </div>
+          )}
         </div>
       </div>
     )

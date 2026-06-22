@@ -183,23 +183,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: subError.message || 'Erreur création abonnement' }, { status: 500 })
     }
 
-    // ✅ Email envoyé directement — plus de fetch inter-routes (causait 401)
+    // Email avec timeout pour ne pas bloquer si SMTP lent
+    let emailError: string | null = null
     try {
-      await sendWelcomeEmail({
-        to_email: email,
-        restaurant_name: restaurant.name,
-        admin_name: full_name,
-        password,
-        plan: normalizedPlan,
-        platformUrl,
-      })
+      const emailTimeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('SMTP timeout (5s)')), 5000)
+      )
+      await Promise.race([
+        sendWelcomeEmail({
+          to_email: email,
+          restaurant_name: restaurant.name,
+          admin_name: full_name,
+          password,
+          plan: normalizedPlan,
+          platformUrl,
+        }),
+        emailTimeout,
+      ])
     } catch (emailErr) {
+      emailError = emailErr instanceof Error ? emailErr.message : 'Erreur inconnue'
       console.error('[EMAIL] ❌ Erreur envoi:', emailErr)
     }
 
     return NextResponse.json({
       success: true,
       data: { user_id: userId, restaurant_id: restaurant.id, restaurant_name: restaurant.name, email },
+      email_sent: !emailError,
+      email_error: emailError,
     })
   } catch (error) {
     console.error('Create restaurant admin error:', error)

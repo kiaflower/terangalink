@@ -162,6 +162,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
             quantity: i.quantity,
             variant_id: i.variant_id ?? null,
             variant_name: i.variant_name ?? null,
+            preorder_delivery_date: i.preorder_delivery_date ?? null,
           })),
           total: finalTotal,
           payment_method: paymentMethod === 'Wave' ? 'wave' : paymentMethod === 'Orange Money' ? 'orange_money' : 'cash',

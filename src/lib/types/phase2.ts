@@ -21,6 +21,7 @@ export interface MenuItem {
   description: string | null
   price: number // FCFA
   image_url: string | null
+  image_urls?: string[]
   is_available: boolean
   is_featured: boolean
   featured_label?: 'Best Seller' | 'Nouveau' | 'Promotion' | 'Recommandé' | null
@@ -55,7 +56,6 @@ export interface OrderItem {
   image_url?: string | null
   variant_id?: string | null
   variant_name?: string | null
-  preorder_delivery_date?: string | null
 }
 
 export interface Order {
@@ -64,7 +64,6 @@ export interface Order {
   restaurant_id: string
   customer_name: string | null
   customer_phone: string | null
-  customer_address: string | null
   items: OrderItem[]
   total: number
   payment_method: PaymentMethod | null

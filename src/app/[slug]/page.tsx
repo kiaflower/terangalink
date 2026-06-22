@@ -99,7 +99,7 @@ export default async function RestaurantPage({ params }: Props) {
   try {
     const { data: extData } = await supabase
       .from('restaurants')
-      .select('whatsapp_number, banner_url, primary_color, background_color, theme_mode, button_color, facebook_url, instagram_url, tiktok_url, opening_hours, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes, latitude, longitude, full_menu_image_url, show_full_menu')
+      .select('whatsapp_number, banner_url, primary_color, background_color, theme_mode, button_color, facebook_url, instagram_url, tiktok_url, snapchat_url, opening_hours, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes, latitude, longitude, full_menu_image_url, show_full_menu')
       .eq('id', base.id)
       .single()
 
@@ -189,6 +189,7 @@ export default async function RestaurantPage({ params }: Props) {
     facebook_url: extended.facebook_url ?? null,
     instagram_url: extended.instagram_url ?? null,
     tiktok_url: extended.tiktok_url ?? null,
+    snapchat_url: (extended as Record<string, unknown>).snapchat_url as string ?? null,
     opening_hours: (extended.opening_hours as RestaurantRow['opening_hours']) ?? null,
     is_demo: extended.is_demo ?? false,
     show_delivery_fee: extended.show_delivery_fee ?? false,

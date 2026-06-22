@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/Select'
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { ImageUpload } from '@/components/menu/ImageUpload'
+import { MultiImageUpload } from '@/components/menu/MultiImageUpload'
 import { EmptyState, SkeletonRow } from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/utils'
 import { getPlanFeatures } from '@/lib/plans'
@@ -68,6 +69,7 @@ export default function MenuPage() {
     name: '', description: '', price: '', category_id: '',
     is_available: true, image_url: '' as string | null,
   })
+  const [imageUrls, setImageUrls] = useState<string[]>([])
 
   // Produit mis en avant (Premium)
   const [isFeatured, setIsFeatured] = useState(false)
@@ -143,6 +145,7 @@ export default function MenuPage() {
   function openCreate() {
     setEditingItem(null)
     setForm({ name: '', description: '', price: '', category_id: '', is_available: true, image_url: null })
+    setImageUrls([])
     setVariants([])
     setIsFeatured(false)
     setFeaturedLabel(null)
@@ -164,6 +167,7 @@ export default function MenuPage() {
       is_available: item.is_available,
       image_url: item.image_url,
     })
+    setImageUrls(item.image_urls ?? (item.image_url ? [item.image_url] : []))
     setVariants((item.variants ?? []).map(v => ({ id: v.id, name: v.name, price: String(v.price) })))
     setIsFeatured(item.is_featured ?? false)
     setFeaturedLabel((item.featured_label as typeof featuredLabel) ?? null)
@@ -196,7 +200,8 @@ export default function MenuPage() {
       price: hasVariants ? Math.min(...variants.map(v => parseInt(v.price) || 0)) : priceNum,
       category_id: form.category_id || null,
       is_available: form.is_available,
-      image_url: form.image_url || null,
+      image_url: imageUrls[0] || form.image_url || null,
+      image_urls: imageUrls,
       restaurant_id: restaurantId,
       // Stock
       stock_enabled: isPremium ? stockEnabled : false,
@@ -465,7 +470,12 @@ export default function MenuPage() {
         <div className="space-y-4">
           {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">{error}</div>}
 
-          <ImageUpload value={form.image_url} onChange={url => setForm(p => ({ ...p, image_url: url }))} />
+          <MultiImageUpload
+            values={imageUrls}
+            onChange={setImageUrls}
+            folder="menu"
+            max={5}
+          />
           <Input label="Nom du plat *" placeholder="Burger Teranga" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
           <Input label="Description" placeholder="Bœuf haché, oignons caramélisés..." value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} />
 

@@ -32,6 +32,7 @@ async function updateRestaurant(request: NextRequest) {
       facebook_url,
       instagram_url,
       tiktok_url,
+      snapchat_url,
       sub_id,
       sub_status,
       ...rest
@@ -75,6 +76,7 @@ async function updateRestaurant(request: NextRequest) {
         corePayload.facebook_url = facebook_url || null
         corePayload.instagram_url = instagram_url || null
         corePayload.tiktok_url = tiktok_url || null
+        corePayload.snapchat_url = snapchat_url || null
       } else {
         // Starter : valeurs TerangaLink par défaut
         corePayload.primary_color = DEFAULT_PRIMARY_COLOR
@@ -84,6 +86,7 @@ async function updateRestaurant(request: NextRequest) {
         corePayload.facebook_url = null
         corePayload.instagram_url = null
         corePayload.tiktok_url = null
+        corePayload.snapchat_url = null
       }
     }
 

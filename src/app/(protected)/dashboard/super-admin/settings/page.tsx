@@ -9,7 +9,69 @@ import {
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/Input'
 
-function Section({ icon: Icon, title, description, children, defaultOpen = true }: {
+function SmtpTest() {
+  const [testEmail, setTestEmail] = useState('')
+  const [sending, setSending] = useState(false)
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+
+  async function handleTest() {
+    if (!testEmail.trim()) return
+    setSending(true)
+    setResult(null)
+    try {
+      const res = await fetch('/api/admin/test-smtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to_email: testEmail.trim() }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setResult({ ok: true, message: `✅ Email envoyé à ${testEmail}` })
+      } else {
+        setResult({ ok: false, message: `❌ Erreur : ${data.error || 'Inconnue'}` })
+      }
+    } catch (e) {
+      setResult({ ok: false, message: `❌ Erreur réseau : ${e instanceof Error ? e.message : 'Inconnue'}` })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-gray-400 text-xs">
+        Envoie un email de test pour vérifier que SMTP_HOST, SMTP_USER et SMTP_PASS sont bien configurés en production.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="email"
+          value={testEmail}
+          onChange={e => setTestEmail(e.target.value)}
+          placeholder="ton@email.com"
+          className="flex-1 bg-surface-100 border border-surface-300 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+        />
+        <button
+          onClick={handleTest}
+          disabled={sending || !testEmail.trim()}
+          className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/90 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+        >
+          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+          Tester
+        </button>
+      </div>
+      {result && (
+        <p className={`text-sm font-medium ${result.ok ? 'text-green-400' : 'text-red-400'}`}>
+          {result.message}
+        </p>
+      )}
+    </div>
+  )
+}
+
+
+function Section({
+  icon: Icon, title, description, children, defaultOpen = true
+}: {
   icon: React.ElementType; title: string; description?: string; children: React.ReactNode; defaultOpen?: boolean
 }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -214,6 +276,10 @@ export default function SuperAdminSettingsPage() {
             <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
             <p className="text-gray-400 text-xs">Les notifications automatiques nécessitent une intégration WhatsApp Business API. Disponible dans une prochaine version.</p>
           </div>
+        </Section>
+
+        <Section icon={Mail} title="Test SMTP — Emails" description="Vérifier que les emails partent correctement" defaultOpen={false}>
+          <SmtpTest />
         </Section>
 
         <Section icon={Mail} title="Contact & support" description="Résumé des coordonnées publiques" defaultOpen={false}>

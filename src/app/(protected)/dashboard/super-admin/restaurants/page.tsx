@@ -93,7 +93,7 @@ export default function RestaurantsPage() {
   }
 
   async function resetAnalytics(restaurant: Restaurant) {
-    if (!confirm(`Réinitialiser les stats analytiques de ${restaurant.name} ?`)) return
+    if (!confirm(`⚠️ Réinitialiser les stats de ${restaurant.name} ?\n\nCela supprimera définitivement :\n• Toutes les commandes\n• Tous les événements analytiques (vues, visites…)\n\nCette action est irréversible.`)) return
     setResettingId(restaurant.id)
     const res = await fetch('/api/admin/reset-restaurant-analytics', {
       method: 'POST',
@@ -102,8 +102,8 @@ export default function RestaurantsPage() {
     })
     const data = await res.json()
     setResettingId(null)
-    if (!res.ok) { alert(data.error || 'Erreur lors de la réinitialisation des statistiques'); return }
-    alert('Stats analytiques réinitialisées avec succès.')
+    if (!res.ok) { alert(data.error || 'Erreur lors de la réinitialisation'); return }
+    alert(`✓ Stats de ${restaurant.name} réinitialisées. Commandes et analytics supprimés.`)
   }
 
   async function confirmDelete() {

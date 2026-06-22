@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { X, Plus, Minus, ShoppingCart, Clock, AlertTriangle, PackageX, Tag } from 'lucide-react'
+import { X, Plus, Minus, ShoppingCart, Clock, AlertTriangle, PackageX, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 import { formatCurrency } from '@/lib/utils'
 import type { MenuItem, MenuItemVariant } from '@/lib/types'
@@ -340,37 +340,97 @@ export function ProductModal({
 
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1">
-          {/* Image */}
-          <div className="relative w-full h-56 sm:h-64 flex-shrink-0" style={{ backgroundColor: tokens.bgCardHover }}>
-            {item.image_url ? (
-              <Image
-                src={item.image_url}
-                alt={item.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, 480px"
-                unoptimized
-                priority
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-6xl opacity-20">🍽️</span>
-              </div>
-            )}
+          {/* Galerie d'images */}
+          {(() => {
+            const allImages = item.image_urls?.length
+              ? item.image_urls
+              : item.image_url
+              ? [item.image_url]
+              : []
+            const [activeIdx, setActiveIdx] = useState(0)
+            const hasMany = allImages.length > 1
+            const currentImg = allImages[activeIdx] ?? null
 
-            {/* Featured badge */}
-            {isPremium && item.is_featured && item.featured_label && (
-              <div className="absolute top-3 left-3">
-                <span
-                  className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full text-white shadow-lg"
-                  style={{ backgroundColor: tokens.button }}
-                >
-                  <Tag className="w-3 h-3" />
-                  {item.featured_label}
-                </span>
+            return (
+              <div className="relative w-full h-56 sm:h-64 flex-shrink-0" style={{ backgroundColor: tokens.bgCardHover }}
+                onTouchStart={e => {
+                  const t = e.touches[0]; (e.currentTarget as HTMLDivElement & { _touchX?: number })._touchX = t.clientX
+                }}
+                onTouchEnd={e => {
+                  const el = e.currentTarget as HTMLDivElement & { _touchX?: number }
+                  if (el._touchX == null) return
+                  const dx = e.changedTouches[0].clientX - el._touchX
+                  if (Math.abs(dx) > 40) setActiveIdx(i => dx < 0 ? (i + 1) % allImages.length : (i - 1 + allImages.length) % allImages.length)
+                  el._touchX = undefined
+                }}
+                onMouseDown={e => { (e.currentTarget as HTMLDivElement & { _mouseX?: number })._mouseX = e.clientX }}
+                onMouseUp={e => {
+                  const el = e.currentTarget as HTMLDivElement & { _mouseX?: number }
+                  if (el._mouseX == null) return
+                  const dx = e.clientX - el._mouseX
+                  if (Math.abs(dx) > 40) setActiveIdx(i => dx < 0 ? (i + 1) % allImages.length : (i - 1 + allImages.length) % allImages.length)
+                  el._mouseX = undefined
+                }}
+              >
+                {currentImg ? (
+                  <Image
+                    src={currentImg}
+                    alt={`${item.name} ${activeIdx + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 480px"
+                    unoptimized
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-6xl opacity-20">🍽️</span>
+                  </div>
+                )}
+
+                {/* Nav arrows */}
+                {hasMany && (
+                  <>
+                    <button
+                      onClick={() => setActiveIdx(i => (i - 1 + allImages.length) % allImages.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setActiveIdx(i => (i + 1) % allImages.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    {/* Dots */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {allImages.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveIdx(i)}
+                          className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeIdx ? 'bg-white' : 'bg-white/40'}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Featured badge */}
+                {isPremium && item.is_featured && item.featured_label && (
+                  <div className="absolute top-3 left-3">
+                    <span
+                      className="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full text-white shadow-lg"
+                      style={{ backgroundColor: tokens.button }}
+                    >
+                      <Tag className="w-3 h-3" />
+                      {item.featured_label}
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            )
+          })()}
 
           {/* Content */}
           <div className="p-5 space-y-4">

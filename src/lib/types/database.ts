@@ -69,6 +69,7 @@ export interface Database {
           facebook_url: string | null
           instagram_url: string | null
           tiktok_url: string | null
+          snapchat_url: string | null
           opening_hours: Json | null
           delivery_fee: number | null
           show_delivery_fee: boolean
@@ -104,6 +105,7 @@ export interface Database {
           facebook_url?: string | null
           instagram_url?: string | null
           tiktok_url?: string | null
+          snapchat_url?: string | null
           opening_hours?: Json | null
           delivery_fee?: number | null
           show_delivery_fee?: boolean
@@ -138,6 +140,7 @@ export interface Database {
           facebook_url?: string | null
           instagram_url?: string | null
           tiktok_url?: string | null
+          snapchat_url?: string | null
           opening_hours?: Json | null
           delivery_fee?: number | null
           show_delivery_fee?: boolean

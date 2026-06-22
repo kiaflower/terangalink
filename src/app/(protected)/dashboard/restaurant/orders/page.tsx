@@ -25,6 +25,7 @@ export default function OrdersPage() {
   const [restaurantAccent, setRestaurantAccent] = useState('#F97316')
   const [waveNumber, setWaveNumber] = useState('')
   const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
+  const [prepTimeMinutes, setPrepTimeMinutes] = useState<number | null>(null)
   const [isPro, setIsPro] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -48,7 +49,7 @@ export default function OrdersPage() {
         .order('created_at', { ascending: false }),
       supabase
         .from('restaurants')
-        .select('name, phone, wave_number, orange_money_number, address, city, button_color, primary_color')
+        .select('name, phone, wave_number, orange_money_number, address, city, button_color, primary_color, prep_time_minutes')
         .eq('id', profile.restaurant_id)
         .single(),
       supabase
@@ -65,6 +66,7 @@ export default function OrdersPage() {
     setRestaurantAccent(restaurant?.button_color || restaurant?.primary_color || '#F97316')
     setWaveNumber(restaurant?.wave_number || restaurant?.phone || '')
     setOrangeMoneyNumber(restaurant?.orange_money_number || restaurant?.phone || '')
+    setPrepTimeMinutes((restaurant as { prep_time_minutes?: number | null } | null)?.prep_time_minutes ?? null)
 
     const plan = normalizePlan((subscription as { plan?: string } | null)?.plan || 'starter')
     setIsPro(canUseFeature(plan, 'suppressionBranding'))
@@ -96,19 +98,38 @@ export default function OrdersPage() {
     )
   }, [orders, search])
 
+  function getPreorderInfo(order: Order) {
+    const orderItems = order.items as { preorder_delivery_date?: string | null }[]
+    const preorderItem = orderItems?.find(i => i.preorder_delivery_date)
+    return { isPreorder: !!preorderItem, deliveryDate: preorderItem?.preorder_delivery_date ?? null }
+  }
+
   function buildConfirmUrl(order: Order) {
     const phone = (order.customer_phone || '').replace(/\D/g, '')
     if (!phone) return null
 
-    const items = (order.items as { name: string; quantity: number }[])
+    const orderItems = order.items as { name: string; quantity: number; preorder_delivery_date?: string | null }[]
+    const items = orderItems
       .map(i => `• ${i.name} x${i.quantity}`)
       .join('\n')
 
     const numStr = order.order_number ? ` (${order.order_number})` : ''
 
+    const preorderInfo = getPreorderInfo(order)
+    const isPreorder = preorderInfo.isPreorder
+    const deliveryDate = preorderInfo.deliveryDate ?? ''
+
+    const timingLine = isPreorder
+      ? `📅 Livraison prévue : ${deliveryDate}.\n`
+      : `Temps de préparation estimé : ${prepTimeMinutes ?? 25} min.\n`
+
+    const header = isPreorder
+      ? `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été validée par ${restaurantName}.\n`
+      : `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n`
+
     const message = encodeURIComponent(
-      `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n` +
-      `Temps de préparation estimé : 25 min.\n` +
+      header +
+      timingLine +
       `Paiement Wave : ${waveNumber || 'À confirmer'}\n` +
       `Paiement Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
       `${items ? `Résumé :\n${items}\n\n` : ''}` +
@@ -172,6 +193,7 @@ export default function OrdersPage() {
           {filteredOrders.map(order => {
             const dejaValidee = order.status === 'delivered'
             const annulee = order.status === 'cancelled'
+            const { isPreorder, deliveryDate } = getPreorderInfo(order)
 
             return (
               <div key={order.id} className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
@@ -185,6 +207,11 @@ export default function OrdersPage() {
                       {order.order_number && (
                         <span className="text-xs font-mono text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded-full">
                           {order.order_number}
+                        </span>
+                      )}
+                      {isPreorder && (
+                        <span className="text-xs font-semibold text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full">
+                          📅 Précommande{deliveryDate ? ` · ${deliveryDate}` : ''}
                         </span>
                       )}
                       <Badge variant={ORDER_STATUS_COLORS[order.status] as 'success' | 'warning' | 'info' | 'danger' | 'default'}>
