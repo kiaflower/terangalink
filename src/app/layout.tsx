@@ -9,13 +9,7 @@ const inter = Inter({
   weight: ['400', '500', '600', '700', '800', '900'],
 })
 
-export const metadata = {
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/icon.png',
-  },
-}
+
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -29,7 +23,14 @@ export const metadata: Metadata = {
     default: 'TerangaLink — La plateforme de commande pour restaurants',
     template: '%s | TerangaLink',
   },
-  description: 'TerangaLink donne à chaque restaurant son propre site de commande professionnel — rapide, beau et adapté au mobile.',
+
+  description: 'TerangaLink donne à chaque restaurant son propre site ...',
+
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/icon.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
