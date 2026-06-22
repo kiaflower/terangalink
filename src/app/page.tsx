@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { LandingNav } from '@/components/landing/LandingNav'
 import { getPlatformSettings } from '@/lib/settings'
 import {
-  Zap, Smartphone, Shield, Globe,
+  Zap, Smartphone, Shield, Globe, Search,
   Check, Star, ArrowRight, UtensilsCrossed, ShoppingBag, BarChart3, MessageCircle,
   Mail, Phone,
 } from 'lucide-react'
@@ -25,6 +25,7 @@ const features = [
   { icon: UtensilsCrossed, title: 'Menu digital', description: "Créez et mettez à jour votre menu en quelques clics. Photos, prix, descriptions — tout." },
   { icon: BarChart3, title: 'Statistiques & revenus', description: 'Suivez vos ventes, vos meilleurs plats et votre croissance en FCFA.' },
   { icon: Shield, title: 'Sécurisé & fiable', description: "Données sécurisées, uptime 99.9%. Votre business ne s'arrête jamais." },
+  { icon: Search, title: 'Référencement Google inclus', description: "Votre restaurant apparaît automatiquement sur Google dès sa création. Titre, description, fiche locale — tout est optimisé sans aucune action de votre part." },
 ]
 
 const plans = [
@@ -67,8 +68,9 @@ const faqs = [
   { q: 'Comment fonctionne TerangaLink ?', a: "Votre restaurant obtient un site de commande unique. Vos clients y accèdent, parcourent votre menu et commandent. La commande arrive directement sur votre WhatsApp." },
   { q: "Ai-je besoin de compétences techniques ?", a: "Aucune. Notre tableau de bord est conçu pour être utilisé depuis un smartphone. Tout est visuel et intuitif." },
   { q: "Combien de temps pour être en ligne ?", a: "Moins de 24h. Vous remplissez votre profil, ajoutez votre menu, et vous êtes prêts à recevoir des commandes." },
+  { q: 'Mon restaurant sera-t-il visible sur Google ?', a: "Oui, automatiquement. Dès que votre restaurant est créé sur TerangaLink, il est référencé sur Google. Nous générons toutes les informations nécessaires à partir de votre menu, votre ville et votre type de cuisine — sans aucune action de votre part. Vos clients peuvent vous trouver en tapant votre nom sur Google, et quand ils partagent votre lien sur WhatsApp, une belle carte visuelle apparaît avec votre photo, votre nom et votre ville." },
   { q: "Comment les clients paient-ils ?", a: "Les clients commandent via WhatsApp. Vous gérez le paiement directement avec eux — Wave, Orange Money, cash, comme vous préférez." },
-  { q: "Puis-je annuler à tout moment ?", a: "Oui, les offres Starter et Pro sont mensuelles et peuvent être résiliées à la fin du mois en cours." },
+  { q: "Puis-je annuler à tout moment ?", a: "Oui, les offres Starter, Pro et Premium sont mensuelles et peuvent être résiliées à la fin du mois en cours." },
 ]
 
 export default async function HomePage() {
