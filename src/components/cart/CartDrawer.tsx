@@ -79,7 +79,7 @@ function computeDiscount(total: number, promo: AppliedPromo | null): number {
 
 // ─── Cart Item display ────────────────────────────────────────────────────────
 
-export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }) {
+export function CartButton({ tokens = DEFAULT_TOKENS, isPremium = false }: { tokens?: ThemeTokens; isPremium?: boolean }) {
   const { totalItems } = useCart()
   const [open, setOpen] = useState(false)
 
@@ -104,7 +104,7 @@ export function CartButton({ tokens = DEFAULT_TOKENS }: { tokens?: ThemeTokens }
           Voir le panier ({totalItems})
         </button>
       )}
-      {open && <CartDrawer onClose={() => setOpen(false)} tokens={tokens} />}
+      {open && <CartDrawer onClose={() => setOpen(false)} tokens={tokens} isPremium={isPremium} />}
     </>
   )
 }
@@ -118,6 +118,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
+  const [customerAddress, setCustomerAddress] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'Wave' | 'Orange Money' | 'Cash'>('Wave')
 
   const promo = usePromoCode(state.restaurantId)
@@ -153,6 +154,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
           restaurant_id: state.restaurantId,
           customer_name: customerName.trim() || 'Client',
           customer_phone: cleanedCustomerPhone,
+          customer_address: customerAddress.trim() || null,
           items: state.items.map(i => ({
             id: i.id,
             name: i.name,
@@ -193,6 +195,10 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
         ? `\nCode promo : ${promo.applied.code} (−${formatCurrency(discount)})`
         : ''
 
+      const addressLine = customerAddress.trim()
+        ? `Adresse : ${customerAddress.trim()}\n`
+        : ''
+
       // Fix Invalid Date: parse safely
       const rawDate = order.created_at
       const parsedDate = rawDate ? new Date(rawDate) : new Date()
@@ -205,7 +211,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
         message = encodeURIComponent(
           `📅 Précommande ${orderNumber} — ${state.restaurantName}\n\n` +
           `Client : ${customerName.trim() || 'Client'}\n` +
-          `Tél : ${cleanedCustomerPhone}\n\n` +
+          `Tél : ${cleanedCustomerPhone}\n` +
+          `${addressLine}\n` +
           `Articles :\n${itemsLines}${promoLine}\n\n` +
           `Livraison : ${deliveryText}\n\n` +
           `Total : ${formatCurrency(finalTotal)}\n` +
@@ -217,7 +224,8 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
         message = encodeURIComponent(
           `🍽 Commande ${orderNumber} — ${state.restaurantName}\n\n` +
           `Client : ${customerName.trim() || 'Client'}\n` +
-          `Tél : ${cleanedCustomerPhone}\n\n` +
+          `Tél : ${cleanedCustomerPhone}\n` +
+          `${addressLine}\n` +
           `Articles :\n${itemsLines}${promoLine}\n\n` +
           `Total : ${formatCurrency(finalTotal)}\n` +
           `Paiement : ${paymentMethod}\n` +
@@ -344,6 +352,14 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
             value={customerPhone}
             onChange={(e) => setCustomerPhone(e.target.value)}
             placeholder="Votre numéro WhatsApp (obligatoire)"
+            className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+            style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+          />
+
+          <input
+            value={customerAddress}
+            onChange={(e) => setCustomerAddress(e.target.value)}
+            placeholder="Adresse de livraison (optionnel)"
             className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
             style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
           />

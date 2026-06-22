@@ -70,7 +70,7 @@ function isOpenNow(opening_hours?: Record<string, { ouverture?: string; fermetur
   return cur >= oh * 60 + om && cur < fh * 60 + fm
 }
 
-function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeTokens> }) {
+function NavCartButton({ tokens, isPremium }: { tokens: ReturnType<typeof generateThemeTokens>; isPremium: boolean }) {
   const { totalItems } = useCart()
   const [open, setOpen] = useState(false)
 
@@ -99,7 +99,7 @@ function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeToke
             className="relative w-full sm:w-[400px] max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl"
             style={{ backgroundColor: tokens.bgCard }}
           >
-            <CartDrawer onClose={() => setOpen(false)} tokens={tokens} />
+            <CartDrawer onClose={() => setOpen(false)} tokens={tokens} isPremium={isPremium} />
           </div>
         </div>
       )}
@@ -273,7 +273,7 @@ function RestaurantInner({ data }: Props) {
               </div>
             )}
             <div className="hidden sm:block">
-              <NavCartButton tokens={tokens} />
+              <NavCartButton tokens={tokens} isPremium={isPremium} />
             </div>
           </div>
         </div>
@@ -632,7 +632,7 @@ function RestaurantInner({ data }: Props) {
       </footer>
 
       {/* Panier mobile flottant */}
-      <CartButton tokens={tokens} />
+      <CartButton tokens={tokens} isPremium={isPremium} />
 
       {/* ── POPUP PRODUIT (Phase 1 + 2 + 3 + 4 + 6) ── */}
       {selectedProduct && (

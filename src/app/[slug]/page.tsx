@@ -110,17 +110,21 @@ export default async function RestaurantPage({ params }: Props) {
 
   // Plan — utilise le client admin pour bypasser le RLS (visiteurs non connectés)
   const adminClient = createAdminClient()
-  const { data: subscriptionData } = await adminClient
+  const { data: subscriptionData, error: subscriptionError } = await adminClient
     .from('subscriptions')
     .select('plan, status')
     .eq('restaurant_id', base.id)
     .single()
 
+  console.log('[DEBUG plan]', { restaurant_id: base.id, subscriptionData, subscriptionError })
+
   const subscription = subscriptionData as { plan: string; status: string } | null
   // On n'applique le plan payant que si l'abonnement est actif ou en période d'essai
-  const isActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trialing'
+  const isActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trial'
   const plan = (subscription?.plan && isActiveSubscription) ? subscription.plan : 'starter'
   const isPremium = plan === 'premium'
+
+  console.log('[DEBUG plan resolved]', { plan, isPremium, isActiveSubscription })
 
   // Catégories + items
   const [{ data: categoriesData }, { data: itemsData }] = await Promise.all([

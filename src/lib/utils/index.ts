@@ -41,27 +41,9 @@ export function getInitials(name: string): string {
     .slice(0, 2)
 }
 
-export const PLAN_PRICES: Record<string, number> = {
-  starter: 9000,
-  pro: 15000,
-  // Compatibilité lecture des anciens abonnements par durée.
-  mensuel: 9000,
-  trimestriel: 9000,
-  annuel: 15000,
-  enterprise: 15000,
-  premium: 15000,
-}
-
-export const PLAN_LABELS: Record<string, string> = {
-  starter: 'Starter',
-  pro: 'Pro',
-  // Compatibilité lecture des anciens abonnements par durée.
-  mensuel: 'Starter',
-  trimestriel: 'Starter',
-  annuel: 'Pro',
-  enterprise: 'Pro',
-  premium: 'Pro',
-}
+// @deprecated Ré-exporté depuis lib/plans.ts (source de vérité unique pour les prix/labels de plan).
+// Ne pas redéfinir ici — utiliser PLAN_PRICES / PLAN_LABELS de '@/lib/plans' dans le nouveau code.
+export { PLAN_PRICES, PLAN_LABELS } from '@/lib/plans'
 
 
 export const STATUS_COLORS: Record<string, string> = {

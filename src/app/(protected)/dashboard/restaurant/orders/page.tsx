@@ -211,6 +211,12 @@ export default function OrdersPage() {
 
                 {expandedId === order.id && (
                   <div className="border-t border-surface-200 px-5 py-4 space-y-4">
+                    {(order as Order & { customer_address?: string | null }).customer_address && (
+                      <div className="bg-surface-100 rounded-xl p-3 text-sm text-gray-400">
+                        <span className="text-gray-500">Adresse:</span> {(order as Order & { customer_address?: string | null }).customer_address}
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       {(order.items as { name: string; quantity: number; price: number; variant_name?: string }[]).map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">

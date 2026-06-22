@@ -4,8 +4,8 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import Link from 'next/link'
 import { Store, Users, TrendingUp, Activity, ArrowRight, PlusCircle } from 'lucide-react'
-import { formatDate, formatCurrency, PLAN_PRICES } from '@/lib/utils'
-import { normalizePlan, PLAN_LABELS } from '@/lib/plans'
+import { formatDate, formatCurrency } from '@/lib/utils'
+import { normalizePlan, PLAN_LABELS, PLAN_PRICES } from '@/lib/plans'
 import type { Restaurant, Profile, Subscription } from '@/lib/types'
 
 export const metadata = { title: 'Super Admin — Vue d\'ensemble' }

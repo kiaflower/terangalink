@@ -64,6 +64,7 @@ export interface Order {
   restaurant_id: string
   customer_name: string | null
   customer_phone: string | null
+  customer_address: string | null
   items: OrderItem[]
   total: number
   payment_method: PaymentMethod | null

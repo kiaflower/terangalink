@@ -29,6 +29,7 @@ function buildOwnerMessage(params: {
   orderNumber: string
   customerName: string
   customerPhone: string
+  customerAddress: string | null
   items: OrderItem[]
   total: number
   paymentMethod: PaymentMethod
@@ -51,6 +52,7 @@ function buildOwnerMessage(params: {
     : ''
 
   const noteLine = params.notes ? `\nNote : ${params.notes}` : ''
+  const addressLine = params.customerAddress ? `\nAdresse : ${params.customerAddress}` : ''
 
   const header = params.isPreorder
     ? `📅 Précommande ${params.orderNumber} — ${params.restaurantName}`
@@ -63,7 +65,7 @@ function buildOwnerMessage(params: {
   return encodeURIComponent(
     `${header}\n\n` +
     `Client : ${params.customerName}\n` +
-    `Tél : ${params.customerPhone}\n\n` +
+    `Tél : ${params.customerPhone}${addressLine}\n\n` +
     `Articles :\n${itemLines}${promoLine}${deliveryLine}\n\n` +
     `Total : ${params.total.toLocaleString('fr-SN')} FCFA\n` +
     `Paiement : ${PAYMENT_LABELS[params.paymentMethod]}\n` +
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
-      restaurant_id, customer_name, customer_phone, items, total,
+      restaurant_id, customer_name, customer_phone, customer_address, items, total,
       notes, promo_code_id, discount_amount,
     } = body
 
@@ -128,6 +130,7 @@ export async function POST(request: NextRequest) {
         restaurant_id,
         customer_name: (customer_name || '').trim() || 'Client',
         customer_phone: customer_phone.trim(),
+        customer_address: (customer_address || '').trim() || null,
         items: normalizedItems,
         total,
         payment_method,
@@ -138,6 +141,28 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single()
+
+    // Fallback si la colonne customer_address n'existe pas encore (migration pas appliquée)
+    if (error && error.message.includes('customer_address')) {
+      const fallback = await adminClient
+        .from('orders')
+        .insert({
+          restaurant_id,
+          customer_name: (customer_name || '').trim() || 'Client',
+          customer_phone: customer_phone.trim(),
+          items: normalizedItems,
+          total,
+          payment_method,
+          notes: notes || null,
+          status: 'pending',
+          promo_code_id: promo_code_id || null,
+          discount_amount: discount_amount || 0,
+        })
+        .select()
+        .single()
+      data = fallback.data
+      error = fallback.error
+    }
 
     if (error && error.message.includes('payment_method')) {
       const fallback = await adminClient
@@ -179,6 +204,7 @@ export async function POST(request: NextRequest) {
       orderNumber,
       customerName: data.customer_name || 'Client',
       customerPhone: customer_phone.trim(),
+      customerAddress: (data as { customer_address?: string | null }).customer_address || (customer_address || '').trim() || null,
       items: data.items as OrderItem[],
       total: data.total,
       paymentMethod: (data as { payment_method?: PaymentMethod }).payment_method || payment_method,

@@ -34,7 +34,7 @@ const plans = [
   },
   {
     name: 'Pro', price: '15 000', period: '/mois', description: 'Personnalisation avancée par TerangaLink', badge: null, popular: true,
-    features: ['Tout Starter', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Réseaux sociaux affichés', 'Couleurs personnalisées', 'Support prioritaire', 'Accompagnement personnalisé'],
+    features: ['Tout Starter', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Réseaux sociaux affichés', 'Couleurs personnalisées', 'Génération de reçus de commande', 'Support prioritaire', 'Accompagnement personnalisé'],
   },
   {
     name: 'Premium', price: '25 000', period: '/mois', description: 'Fonctionnalités e-commerce avancées', badge: 'NOUVEAU', popular: false,

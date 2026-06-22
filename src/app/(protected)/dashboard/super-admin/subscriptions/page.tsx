@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, TrendingUp, Clock, CheckCircle, AlertTriangle, XCircle, PauseCircle, RefreshCw, CreditCard, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
-import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
+import { PLAN_LABELS, PLAN_PRICES, normalizePlan } from '@/lib/plans'
 import { formatDate } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -146,7 +146,7 @@ export default function SubscriptionsPage() {
       return diff >= 0 && diff <= 7
     }).length,
     revenueEstimated: rows.filter(r => r.status === 'active').reduce((sum, r) => {
-      return sum + (normalizePlan(r.plan) === 'pro' ? 25000 : 10000)
+      return sum + PLAN_PRICES[normalizePlan(r.plan)]
     }, 0),
     revenueReal: rows.reduce((sum, r) => sum + (r.amount_paid ?? 0), 0),
   }

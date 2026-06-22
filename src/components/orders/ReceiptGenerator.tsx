@@ -114,6 +114,7 @@ function buildReceiptHTML(
       <div style="font-size:9px;font-weight:700;color:#aaa;letter-spacing:2px;margin-bottom:5px;">CLIENT</div>
       <div style="font-size:14px;font-weight:700;color:#111;">${order.customer_name || '-'}</div>
       ${order.customer_phone ? `<div style="font-size:12px;color:#888;margin-top:3px;">${order.customer_phone}</div>` : ''}
+      ${order.customer_address ? `<div style="font-size:12px;color:#888;margin-top:3px;">${order.customer_address}</div>` : ''}
     </div>
 
     <div style="font-size:9px;color:#ccc;letter-spacing:2px;margin-bottom:14px;">${dashes}</div>
