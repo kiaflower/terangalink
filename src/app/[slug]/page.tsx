@@ -2,11 +2,23 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
+import Script from 'next/script'
 import RestaurantPageClient from './RestaurantPageClient'
+import {
+  buildAutoDescription,
+  buildTitle,
+  buildKeywords,
+  buildCanonical,
+  buildOgImageUrl,
+  buildSchemaOrg,
+  SITE_NAME,
+} from '@/lib/seo'
 
 interface Props { params: { slug: string } }
 
 export const dynamic = 'force-dynamic'
+
+const STATIC_EXTENSIONS = /\.(ico|png|jpg|jpeg|gif|svg|webp|txt|xml|json|js|css)$/i
 
 interface RestaurantRow {
   id: string
@@ -38,29 +50,87 @@ interface RestaurantRow {
   latitude: number | null
   longitude: number | null
   cuisine_type: string | null
-  // Premium
   full_menu_image_url: string | null
   show_full_menu: boolean
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  if (STATIC_EXTENSIONS.test(params.slug)) {
+    return { title: 'Not found', robots: { index: false } }
+  }
+
   const supabase = await createClient()
+
   const { data } = await supabase
     .from('restaurants')
-    .select('name, description')
+    .select('name, slug, description, city, address, cuisine_type, phone, whatsapp_number, logo_url, cover_url, latitude, longitude, opening_hours, facebook_url, instagram_url, tiktok_url, is_active')
     .eq('slug', params.slug)
     .single()
 
-  const row = data as { name: string; description: string | null } | null
-  if (!row) return { title: 'Restaurant introuvable' }
+  if (!data || !data.is_active) {
+    return { title: 'Restaurant introuvable', robots: { index: false, follow: false } }
+  }
+
+  const { data: restRow } = await supabase.from('restaurants').select('id').eq('slug', params.slug).single()
+  const { data: items } = await supabase
+    .from('menu_items')
+    .select('name')
+    .eq('restaurant_id', restRow?.id ?? '')
+    .eq('is_available', true)
+    .limit(6)
+
+  const topItems = (items ?? []).map((i: { name: string }) => i.name.toLowerCase()).slice(0, 4)
+  const seoData = { ...data, topItems, topCategories: [] as string[] }
+  const description = data.description?.trim() ? data.description : buildAutoDescription(seoData)
+  const title = buildTitle(data)
+  const canonical = buildCanonical(params.slug)
+  const ogImage = buildOgImageUrl(params.slug)
+  const keywords = buildKeywords(seoData)
 
   return {
-    title: `${row.name} — Commander en ligne`,
-    description: row.description || `Commandez chez ${row.name} via WhatsApp`,
+    title,
+    description,
+    keywords,
+    alternates: { canonical },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true, 'max-snippet': -1, 'max-image-preview': 'large', 'max-video-preview': -1 },
+    },
+    openGraph: {
+      type: 'website',
+      locale: 'fr_SN',
+      url: canonical,
+      siteName: SITE_NAME,
+      title,
+      description,
+      images: [
+        { url: ogImage, width: 1200, height: 630, alt: `${data.name} — commander en ligne` },
+        ...(data.cover_url ? [{ url: data.cover_url, width: 1200, height: 630, alt: data.name }] : []),
+        ...(data.logo_url ? [{ url: data.logo_url, width: 400, height: 400, alt: data.name }] : []),
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImage],
+      site: '@TerangaLink',
+    },
+    other: {
+      ...(data.latitude && data.longitude ? {
+        'geo.position': `${data.latitude};${data.longitude}`,
+        'geo.placename': data.city ?? '',
+        'geo.region': 'SN',
+        ICBM: `${data.latitude}, ${data.longitude}`,
+      } : {}),
+    },
   }
 }
 
 export default async function RestaurantPage({ params }: Props) {
+  if (STATIC_EXTENSIONS.test(params.slug)) notFound()
+
   const supabase = await createClient()
 
   const { data: baseData, error: baseError } = await supabase
@@ -94,7 +164,6 @@ export default async function RestaurantPage({ params }: Props) {
     )
   }
 
-  // Colonnes étendues (graceful fallback si migration pas encore appliquée)
   let extended: Partial<RestaurantRow> = {}
   try {
     const { data: extData } = await supabase
@@ -102,13 +171,11 @@ export default async function RestaurantPage({ params }: Props) {
       .select('whatsapp_number, banner_url, primary_color, background_color, theme_mode, button_color, facebook_url, instagram_url, tiktok_url, snapchat_url, opening_hours, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes, latitude, longitude, full_menu_image_url, show_full_menu')
       .eq('id', base.id)
       .single()
-
     if (extData) extended = extData as Partial<RestaurantRow>
   } catch {
-    console.warn('Extended columns not yet available — run migration SQL')
+    console.warn('Extended columns not yet available')
   }
 
-  // Plan — utilise le client admin pour bypasser le RLS (visiteurs non connectés)
   const adminClient = createAdminClient()
   const { data: subscriptionData, error: subscriptionError } = await adminClient
     .from('subscriptions')
@@ -119,62 +186,44 @@ export default async function RestaurantPage({ params }: Props) {
   console.log('[DEBUG plan]', { restaurant_id: base.id, subscriptionData, subscriptionError })
 
   const subscription = subscriptionData as { plan: string; status: string } | null
-  // On n'applique le plan payant que si l'abonnement est actif ou en période d'essai
   const isActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trial'
   const plan = (subscription?.plan && isActiveSubscription) ? subscription.plan : 'starter'
   const isPremium = plan === 'premium'
 
   console.log('[DEBUG plan resolved]', { plan, isPremium, isActiveSubscription })
 
-  // Catégories + items
   const [{ data: categoriesData }, { data: itemsData }] = await Promise.all([
     supabase.from('menu_categories').select('*').eq('restaurant_id', base.id).eq('is_active', true).order('position'),
     supabase.from('menu_items').select('*').eq('restaurant_id', base.id).order('position'),
   ])
 
-  // Variantes (Premium uniquement)
   let variantsByItemId: Record<string, import('@/lib/types').MenuItemVariant[]> = {}
   if (isPremium && itemsData && itemsData.length > 0) {
     try {
       const itemIds = (itemsData as { id: string }[]).map(i => i.id)
       const { data: variantsData } = await supabase
-        .from('menu_item_variants')
-        .select('*')
-        .in('menu_item_id', itemIds)
-        .order('position')
-
+        .from('menu_item_variants').select('*').in('menu_item_id', itemIds).order('position')
       if (variantsData) {
         for (const v of variantsData as import('@/lib/types').MenuItemVariant[]) {
           if (!variantsByItemId[v.menu_item_id]) variantsByItemId[v.menu_item_id] = []
           variantsByItemId[v.menu_item_id].push(v)
         }
       }
-    } catch {
-      console.warn('menu_item_variants table not yet available')
-    }
+    } catch { console.warn('menu_item_variants table not yet available') }
   }
 
-  // Items enrichis avec variantes
   const enrichedItems = (itemsData as import('@/lib/types').MenuItem[] ?? []).map(item => ({
     ...item,
     variants: variantsByItemId[item.id] ?? [],
   }))
 
-  // Bannières (Premium uniquement)
   let banners: import('@/components/restaurant/PromoBanners').Banner[] = []
   if (isPremium) {
     try {
       const { data: bannersData } = await supabase
-        .from('banners')
-        .select('*')
-        .eq('restaurant_id', base.id)
-        .eq('is_active', true)
-        .order('position')
-
+        .from('banners').select('*').eq('restaurant_id', base.id).eq('is_active', true).order('position')
       if (bannersData) banners = bannersData as import('@/components/restaurant/PromoBanners').Banner[]
-    } catch {
-      console.warn('banners table not yet available')
-    }
+    } catch { console.warn('banners table not yet available') }
   }
 
   const restaurant: RestaurantRow = {
@@ -203,13 +252,42 @@ export default async function RestaurantPage({ params }: Props) {
     show_full_menu: extended.show_full_menu ?? false,
   }
 
+  const schemaOrg = buildSchemaOrg({
+    name: restaurant.name,
+    slug: restaurant.slug,
+    description: restaurant.description,
+    city: restaurant.city,
+    address: restaurant.address,
+    cuisine_type: restaurant.cuisine_type,
+    phone: restaurant.phone,
+    whatsapp_number: restaurant.whatsapp_number,
+    logo_url: restaurant.logo_url,
+    cover_url: restaurant.cover_url,
+    latitude: restaurant.latitude,
+    longitude: restaurant.longitude,
+    opening_hours: restaurant.opening_hours,
+    facebook_url: restaurant.facebook_url,
+    instagram_url: restaurant.instagram_url,
+    tiktok_url: restaurant.tiktok_url,
+    topItems: enrichedItems.filter(i => i.is_available).slice(0, 5).map(i => i.name.toLowerCase()),
+    topCategories: (categoriesData as Array<{ name: string }> ?? []).map(c => c.name.toLowerCase()),
+  })
+
   return (
-    <RestaurantPageClient
-      data={{
-        restaurant: { ...restaurant, plan, banners },
-        categories: (categoriesData as never[]) ?? [],
-        items: enrichedItems,
-      }}
-    />
+    <>
+      <Script
+        id="schema-restaurant"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
+        strategy="beforeInteractive"
+      />
+      <RestaurantPageClient
+        data={{
+          restaurant: { ...restaurant, plan, banners },
+          categories: (categoriesData as never[]) ?? [],
+          items: enrichedItems,
+        }}
+      />
+    </>
   )
 }

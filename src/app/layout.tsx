@@ -27,9 +27,12 @@ export const metadata: Metadata = {
   description: 'TerangaLink donne à chaque restaurant son propre site ...',
 
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicogit add <div className=""></div>n.ico',
     shortcut: '/favicon.ico',
     apple: '/icon.png',
+  },
+  verification: {
+    google: '2Rm5HUVUcyejAAKhDLRqJho7Rct7jyL3H7N1brwuYEQ',
   },
 }
 
