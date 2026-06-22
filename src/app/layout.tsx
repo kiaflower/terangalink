@@ -9,6 +9,14 @@ const inter = Inter({
   weight: ['400', '500', '600', '700', '800', '900'],
 })
 
+export const metadata = {
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/icon.png',
+  },
+}
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
