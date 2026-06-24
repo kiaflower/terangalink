@@ -68,26 +68,13 @@ export default function EditRestaurantPage() {
   const [facebookUrl, setFacebookUrl] = useState('')
   const [instagramUrl, setInstagramUrl] = useState('')
   const [tiktokUrl, setTiktokUrl] = useState('')
-  const [snapchatUrl, setSnapchatUrl] = useState('')
   const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark')
   const [isActive, setIsActive] = useState(true)
   const [openingHours, setOpeningHours] = useState<OpeningHours>({})
   const [deliveryFee, setDeliveryFee] = useState('0')
   const [showDeliveryFee, setShowDeliveryFee] = useState(false)
   const [plan, setPlan] = useState<PlanType>('starter')
-  const [subStatus, setSubStatus] = useState('active')
   const [subId, setSubId] = useState<string | null>(null)
-  const [trialEndDate, setTrialEndDate] = useState('')
-  const [nextPaymentDue, setNextPaymentDue] = useState('')
-  const [lastPaymentDate, setLastPaymentDate] = useState('')
-  const [amountPaid, setAmountPaid] = useState('')
-  const [notesAdmin, setNotesAdmin] = useState('')
-  const [payModal, setPayModal] = useState(false)
-  const [payAmount, setPayAmount] = useState('')
-  const [payDate, setPayDate] = useState(new Date().toISOString().split('T')[0])
-  const [payNextDue2, setPayNextDue2] = useState('')
-  const [payNotes2, setPayNotes2] = useState('')
-  const [paying, setPaying] = useState(false)
 
   // Admins
   const [admins, setAdmins] = useState<AdminProfile[]>([])
@@ -142,7 +129,6 @@ export default function EditRestaurantPage() {
     setFacebookUrl(r.facebook_url || '')
     setInstagramUrl(r.instagram_url || '')
     setTiktokUrl(r.tiktok_url || '')
-    setSnapchatUrl((r as Record<string, unknown>).snapchat_url as string || '')
     setThemeMode(r.theme_mode || 'dark')
     setPreviewPrimary(r.primary_color || DEFAULT_PRIMARY_COLOR)
     setPreviewBg(r.background_color || DEFAULT_DARK_BACKGROUND)
@@ -161,12 +147,6 @@ export default function EditRestaurantPage() {
     if (sub) {
       setSubId(sub.id)
       setPlan(normalizePlan(sub.plan || 'starter'))
-      setSubStatus(sub.status || 'active')
-      setTrialEndDate(sub.trial_end_date ? sub.trial_end_date.split('T')[0] : '')
-      setNextPaymentDue(sub.next_payment_due_date ? sub.next_payment_due_date.split('T')[0] : '')
-      setLastPaymentDate(sub.last_payment_date ? sub.last_payment_date.split('T')[0] : '')
-      setAmountPaid(String(sub.amount_paid ?? ''))
-      setNotesAdmin(sub.notes_admin ?? '')
     }
 
     const { data: profiles } = await supabase
@@ -213,14 +193,10 @@ export default function EditRestaurantPage() {
         facebook_url: facebookUrl || null,
         instagram_url: instagramUrl || null,
         tiktok_url: tiktokUrl || null,
-        snapchat_url: snapchatUrl || null,
         is_active: isActive,
         opening_hours: openingHours,
         delivery_fee: Number(deliveryFee) || 0,
         show_delivery_fee: showDeliveryFee,
-        // Statut abonnement — géré côté serveur via admin client
-        sub_id: subId,
-        sub_status: subStatus,
       }),
     })
 
@@ -436,120 +412,6 @@ export default function EditRestaurantPage() {
           </div>
         </div>
 
-        {/* ── Subscription section ─────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
-          <h2 className="text-white font-semibold text-sm">Abonnement</h2>
-
-          <Select
-            label="Plan"
-            value={plan}
-            onChange={e => setPlan(e.target.value as PlanType)}
-            options={PLAN_OPTIONS}
-          />
-
-          <Select
-            label="Statut"
-            value={subStatus}
-            onChange={e => setSubStatus(e.target.value)}
-            options={[
-              { value: 'active', label: 'Actif' },
-              { value: 'trial', label: 'Essai' },
-              { value: 'suspended', label: 'Suspendu' },
-              { value: 'cancelled', label: 'Annulé' },
-            ]}
-          />
-
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(getPlanFeatures(plan)).map(([k, v]) => (
-              <Badge key={k} variant={v ? 'success' : 'default'}>{k}</Badge>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Fin essai" type="date" value={trialEndDate} onChange={e => setTrialEndDate(e.target.value)} />
-            <Input label="Prochaine échéance" type="date" value={nextPaymentDue} onChange={e => setNextPaymentDue(e.target.value)} />
-            <Input label="Dernier paiement" type="date" value={lastPaymentDate} onChange={e => setLastPaymentDate(e.target.value)} />
-            <Input label="Montant payé (FCFA)" type="number" value={amountPaid} onChange={e => setAmountPaid(e.target.value)} placeholder="0" />
-          </div>
-
-          <Input label="Notes admin" value={notesAdmin} onChange={e => setNotesAdmin(e.target.value)} placeholder="Notes internes..." />
-
-          <div className="flex gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                const next = new Date(); next.setDate(next.getDate() + 30)
-                setPayAmount(''); setPayDate(new Date().toISOString().split('T')[0])
-                setPayNotes2(''); setPayNextDue2(next.toISOString().split('T')[0])
-                setPayModal(true)
-              }}
-              className="inline-flex items-center gap-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
-            >
-              Marquer comme payé
-            </button>
-            {(subStatus === 'suspended' || subStatus === 'overdue') && (
-              <button
-                type="button"
-                onClick={async () => {
-                  await fetch('/api/admin/subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'reactivate', restaurant_id: restaurantId }) })
-                  setSubStatus('active')
-                }}
-                className="inline-flex items-center gap-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
-              >
-                Réactiver
-              </button>
-            )}
-            {subStatus !== 'suspended' && subStatus !== 'cancelled' && (
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!confirm('Suspendre cet abonnement ?')) return
-                  await fetch('/api/admin/subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'suspend', restaurant_id: restaurantId }) })
-                  setSubStatus('suspended')
-                }}
-                className="inline-flex items-center gap-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
-              >
-                Suspendre
-              </button>
-            )}
-          </div>
-        </div>
-
-      {/* Pay modal */}
-      {payModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setPayModal(false)} />
-          <div className="relative bg-surface-50 border border-surface-200 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
-            <h3 className="font-bold text-white">Marquer comme payé</h3>
-            <Input label="Montant (FCFA)" type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)} placeholder="10000" />
-            <Input label="Date du paiement" type="date" value={payDate} onChange={e => setPayDate(e.target.value)} />
-            <Input label="Prochaine échéance" type="date" value={payNextDue2} onChange={e => setPayNextDue2(e.target.value)} />
-            <Input label="Notes" value={payNotes2} onChange={e => setPayNotes2(e.target.value)} placeholder="Ex: Paiement Wave reçu" />
-            <div className="flex gap-3">
-              <button type="button" onClick={() => setPayModal(false)} className="flex-1 bg-surface-100 hover:bg-surface-200 text-white py-2.5 rounded-xl text-sm font-semibold">Annuler</button>
-              <button
-                type="button"
-                disabled={paying}
-                onClick={async () => {
-                  setPaying(true)
-                  await fetch('/api/admin/subscription', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'mark_paid', restaurant_id: restaurantId,
-                      amount_paid: Number(payAmount) || 0, payment_date: payDate,
-                      next_payment_due_date: payNextDue2, notes_admin: payNotes2 || null }) })
-                  setSubStatus('active'); setLastPaymentDate(payDate); setNextPaymentDue(payNextDue2)
-                  setAmountPaid(payAmount); setPaying(false); setPayModal(false)
-                }}
-                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-              >
-                {paying ? 'Enregistrement...' : 'Confirmer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
         {/* ── Theme section ────────────────────────────────────────────── */}
         <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
           <h2 className="text-white font-semibold mb-1 text-sm">Thème du site</h2>
@@ -595,7 +457,6 @@ export default function EditRestaurantPage() {
               <Input label="Instagram" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/..." />
               <Input label="Facebook" value={facebookUrl} onChange={e => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
               <Input label="TikTok" value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." />
-              <Input label="Snapchat" value={snapchatUrl} onChange={e => setSnapchatUrl(e.target.value)} placeholder="https://snapchat.com/add/..." />
             </div>
           )}
 
