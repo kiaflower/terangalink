@@ -4,9 +4,14 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { StatCard } from '@/components/dashboard/StatCard'
 import Link from 'next/link'
-import { ShoppingBag, TrendingUp, UtensilsCrossed, Users, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
+import {
+  ShoppingBag, TrendingUp, UtensilsCrossed, Users,
+  ArrowRight, AlertCircle, CheckCircle2,
+} from 'lucide-react'
 import type { Restaurant, Subscription } from '@/lib/types'
 import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
+import { SubscriptionReminder } from '@/components/dashboard/SubscriptionReminder'
+import { SmartCards } from '@/components/dashboard/SmartCards'
 
 export const metadata = { title: 'Tableau de bord — Restaurant' }
 
@@ -33,11 +38,16 @@ export default async function RestaurantDashboard() {
     subscription = sub
   }
 
-  // ── Vraies données réelles ─────────────────────────────────────────────────
+  // ── Données réelles ────────────────────────────────────────────────────────
   let todayOrders = 0
   let monthRevenue = 0
   let menuItemsCount = 0
   let totalOrders = 0
+  let hasWave = false
+  let hasOrangeMoney = false
+  let hasFeaturedProduct = false
+  let lastMenuUpdate: string | null = null
+  let lastOrderDate: string | null = null
 
   if (restaurant) {
     const rid = restaurant.id
@@ -45,39 +55,43 @@ export default async function RestaurantDashboard() {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 
-    // Commandes aujourd'hui (non annulées)
-    const { count: todayCount } = await supabase
-      .from('orders')
-      .select('*', { count: 'exact', head: true })
-      .eq('restaurant_id', rid)
-      .neq('status', 'cancelled')
-      .gte('created_at', todayStart)
+    const [
+      { count: todayCount },
+      { data: monthOrders },
+      { count: itemsCount },
+      { count: total },
+      { data: restoDetails },
+      { data: featuredItem },
+      { data: lastMenuItem },
+      { data: lastOrder },
+    ] = await Promise.all([
+      supabase.from('orders').select('*', { count: 'exact', head: true })
+        .eq('restaurant_id', rid).neq('status', 'cancelled').gte('created_at', todayStart),
+      supabase.from('orders').select('total')
+        .eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', monthStart),
+      supabase.from('menu_items').select('*', { count: 'exact', head: true })
+        .eq('restaurant_id', rid).eq('is_available', true),
+      supabase.from('orders').select('*', { count: 'exact', head: true })
+        .eq('restaurant_id', rid).neq('status', 'cancelled'),
+      supabase.from('restaurants').select('wave_number, orange_money_number')
+        .eq('id', rid).single(),
+      supabase.from('menu_items').select('id').eq('restaurant_id', rid)
+        .eq('is_featured', true).limit(1),
+      supabase.from('menu_items').select('updated_at').eq('restaurant_id', rid)
+        .order('updated_at', { ascending: false }).limit(1),
+      supabase.from('orders').select('created_at').eq('restaurant_id', rid)
+        .order('created_at', { ascending: false }).limit(1),
+    ])
+
     todayOrders = todayCount ?? 0
-
-    // Revenus ce mois (commandes livrées)
-    const { data: monthOrders } = await supabase
-      .from('orders')
-      .select('total')
-      .eq('restaurant_id', rid)
-      .eq('status', 'delivered')
-      .gte('created_at', monthStart)
     monthRevenue = (monthOrders ?? []).reduce((sum, o) => sum + (o.total ?? 0), 0)
-
-    // Nombre de plats actifs au menu
-    const { count: itemsCount } = await supabase
-      .from('menu_items')
-      .select('*', { count: 'exact', head: true })
-      .eq('restaurant_id', rid)
-      .eq('is_available', true)
     menuItemsCount = itemsCount ?? 0
-
-    // Total commandes (tous statuts sauf annulées)
-    const { count: total } = await supabase
-      .from('orders')
-      .select('*', { count: 'exact', head: true })
-      .eq('restaurant_id', rid)
-      .neq('status', 'cancelled')
     totalOrders = total ?? 0
+    hasWave = !!(restoDetails as { wave_number?: string | null } | null)?.wave_number
+    hasOrangeMoney = !!(restoDetails as { orange_money_number?: string | null } | null)?.orange_money_number
+    hasFeaturedProduct = (featuredItem?.length ?? 0) > 0
+    lastMenuUpdate = (lastMenuItem?.[0] as { updated_at?: string } | undefined)?.updated_at ?? null
+    lastOrderDate = (lastOrder?.[0] as { created_at?: string } | undefined)?.created_at ?? null
   }
 
   const formatRevenue = (amount: number) => {
@@ -85,6 +99,9 @@ export default async function RestaurantDashboard() {
     if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}k FCFA`
     return `${amount} FCFA`
   }
+
+  // Numéro WhatsApp TerangaLink pour les boutons d'abonnement
+  const TL_WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || '221700000000'
 
   return (
     <div className="p-6 sm:p-8 max-w-7xl">
@@ -115,7 +132,7 @@ export default async function RestaurantDashboard() {
               <p className="text-white font-semibold">{restaurant.name}</p>
               {restaurant.is_verified && <CheckCircle2 className="w-4 h-4 text-brand-orange" />}
             </div>
-            <p className="text-gray-500 text-sm">{restaurant.city || 'Dakar'}</p>
+            <p className="text-gray-500 text-sm">{(restaurant as Restaurant & { city?: string }).city || 'Dakar'}</p>
           </div>
           {subscription && (
             <Badge variant="warning">{PLAN_LABELS[normalizePlan(subscription.plan)]} · {subscription.status}</Badge>
@@ -176,6 +193,30 @@ export default async function RestaurantDashboard() {
           ))}
         </div>
       </Card>
+
+      {/* ── Rappel abonnement ── */}
+      {restaurant && subscription && (
+        <SubscriptionReminder
+          subscription={subscription}
+          tlWhatsapp={TL_WHATSAPP}
+        />
+      )}
+
+      {/* ── Smart Cards (audit, inactivité, saisonnier) ── */}
+      {restaurant && subscription && (
+        <SmartCards
+          restaurantId={restaurant.id}
+          plan={normalizePlan(subscription.plan)}
+          menuItemsCount={menuItemsCount}
+          hasWhatsapp={!!(restaurant as Restaurant & { whatsapp_number?: string }).whatsapp_number}
+          hasWave={hasWave}
+          hasOrangeMoney={hasOrangeMoney}
+          hasFeaturedProduct={hasFeaturedProduct}
+          lastMenuUpdate={lastMenuUpdate}
+          lastOrderDate={lastOrderDate}
+          restaurantCreatedAt={restaurant.created_at}
+        />
+      )}
     </div>
   )
 }

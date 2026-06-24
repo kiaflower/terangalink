@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/Badge'
@@ -12,7 +12,7 @@ import type { Order, OrderStatus } from '@/lib/types'
 import { ReceiptGenerator } from '@/components/orders/ReceiptGenerator'
 import { canUseFeature, normalizePlan } from '@/lib/plans'
 
-export default function OrdersPage() {
+function OrdersInner() {
   const supabase = createClient()
   const searchParams = useSearchParams()
 
@@ -25,7 +25,6 @@ export default function OrdersPage() {
   const [restaurantAccent, setRestaurantAccent] = useState('#F97316')
   const [waveNumber, setWaveNumber] = useState('')
   const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
-  const [prepTimeMinutes, setPrepTimeMinutes] = useState<number | null>(null)
   const [isPro, setIsPro] = useState(false)
   const [search, setSearch] = useState('')
 
@@ -49,7 +48,7 @@ export default function OrdersPage() {
         .order('created_at', { ascending: false }),
       supabase
         .from('restaurants')
-        .select('name, phone, wave_number, orange_money_number, address, city, button_color, primary_color, prep_time_minutes')
+        .select('name, phone, wave_number, orange_money_number, address, city, button_color, primary_color')
         .eq('id', profile.restaurant_id)
         .single(),
       supabase
@@ -66,7 +65,6 @@ export default function OrdersPage() {
     setRestaurantAccent(restaurant?.button_color || restaurant?.primary_color || '#F97316')
     setWaveNumber(restaurant?.wave_number || restaurant?.phone || '')
     setOrangeMoneyNumber(restaurant?.orange_money_number || restaurant?.phone || '')
-    setPrepTimeMinutes((restaurant as { prep_time_minutes?: number | null } | null)?.prep_time_minutes ?? null)
 
     const plan = normalizePlan((subscription as { plan?: string } | null)?.plan || 'starter')
     setIsPro(canUseFeature(plan, 'suppressionBranding'))
@@ -98,38 +96,19 @@ export default function OrdersPage() {
     )
   }, [orders, search])
 
-  function getPreorderInfo(order: Order) {
-    const orderItems = order.items as { preorder_delivery_date?: string | null }[]
-    const preorderItem = orderItems?.find(i => i.preorder_delivery_date)
-    return { isPreorder: !!preorderItem, deliveryDate: preorderItem?.preorder_delivery_date ?? null }
-  }
-
   function buildConfirmUrl(order: Order) {
     const phone = (order.customer_phone || '').replace(/\D/g, '')
     if (!phone) return null
 
-    const orderItems = order.items as { name: string; quantity: number; preorder_delivery_date?: string | null }[]
-    const items = orderItems
+    const items = (order.items as { name: string; quantity: number }[])
       .map(i => `• ${i.name} x${i.quantity}`)
       .join('\n')
 
     const numStr = order.order_number ? ` (${order.order_number})` : ''
 
-    const preorderInfo = getPreorderInfo(order)
-    const isPreorder = preorderInfo.isPreorder
-    const deliveryDate = preorderInfo.deliveryDate ?? ''
-
-    const timingLine = isPreorder
-      ? `📅 Livraison prévue : ${deliveryDate}.\n`
-      : `Temps de préparation estimé : ${prepTimeMinutes ?? 25} min.\n`
-
-    const header = isPreorder
-      ? `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été validée par ${restaurantName}.\n`
-      : `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n`
-
     const message = encodeURIComponent(
-      header +
-      timingLine +
+      `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n` +
+      `Temps de préparation estimé : 25 min.\n` +
       `Paiement Wave : ${waveNumber || 'À confirmer'}\n` +
       `Paiement Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
       `${items ? `Résumé :\n${items}\n\n` : ''}` +
@@ -145,10 +124,22 @@ export default function OrdersPage() {
     setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'delivered' as OrderStatus } : o))
   }
 
-  async function annulerCommande(orderId: string) {
+  async function annulerCommande(order: Order) {
     if (!confirm('Annuler cette commande ?')) return
-    await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' as OrderStatus } : o))
+
+    // Ouvrir WhatsApp AVANT le await — Safari bloque window.open après un await
+    const phone = (order.customer_phone || '').replace(/\D/g, '')
+    if (phone) {
+      const numStr = order.order_number ? ` (${order.order_number})` : ''
+      const message = encodeURIComponent(
+        `Bonjour ${order.customer_name || ''}${numStr}, nous sommes désolés mais votre commande a été annulée par ${restaurantName}.\n\n` +
+        `N'hésitez pas à nous recontacter pour toute question. 🙏`
+      )
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank')
+    }
+
+    await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' as OrderStatus } : o))
   }
 
   const pendingCount = orders.filter(o => o.status === 'pending').length
@@ -193,7 +184,6 @@ export default function OrdersPage() {
           {filteredOrders.map(order => {
             const dejaValidee = order.status === 'delivered'
             const annulee = order.status === 'cancelled'
-            const { isPreorder, deliveryDate } = getPreorderInfo(order)
 
             return (
               <div key={order.id} className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
@@ -207,11 +197,6 @@ export default function OrdersPage() {
                       {order.order_number && (
                         <span className="text-xs font-mono text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded-full">
                           {order.order_number}
-                        </span>
-                      )}
-                      {isPreorder && (
-                        <span className="text-xs font-semibold text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full">
-                          📅 Précommande{deliveryDate ? ` · ${deliveryDate}` : ''}
                         </span>
                       )}
                       <Badge variant={ORDER_STATUS_COLORS[order.status] as 'success' | 'warning' | 'info' | 'danger' | 'default'}>
@@ -238,12 +223,6 @@ export default function OrdersPage() {
 
                 {expandedId === order.id && (
                   <div className="border-t border-surface-200 px-5 py-4 space-y-4">
-                    {(order as Order & { customer_address?: string | null }).customer_address && (
-                      <div className="bg-surface-100 rounded-xl p-3 text-sm text-gray-400">
-                        <span className="text-gray-500">Adresse:</span> {(order as Order & { customer_address?: string | null }).customer_address}
-                      </div>
-                    )}
-
                     <div className="space-y-2">
                       {(order.items as { name: string; quantity: number; price: number; variant_name?: string }[]).map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
@@ -279,7 +258,7 @@ export default function OrdersPage() {
                             Confirmer au client
                           </button>
                           <button
-                            onClick={() => annulerCommande(order.id)}
+                            onClick={() => annulerCommande(order)}
                             className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
                           >
                             Annuler
@@ -305,5 +284,13 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-gray-500 text-sm">Chargement...</div>}>
+      <OrdersInner />
+    </Suspense>
   )
 }

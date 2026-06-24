@@ -87,6 +87,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true })
     }
 
+    if (action === 'update_dates') {
+      const updates: Record<string, string | number | null> = {}
+      if (body.trial_start_date !== undefined) updates.trial_start_date = body.trial_start_date ? new Date(body.trial_start_date).toISOString() : null
+      if (body.trial_end_date !== undefined) updates.trial_end_date = body.trial_end_date ? new Date(body.trial_end_date).toISOString() : null
+      if (body.subscription_start_date !== undefined) updates.subscription_start_date = body.subscription_start_date ? new Date(body.subscription_start_date).toISOString() : null
+      if (body.last_payment_date !== undefined) updates.last_payment_date = body.last_payment_date ? new Date(body.last_payment_date).toISOString() : null
+      if (body.next_payment_due_date !== undefined) updates.next_payment_due_date = body.next_payment_due_date ? new Date(body.next_payment_due_date).toISOString() : null
+      if (body.amount_paid !== undefined) updates.amount_paid = body.amount_paid !== '' ? Number(body.amount_paid) : null
+
+      if (Object.keys(updates).length === 0) {
+        return NextResponse.json({ error: 'Aucune donnée à mettre à jour' }, { status: 400 })
+      }
+
+      const { error } = await admin
+        .from('subscriptions')
+        .update(updates)
+        .eq('restaurant_id', restaurant_id)
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ success: true })
+    }
+
     if (action === 'check_trial_expiry') {
       // Passer en overdue tous les essais expirés
       const { error } = await admin

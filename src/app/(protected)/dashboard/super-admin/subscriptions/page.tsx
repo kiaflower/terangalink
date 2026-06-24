@@ -111,6 +111,19 @@ export default function SubscriptionsPage() {
   const [dueNotes, setDueNotes] = useState('')
   const [savingDue, setSavingDue] = useState(false)
 
+  // Modal dates manuelles
+  const [datesModal, setDatesModal] = useState(false)
+  const [datesRow, setDatesRow] = useState<SubRow | null>(null)
+  const [datesForm, setDatesForm] = useState({
+    trial_start_date: '',
+    trial_end_date: '',
+    subscription_start_date: '',
+    last_payment_date: '',
+    next_payment_due_date: '',
+    amount_paid: '',
+  })
+  const [savingDates, setSavingDates] = useState(false)
+
   const loadData = useCallback(async () => {
     const { data: subs } = await supabase
       .from('subscriptions')
@@ -223,6 +236,34 @@ export default function SubscriptionsPage() {
     })
     setSavingDue(false)
     setDueModal(false)
+  }
+
+  function openDatesModal(row: SubRow) {
+    setDatesRow(row)
+    setDatesForm({
+      trial_start_date: row.trial_start_date?.split('T')[0] || '',
+      trial_end_date: row.trial_end_date?.split('T')[0] || '',
+      subscription_start_date: row.subscription_start_date?.split('T')[0] || '',
+      last_payment_date: row.last_payment_date?.split('T')[0] || '',
+      next_payment_due_date: row.next_payment_due_date?.split('T')[0] || '',
+      amount_paid: row.amount_paid != null ? String(row.amount_paid) : '',
+    })
+    setDatesModal(true)
+  }
+
+  async function confirmDates() {
+    if (!datesRow) return
+    setSavingDates(true)
+    await handleAction('update_dates', datesRow.restaurant_id, {
+      trial_start_date: datesForm.trial_start_date || null,
+      trial_end_date: datesForm.trial_end_date || null,
+      subscription_start_date: datesForm.subscription_start_date || null,
+      last_payment_date: datesForm.last_payment_date || null,
+      next_payment_due_date: datesForm.next_payment_due_date || null,
+      amount_paid: datesForm.amount_paid !== '' ? datesForm.amount_paid : null,
+    })
+    setSavingDates(false)
+    setDatesModal(false)
   }
 
   const stats = {
@@ -465,6 +506,13 @@ export default function SubscriptionsPage() {
                   {/* Actions */}
                   <div className="flex flex-wrap gap-2">
                     <button
+                      onClick={() => openDatesModal(row)}
+                      className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white border border-surface-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />Modifier les dates
+                    </button>
+
+                    <button
                       onClick={() => openPayModal(row)}
                       className="inline-flex items-center gap-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
                     >
@@ -538,6 +586,62 @@ export default function SubscriptionsPage() {
           </button>
         </div>
       </Modal>
+      {/* Modal dates manuelles */}
+      <Modal open={datesModal} onClose={() => setDatesModal(false)} title="Modifier les dates & montant">
+        <div className="space-y-3">
+          <p className="text-gray-400 text-sm mb-2">{datesRow?.restaurant_name}</p>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Début essai"
+              type="date"
+              value={datesForm.trial_start_date}
+              onChange={e => setDatesForm(f => ({ ...f, trial_start_date: e.target.value }))}
+            />
+            <Input
+              label="Fin essai"
+              type="date"
+              value={datesForm.trial_end_date}
+              onChange={e => setDatesForm(f => ({ ...f, trial_end_date: e.target.value }))}
+            />
+            <Input
+              label="Début abonnement"
+              type="date"
+              value={datesForm.subscription_start_date}
+              onChange={e => setDatesForm(f => ({ ...f, subscription_start_date: e.target.value }))}
+            />
+            <Input
+              label="Dernier paiement"
+              type="date"
+              value={datesForm.last_payment_date}
+              onChange={e => setDatesForm(f => ({ ...f, last_payment_date: e.target.value }))}
+            />
+            <Input
+              label="Prochaine échéance"
+              type="date"
+              value={datesForm.next_payment_due_date}
+              onChange={e => setDatesForm(f => ({ ...f, next_payment_due_date: e.target.value }))}
+            />
+            <Input
+              label="Montant payé (FCFA)"
+              type="number"
+              value={datesForm.amount_paid}
+              onChange={e => setDatesForm(f => ({ ...f, amount_paid: e.target.value }))}
+              placeholder="0"
+            />
+          </div>
+
+          <button
+            onClick={confirmDates}
+            disabled={savingDates}
+            className="w-full flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange/90 text-white font-semibold py-3 rounded-xl text-sm transition-colors disabled:opacity-60 mt-2"
+          >
+            {savingDates ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+            {savingDates ? 'Enregistrement...' : 'Enregistrer'}
+          </button>
+        </div>
+      </Modal>
+
     </div>
   )
 }
