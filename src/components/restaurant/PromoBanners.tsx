@@ -46,7 +46,7 @@ export function PromoBanners({ banners, tokens }: PromoBannersProps) {
           {banner.icon && (
             <span className="text-base flex-shrink-0" aria-hidden>{banner.icon}</span>
           )}
-          <span>{banner.title}</span>
+          <span>{banner.text}</span>
         </div>
       ))}
     </div>

@@ -73,6 +73,7 @@ export default function BannersPage() {
       .select('*')
       .eq('restaurant_id', p.restaurant_id)
       .order('position')
+      console.log(bannersData)
     setBanners((bannersData as Banner[]) ?? [])
     setLoading(false)
   }, [supabase])
@@ -121,6 +122,7 @@ export default function BannersPage() {
 
     let err
     if (editing) {
+      console.log(playload)
       ;({ error: err } = await supabase.from('banners').update(payload).eq('id', editing.id))
     } else {
       ;({ error: err } = await supabase.from('banners').insert(payload))
