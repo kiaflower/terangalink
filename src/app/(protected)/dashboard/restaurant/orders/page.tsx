@@ -8,7 +8,7 @@ import { SkeletonRow, EmptyState } from '@/components/ui/Loading'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import {
   ShoppingBag, Phone, ChevronDown, MessageCircle,
-  Search, CheckCircle2, XCircle, AlertTriangle, RefreshCw, Calendar
+  Search, CheckCircle2, XCircle, AlertTriangle, RefreshCw, Calendar, Star
 } from 'lucide-react'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/types'
 import type { Order, OrderStatus } from '@/lib/types'
@@ -33,8 +33,10 @@ function OrdersInner() {
   const searchParams = useSearchParams()
 
   const [orders, setOrders] = useState<Order[]>([])
+  const [reviewedOrderIds, setReviewedOrderIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [restaurantSlug, setRestaurantSlug] = useState('')
   const [restaurantName, setRestaurantName] = useState('Restaurant')
   const [restaurantPhone, setRestaurantPhone] = useState('')
   const [restaurantAddress, setRestaurantAddress] = useState('')
@@ -45,7 +47,6 @@ function OrdersInner() {
   const [search, setSearch] = useState('')
   const [updateError, setUpdateError] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
-  // Suivi des précommandes dont le paiement a été coché localement
   const [paidPreorders, setPaidPreorders] = useState<Set<string>>(new Set())
 
   const fetchOrders = useCallback(async () => {
@@ -68,7 +69,7 @@ function OrdersInner() {
         .order('created_at', { ascending: false }),
       supabase
         .from('restaurants')
-        .select('name, phone, wave_number, orange_money_number, address, city, button_color, primary_color')
+        .select('name, slug, phone, wave_number, orange_money_number, address, city, button_color, primary_color')
         .eq('id', profile.restaurant_id)
         .single(),
       supabase
@@ -83,10 +84,26 @@ function OrdersInner() {
     } else {
       const clean = ((ordersResult.data as Order[]) ?? []).filter(o => o.id && !o.id.includes('__'))
       setOrders(clean)
+
+      // Charger les avis existants pour les commandes livrées
+      const deliveredIds = clean
+        .filter(o => o.status === 'delivered')
+        .map(o => o.id)
+
+      if (deliveredIds.length > 0) {
+        const { data: reviews } = await supabase
+          .from('reviews')
+          .select('order_id')
+          .in('order_id', deliveredIds)
+        if (reviews) {
+          setReviewedOrderIds(new Set(reviews.map(r => r.order_id as string)))
+        }
+      }
     }
 
     const restaurant = restaurantResult.data
     setRestaurantName(restaurant?.name || 'Restaurant')
+    setRestaurantSlug(restaurant?.slug || '')
     setRestaurantPhone(restaurant?.phone || '')
     setRestaurantAddress([restaurant?.address, restaurant?.city].filter(Boolean).join(', '))
     setRestaurantAccent(restaurant?.button_color || restaurant?.primary_color || '#F97316')
@@ -179,6 +196,27 @@ function OrdersInner() {
     return `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`
   }
 
+  function buildReviewWhatsApp(order: Order) {
+    const phone = (order.customer_phone || '').replace(/\D/g, '')
+    if (!phone) return null
+
+    const orderNum = (order as unknown as { order_number?: string }).order_number
+    const numStr = orderNum ? ` (${orderNum})` : ''
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const trackingUrl = orderNum && restaurantSlug
+      ? `${origin}/c/${restaurantSlug}/${orderNum}`
+      : ''
+
+    const messageText =
+      `Bonjour ${order.customer_name || ''}${numStr} ! 😊\n\n` +
+      `Nous espérons que vous avez apprécié votre commande chez ${restaurantName}.\n\n` +
+      `Votre avis nous aide à nous améliorer — cela prend moins d'une minute :\n` +
+      `${trackingUrl}\n\n` +
+      `Merci pour votre confiance ! 🙏`
+
+    return `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`
+  }
+
   async function confirmerCommande(order: Order) {
     const url = buildConfirmWhatsApp(order)
     if (url) window.open(url, '_blank')
@@ -223,7 +261,7 @@ function OrdersInner() {
     <div className="p-6 sm:p-8 max-w-4xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             Commandes
             {pendingCount > 0 && (
               <span className="bg-brand-orange text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -235,7 +273,7 @@ function OrdersInner() {
         </div>
         <button
           onClick={() => fetchOrders()}
-          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Actualiser
@@ -259,7 +297,7 @@ function OrdersInner() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Rechercher par numéro, nom ou téléphone..."
-          className="w-full bg-surface-50 border border-surface-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
         />
       </div>
 
@@ -278,24 +316,25 @@ function OrdersInner() {
             const discountAmt = (order as unknown as { discount_amount?: number }).discount_amount
             const status = order.status
             const annulee = status === 'cancelled' || status === 'delivery_cancelled'
+            const isDelivered = status === 'delivered'
             const isPending = status === 'pending'
             const isConfirmed = status === 'confirmed' || status === 'preparing' || status === 'ready'
             const isUpdating = updating === order.id
             const deliveryDate = getDeliveryDate(order)
             const isPreorder = !!deliveryDate
             const isPaid = paidPreorders.has(order.id)
+            const hasReview = reviewedOrderIds.has(order.id)
 
             return (
-              <div key={order.id} className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
+              <div key={order.id} className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden">
                 <div
-                  className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-surface-100 transition-colors"
+                  className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-100 transition-colors"
                   onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-white font-semibold text-sm">{order.customer_name || 'Client anonyme'}</p>
+                      <p className="text-gray-900 font-semibold text-sm">{order.customer_name || 'Client anonyme'}</p>
 
-                      {/* Étiquette précommande */}
                       {isPreorder && (
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
                           style={{ backgroundColor: 'rgba(99,102,241,0.15)', color: '#A5B4FC' }}>
@@ -312,21 +351,29 @@ function OrdersInner() {
                       <Badge variant={ORDER_STATUS_COLORS[order.status] as 'success' | 'warning' | 'info' | 'danger' | 'default'}>
                         {ORDER_STATUS_LABELS[order.status] ?? order.status}
                       </Badge>
+
+                      {/* Badge "Avis reçu" si le client a déjà noté */}
+                      {isDelivered && hasReview && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: 'rgba(234,179,8,0.12)', color: '#FCD34D' }}>
+                          <Star className="w-3 h-3" />
+                          Avis reçu
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-1 flex-wrap">
                       <p className="text-brand-orange text-sm font-bold">{formatCurrency(order.total)}</p>
-                      {/* Date de livraison visible directement dans la liste */}
                       {isPreorder && deliveryDate && (
                         <p className="text-xs font-semibold" style={{ color: '#818CF8' }}>
                           📅 {deliveryDate}
                         </p>
                       )}
-                      <p className="text-gray-600 text-xs">{formatDate(order.created_at)}</p>
+                      <p className="text-gray-500 text-xs">{formatDate(order.created_at)}</p>
                       {order.customer_phone && (
                         <a
                           href={`tel:${order.customer_phone}`}
                           onClick={e => e.stopPropagation()}
-                          className="flex items-center gap-1 text-gray-500 hover:text-white text-xs transition-colors"
+                          className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-xs transition-colors"
                         >
                           <Phone className="w-3 h-3" />
                           {order.customer_phone}
@@ -338,9 +385,9 @@ function OrdersInner() {
                 </div>
 
                 {expandedId === order.id && (
-                  <div className="border-t border-surface-200 px-5 py-4 space-y-4">
+                  <div className="border-t border-gray-200 px-5 py-4 space-y-4">
 
-                    {/* Bandeau précommande dans le détail */}
+                    {/* Bandeau précommande */}
                     {isPreorder && (
                       <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
                         style={{ backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)' }}>
@@ -348,11 +395,10 @@ function OrdersInner() {
                           <p className="text-xs font-bold" style={{ color: '#A5B4FC' }}>📅 Précommande</p>
                           {deliveryDate && (
                             <p className="text-xs mt-0.5" style={{ color: '#818CF8' }}>
-                              Livraison : <span className="font-semibold text-white">{deliveryDate}</span>
+                              Livraison : <span className="font-semibold text-gray-900">{deliveryDate}</span>
                             </p>
                           )}
                         </div>
-                        {/* Case à cocher paiement reçu */}
                         <label className="flex items-center gap-2 cursor-pointer select-none"
                           onClick={e => e.stopPropagation()}>
                           <div
@@ -363,7 +409,7 @@ function OrdersInner() {
                               border: `2px solid ${isPaid ? '#22C55E' : 'rgba(255,255,255,0.2)'}`,
                             }}
                           >
-                            {isPaid && <CheckCircle2 className="w-3 h-3 text-white" />}
+                            {isPaid && <CheckCircle2 className="w-3 h-3 text-gray-900" />}
                           </div>
                           <span className="text-xs font-semibold" style={{ color: isPaid ? '#4ADE80' : '#9CA3AF' }}>
                             {isPaid ? 'Paiement reçu ✓' : 'Paiement reçu ?'}
@@ -376,10 +422,10 @@ function OrdersInner() {
                     <div className="space-y-2">
                       {(order.items as OrderItemRaw[]).map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
-                          <span className="text-gray-300">
+                          <span className="text-gray-500">
                             {item.name}{item.variant_name ? ` (${item.variant_name})` : ''} × {item.quantity}
                           </span>
-                          <span className="text-white">{formatCurrency(item.price * item.quantity)}</span>
+                          <span className="text-gray-900">{formatCurrency(item.price * item.quantity)}</span>
                         </div>
                       ))}
                     </div>
@@ -392,7 +438,7 @@ function OrdersInner() {
                     ) : null}
 
                     {order.notes && (
-                      <div className="bg-surface-100 rounded-xl p-3 text-sm text-gray-400">
+                      <div className="bg-gray-100 rounded-xl p-3 text-sm text-gray-500">
                         <span className="text-gray-500">Note:</span> {order.notes}
                       </div>
                     )}
@@ -403,7 +449,7 @@ function OrdersInner() {
                           <button
                             onClick={() => confirmerCommande(order)}
                             disabled={isUpdating}
-                            className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-gray-900 text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
                           >
                             <MessageCircle className="w-3.5 h-3.5" />
                             {isUpdating ? 'En cours...' : isPreorder ? 'Envoyer demande de paiement' : 'Confirmer au client'}
@@ -424,8 +470,7 @@ function OrdersInner() {
                             onClick={() => marquerLivree(order)}
                             disabled={isUpdating || (isPreorder && !isPaid)}
                             title={isPreorder && !isPaid ? 'Cochez "Paiement reçu" avant de marquer comme livré' : ''}
-                            className="inline-flex items-center gap-1.5 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                            style={{ backgroundColor: restaurantAccent }}
+                            className="inline-flex items-center gap-1.5 bg-brand-orange hover:bg-brand-orange/90 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {isUpdating ? 'En cours...' : isPreorder ? 'Marquer comme livrée' : 'Livré'}
@@ -439,6 +484,21 @@ function OrdersInner() {
                             Livraison annulée
                           </button>
                         </>
+                      )}
+
+                      {/* Bouton demande d'avis — uniquement livrées sans avis */}
+                      {isDelivered && !hasReview && order.customer_phone && (
+                        <button
+                          onClick={() => {
+                            const url = buildReviewWhatsApp(order)
+                            if (url) window.open(url, '_blank')
+                          }}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                          style={{ backgroundColor: 'rgba(234,179,8,0.12)', color: '#FCD34D', border: '1px solid rgba(234,179,8,0.25)' }}
+                        >
+                          <Star className="w-3.5 h-3.5" />
+                          Demander un avis
+                        </button>
                       )}
 
                       {isPro && !annulee && (

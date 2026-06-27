@@ -178,7 +178,7 @@ export default function SettingsPage() {
     <div className="p-6 sm:p-8 max-w-2xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Paramètres</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
           <p className="text-gray-500 text-sm mt-1">Horaires, paiements et livraison</p>
         </div>
         <button
@@ -201,47 +201,47 @@ export default function SettingsPage() {
       <div className="space-y-6">
 
         {/* ── Paiement mobile ── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-1">
             <Wallet className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">Numéros de paiement mobile</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">Numéros de paiement mobile</h2>
           </div>
           <p className="text-gray-500 text-xs mb-4">Ces numéros seront envoyés au client dans le message de confirmation de commande.</p>
           <div className="space-y-4">
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">
+              <label className="text-gray-500 text-xs block mb-1.5">
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-[#1E90FF] inline-flex items-center justify-center text-white font-bold" style={{fontSize:'9px'}}>W</span>
+                  <span className="w-4 h-4 rounded-full bg-[#1E90FF] inline-flex items-center justify-center text-gray-900 font-bold" style={{fontSize:'9px'}}>W</span>
                   Numéro Wave
                 </span>
               </label>
               <input type="text" value={waveNumber} onChange={e => setWaveNumber(e.target.value)} placeholder="77 123 45 67"
-                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">
+              <label className="text-gray-500 text-xs block mb-1.5">
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-[#FF6600] inline-flex items-center justify-center text-white font-bold" style={{fontSize:'9px'}}>O</span>
+                  <span className="w-4 h-4 rounded-full bg-[#FF6600] inline-flex items-center justify-center text-gray-900 font-bold" style={{fontSize:'9px'}}>O</span>
                   Numéro Orange Money
                 </span>
               </label>
               <input type="text" value={orangeMoneyNumber} onChange={e => setOrangeMoneyNumber(e.target.value)} placeholder="76 123 45 67"
-                className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
             </div>
           </div>
         </div>
 
         {/* ── Temps de préparation ── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-1">
             <Timer className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">Temps de préparation</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">Temps de préparation</h2>
           </div>
           <p className="text-gray-500 text-xs mb-4">Durée estimée communiquée au client lors de la confirmation de commande.</p>
           <div className="flex flex-wrap gap-2">
             {PREP_TIMES.map(t => (
               <button key={t} onClick={() => setPrepTime(t)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${prepTime === t ? 'bg-brand-orange text-white' : 'bg-surface-100 text-gray-400 hover:text-white border border-surface-300'}`}>
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${prepTime === t ? 'bg-brand-orange text-white' : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-300'}`}>
                 {t} min
               </button>
             ))}
@@ -250,45 +250,45 @@ export default function SettingsPage() {
         </div>
 
         {/* ── WhatsApp ── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Phone className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">WhatsApp restaurant</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">WhatsApp restaurant</h2>
           </div>
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">Numéro WhatsApp (ex: 221771234567)</label>
+            <label className="text-gray-500 text-xs block mb-1.5">Numéro WhatsApp (ex: 221771234567)</label>
             <input type="text" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="221771234567"
-              className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
-            <p className="text-gray-600 text-xs mt-1">Format international sans + ni espaces. Les commandes client arrivent sur ce numéro.</p>
+              className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+            <p className="text-gray-500 text-xs mt-1">Format international sans + ni espaces. Les commandes client arrivent sur ce numéro.</p>
           </div>
         </div>
 
         {/* ── Livraison ── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Truck className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">Livraison</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">Livraison</h2>
           </div>
           <div className="space-y-4">
             <label className="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" checked={showDeliveryFee} onChange={e => setShowDeliveryFee(e.target.checked)} className="w-4 h-4 accent-brand-orange" />
-              <span className="text-gray-300 text-sm">Afficher les frais de livraison sur la page du restaurant</span>
+              <span className="text-gray-500 text-sm">Afficher les frais de livraison sur la page du restaurant</span>
             </label>
             {showDeliveryFee && (
               <div>
-                <label className="text-gray-400 text-xs block mb-1.5">Frais de livraison (FCFA)</label>
+                <label className="text-gray-500 text-xs block mb-1.5">Frais de livraison (FCFA)</label>
                 <input type="number" value={deliveryFee} onChange={e => setDeliveryFee(e.target.value)} placeholder="2000" min="0"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                  className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
               </div>
             )}
           </div>
         </div>
 
         {/* ── Horaires ── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-5">
             <Clock className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">Horaires d&apos;ouverture</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">Horaires d&apos;ouverture</h2>
           </div>
           <div className="space-y-4">
             {JOURS.map(({ key, label }) => {
@@ -296,7 +296,7 @@ export default function SettingsPage() {
               const ferme = h?.ferme || false
               return (
                 <div key={key} className="flex items-center gap-3 flex-wrap">
-                  <span className="text-gray-400 text-sm w-24 flex-shrink-0">{label}</span>
+                  <span className="text-gray-500 text-sm w-24 flex-shrink-0">{label}</span>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={!ferme} onChange={e => updateHours(key, 'ferme', !e.target.checked)} className="w-4 h-4 accent-brand-orange" />
                     <span className="text-xs text-gray-500">Ouvert</span>
@@ -304,10 +304,10 @@ export default function SettingsPage() {
                   {!ferme ? (
                     <>
                       <input type="time" value={h?.ouverture || '08:00'} onChange={e => updateHours(key, 'ouverture', e.target.value)}
-                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28" />
-                      <span className="text-gray-600 text-xs">→</span>
+                        className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-1.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28" />
+                      <span className="text-gray-500 text-xs">→</span>
                       <input type="time" value={h?.fermeture || '22:00'} onChange={e => updateHours(key, 'fermeture', e.target.value)}
-                        className="bg-surface-100 border border-surface-300 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28" />
+                        className="bg-gray-100 border border-gray-300 rounded-lg px-3 py-1.5 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 w-28" />
                     </>
                   ) : (
                     <span className="text-xs text-red-400">Fermé</span>
@@ -319,10 +319,10 @@ export default function SettingsPage() {
         </div>
 
         {/* ── Sécurité — Changer mot de passe ── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-1">
             <Lock className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">Sécurité</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">Sécurité</h2>
           </div>
           <p className="text-gray-500 text-xs mb-4">Changez votre mot de passe de connexion.</p>
 
@@ -335,49 +335,49 @@ export default function SettingsPage() {
 
           <div className="space-y-3">
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Mot de passe actuel</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Mot de passe actuel</label>
               <div className="relative">
                 <input
                   type={showCurrent ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={e => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 pr-11 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 pr-11 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
                 />
                 <button type="button" onClick={() => setShowCurrent(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-500">
                   {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Nouveau mot de passe</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Nouveau mot de passe</label>
               <div className="relative">
                 <input
                   type={showNew ? 'text' : 'password'}
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   placeholder="Minimum 8 caractères"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 pr-11 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 pr-11 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
                 />
                 <button type="button" onClick={() => setShowNew(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-500">
                   {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Confirmer le nouveau mot de passe</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Confirmer le nouveau mot de passe</label>
               <div className="relative">
                 <input
                   type={showConfirm ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 pr-11 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 pr-11 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50"
                 />
                 <button type="button" onClick={() => setShowConfirm(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-500">
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>

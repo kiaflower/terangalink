@@ -15,13 +15,29 @@ const config: Config = {
           'orange-dark': '#EA580C',
           gold: '#F59E0B',
         },
+        // Couleurs surface — désormais claires (mode clair dashboard)
         surface: {
-          DEFAULT: '#0A0A0A',
-          '50': '#141414',
-          '100': '#1C1C1C',
-          '200': '#242424',
-          '300': '#2E2E2E',
-          '400': '#3A3A3A',
+          DEFAULT: '#FFFFFF',
+          '50': '#F9FAFB',
+          '100': '#F3F4F6',
+          '200': '#E5E7EB',
+          '300': '#D1D5DB',
+          '400': '#9CA3AF',
+        },
+        // Couleurs light (landing, annuaire, dashboard blanc)
+        light: {
+          DEFAULT: '#FFFFFF',
+          '50': '#F9FAFB',
+          '100': '#F3F4F6',
+          '200': '#E5E7EB',
+          '300': '#D1D5DB',
+          '400': '#9CA3AF',
+        },
+        ink: {
+          DEFAULT: '#111111',
+          '500': '#374151',
+          '400': '#6B7280',
+          '300': '#9CA3AF',
         },
       },
       fontFamily: {

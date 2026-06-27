@@ -122,7 +122,7 @@ export default function BannersPage() {
 
     let err
     if (editing) {
-      console.log(playload)
+      console.log(payload)
       ;({ error: err } = await supabase.from('banners').update(payload).eq('id', editing.id))
     } else {
       ;({ error: err } = await supabase.from('banners').insert(payload))
@@ -153,8 +153,8 @@ export default function BannersPage() {
       <div className="p-6 max-w-3xl mx-auto">
         <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-8 text-center">
           <Crown className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
-          <h2 className="text-white font-bold text-lg mb-2">Fonctionnalité Premium</h2>
-          <p className="text-gray-400 text-sm">Les bannières promotionnelles sont disponibles avec le plan <strong className="text-white">Premium</strong>.</p>
+          <h2 className="text-gray-900 font-bold text-lg mb-2">Fonctionnalité Premium</h2>
+          <p className="text-gray-500 text-sm">Les bannières promotionnelles sont disponibles avec le plan <strong className="text-gray-900">Premium</strong>.</p>
         </div>
       </div>
     )
@@ -164,7 +164,7 @@ export default function BannersPage() {
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white font-bold text-xl">Bannières promotionnelles</h1>
+          <h1 className="text-gray-900 font-bold text-xl">Bannières promotionnelles</h1>
           <p className="text-gray-500 text-sm mt-0.5">{banners.length} bannière{banners.length !== 1 ? 's' : ''}</p>
         </div>
         <Button onClick={openCreate} variant="primary">
@@ -177,7 +177,7 @@ export default function BannersPage() {
         <div className="space-y-2">{[...Array(2)].map((_, i) => <SkeletonRow key={i} />)}</div>
       ) : banners.length === 0 ? (
         <EmptyState
-          icon={<Megaphone className="w-8 h-8 text-gray-600" />}
+          icon={<Megaphone className="w-8 h-8 text-gray-500" />}
           title="Aucune bannière"
           description="Créez des bannières pour mettre en avant vos offres spéciales."
           action={<Button onClick={openCreate} variant="primary"><PlusCircle className="w-4 h-4 mr-2" />Créer une bannière</Button>}
@@ -185,10 +185,10 @@ export default function BannersPage() {
       ) : (
         <div className="space-y-3">
           {banners.map(b => (
-            <div key={b.id} className="rounded-2xl p-4 bg-surface-50 border border-surface-200 flex items-center gap-4">
+            <div key={b.id} className="rounded-2xl p-4 bg-gray-50 border border-gray-200 flex items-center gap-4">
               {/* Preview */}
               <div
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-white flex-1 min-w-0"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-900 flex-1 min-w-0"
                 style={{ backgroundColor: b.bg_color || '#F97316' }}
               >
                 {b.icon && <span className="flex-shrink-0">{b.icon}</span>}
@@ -197,17 +197,17 @@ export default function BannersPage() {
 
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!b.is_active && (
-                  <span className="text-xs text-gray-500 bg-surface-200 px-2 py-0.5 rounded-full">Inactif</span>
+                  <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">Inactif</span>
                 )}
-                <button onClick={() => toggleActive(b)} className="text-gray-400 hover:text-white transition-colors" title={b.is_active ? 'Désactiver' : 'Activer'}>
+                <button onClick={() => toggleActive(b)} className="text-gray-500 hover:text-gray-900 transition-colors" title={b.is_active ? 'Désactiver' : 'Activer'}>
                   {b.is_active
                     ? <ToggleRight className="w-5 h-5 text-brand-orange" />
                     : <ToggleLeft className="w-5 h-5" />}
                 </button>
-                <button onClick={() => openEdit(b)} className="text-gray-400 hover:text-white transition-colors">
+                <button onClick={() => openEdit(b)} className="text-gray-500 hover:text-gray-900 transition-colors">
                   <Pencil className="w-4 h-4" />
                 </button>
-                <button onClick={() => setDeleteConfirm(b.id)} className="text-gray-400 hover:text-red-400 transition-colors">
+                <button onClick={() => setDeleteConfirm(b.id)} className="text-gray-500 hover:text-red-400 transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -220,24 +220,24 @@ export default function BannersPage() {
       <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'Modifier la bannière' : 'Nouvelle bannière'}>
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Texte de la bannière</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Texte de la bannière</label>
             <Input value={form.text} onChange={e => setForm(f => ({ ...f, text: e.target.value }))} placeholder="Ex : Livraison offerte ce week-end ! 🚀" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Icône (emoji, optionnel)</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Icône (emoji, optionnel)</label>
             <Input value={form.icon} onChange={e => setForm(f => ({ ...f, icon: e.target.value }))} placeholder="🎉" />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Couleur de fond</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Couleur de fond</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
                 value={form.bg_color}
                 onChange={e => setForm(f => ({ ...f, bg_color: e.target.value }))}
-                className="w-12 h-10 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer"
+                className="w-12 h-10 bg-gray-100 border border-gray-300 rounded-xl p-1 cursor-pointer"
               />
               <div
-                className="flex-1 px-3 py-2 rounded-xl text-sm font-semibold text-white truncate"
+                className="flex-1 px-3 py-2 rounded-xl text-sm font-semibold text-gray-900 truncate"
                 style={{ backgroundColor: form.bg_color }}
               >
                 {form.icon && <span className="mr-2">{form.icon}</span>}
@@ -247,20 +247,20 @@ export default function BannersPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Début (optionnel)</label>
+              <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Début (optionnel)</label>
               <Input type="datetime-local" value={form.starts_at} onChange={e => setForm(f => ({ ...f, starts_at: e.target.value }))} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Fin (optionnel)</label>
+              <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Fin (optionnel)</label>
               <Input type="datetime-local" value={form.ends_at} onChange={e => setForm(f => ({ ...f, ends_at: e.target.value }))} />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Position (ordre d&apos;affichage)</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Position (ordre d&apos;affichage)</label>
             <Input type="number" value={form.position} onChange={e => setForm(f => ({ ...f, position: e.target.value }))} placeholder="0" min="0" />
           </div>
           <div className="flex items-center justify-between py-1">
-            <span className="text-sm text-gray-300 font-medium">Active</span>
+            <span className="text-sm text-gray-500 font-medium">Active</span>
             <button onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}>
               {form.is_active
                 ? <ToggleRight className="w-6 h-6 text-brand-orange" />
@@ -281,7 +281,7 @@ export default function BannersPage() {
 
       {/* Delete confirm */}
       <Modal open={!!deleteConfirm} onClose={() => setDeleteConfirm(null)} title="Supprimer cette bannière ?">
-        <p className="text-gray-400 text-sm mb-4">Cette action est irréversible.</p>
+        <p className="text-gray-500 text-sm mb-4">Cette action est irréversible.</p>
         <div className="flex gap-2">
           <Button variant="secondary" fullWidth onClick={() => setDeleteConfirm(null)}>Annuler</Button>
           <Button variant="danger" fullWidth onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Supprimer</Button>

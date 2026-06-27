@@ -153,13 +153,13 @@ export default function AnalyticsPage() {
   return (
     <div className="p-6 sm:p-8 max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Analytiques</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Analytiques</h1>
         <p className="text-gray-500 text-sm mt-1">Statistiques de votre site de commande</p>
       </div>
 
       {/* ── Section Commandes réelles ── */}
       <div className="mb-6">
-        <h2 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+        <h2 className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2">
           <Package className="w-4 h-4 text-brand-orange" />
           Commandes
         </h2>
@@ -170,11 +170,11 @@ export default function AnalyticsPage() {
             { label: 'En attente', value: orderStats.pendingCount, icon: Users, color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
             { label: 'Revenus livrés', value: formatRevenue(orderStats.monthRevenue), icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-400/10', isText: true },
           ].map(stat => (
-            <div key={stat.label} className="bg-surface-50 border border-surface-200 rounded-2xl p-4">
+            <div key={stat.label} className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
               <div className={`w-9 h-9 ${stat.bg} rounded-xl flex items-center justify-center mb-3`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
               </div>
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
+              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
               <p className="text-gray-500 text-xs mt-1">{stat.label}</p>
             </div>
           ))}
@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
 
       {/* ── Section Vues & Paniers (analytics_events) ── */}
       <div className="mb-6">
-        <h2 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+        <h2 className="text-gray-900 font-semibold text-sm mb-3 flex items-center gap-2">
           <Eye className="w-4 h-4 text-brand-orange" />
           Visibilité &amp; Paniers
         </h2>
@@ -194,11 +194,11 @@ export default function AnalyticsPage() {
             { label: "Paniers aujourd'hui", value: cartToday, icon: ShoppingBag, color: 'text-green-400', bg: 'bg-green-400/10' },
             { label: 'Paniers ce mois', value: cartMonth, icon: TrendingUp, color: 'text-purple-400', bg: 'bg-purple-400/10' },
           ].map(stat => (
-            <div key={stat.label} className="bg-surface-50 border border-surface-200 rounded-2xl p-4">
+            <div key={stat.label} className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
               <div className={`w-9 h-9 ${stat.bg} rounded-xl flex items-center justify-center mb-3`}>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
               </div>
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
+              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
               <p className="text-gray-500 text-xs mt-1">{stat.label}</p>
             </div>
           ))}
@@ -209,28 +209,28 @@ export default function AnalyticsPage() {
       <FeatureGate feature="analyticsAvances" hasAccess={hasAdvanced}>
         <div className="space-y-4">
           {/* Trend card */}
-          <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp className="w-4 h-4 text-brand-orange" />
-              <h2 className="text-white font-semibold text-sm">Tendance des vues</h2>
+              <h2 className="text-gray-900 font-semibold text-sm">Tendance des vues</h2>
             </div>
             <div className="flex items-center gap-4">
               <div>
-                <p className="text-3xl font-bold text-white">{viewsToday}</p>
+                <p className="text-3xl font-bold text-gray-900">{viewsToday}</p>
                 <p className="text-gray-500 text-xs">Vues aujourd&apos;hui</p>
               </div>
               <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${viewTrend >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
                 {viewTrend >= 0 ? '↑' : '↓'} {Math.abs(viewTrend)}%
               </div>
-              <div className="text-gray-600 text-xs">vs hier ({viewsYesterday} vues)</div>
+              <div className="text-gray-500 text-xs">vs hier ({viewsYesterday} vues)</div>
             </div>
           </div>
 
           {/* Top items */}
-          <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <ShoppingBag className="w-4 h-4 text-brand-orange" />
-              <h2 className="text-white font-semibold text-sm">Plats les plus ajoutés au panier</h2>
+              <h2 className="text-gray-900 font-semibold text-sm">Plats les plus ajoutés au panier</h2>
             </div>
             {topItems.length === 0 ? (
               <p className="text-gray-500 text-sm text-center py-6">
@@ -243,13 +243,13 @@ export default function AnalyticsPage() {
                   const pct = Math.round((item.count / max) * 100)
                   return (
                     <div key={item.item_name} className="flex items-center gap-3">
-                      <span className="text-gray-600 text-xs w-4 text-right">{i + 1}</span>
+                      <span className="text-gray-500 text-xs w-4 text-right">{i + 1}</span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <p className="text-white text-sm truncate">{item.item_name}</p>
-                          <p className="text-gray-400 text-xs ml-2 flex-shrink-0">{item.count} fois</p>
+                          <p className="text-gray-900 text-sm truncate">{item.item_name}</p>
+                          <p className="text-gray-500 text-xs ml-2 flex-shrink-0">{item.count} fois</p>
                         </div>
-                        <div className="h-1.5 bg-surface-200 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full bg-brand-orange transition-all duration-500"
                             style={{ width: `${pct}%` }}

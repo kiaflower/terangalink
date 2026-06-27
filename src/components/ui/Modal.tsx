@@ -49,7 +49,7 @@ export function Modal({
       {/* Panel — hauteur max + flex column pour scroll interne */}
       <div
         className={cn(
-          'relative w-full bg-surface-50 border border-surface-200 rounded-2xl shadow-2xl',
+          'relative w-full bg-gray-50 border border-gray-200 rounded-2xl shadow-2xl',
           'flex flex-col animate-fade-in',
           'max-h-[90vh]',
           sizes[size]
@@ -57,10 +57,10 @@ export function Modal({
       >
         {/* Header — fixe en haut */}
         {(title || description) && (
-          <div className="flex items-start justify-between p-6 border-b border-surface-200 flex-shrink-0">
+          <div className="flex items-start justify-between p-6 border-b border-gray-200 flex-shrink-0">
             <div>
               {title && (
-                <h2 className="text-white font-semibold text-lg">{title}</h2>
+                <h2 className="text-gray-900 font-semibold text-lg">{title}</h2>
               )}
               {description && (
                 <p className="text-gray-500 text-sm mt-1">{description}</p>
@@ -68,7 +68,7 @@ export function Modal({
             </div>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-white transition-colors ml-4 flex-shrink-0"
+              className="text-gray-500 hover:text-gray-900 transition-colors ml-4 flex-shrink-0"
             >
               <X className="w-5 h-5" />
             </button>

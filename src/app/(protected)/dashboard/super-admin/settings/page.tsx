@@ -39,7 +39,7 @@ function SmtpTest() {
 
   return (
     <div className="space-y-3">
-      <p className="text-gray-400 text-xs">
+      <p className="text-gray-500 text-xs">
         Envoie un email de test pour vérifier que SMTP_HOST, SMTP_USER et SMTP_PASS sont bien configurés en production.
       </p>
       <div className="flex gap-2">
@@ -48,7 +48,7 @@ function SmtpTest() {
           value={testEmail}
           onChange={e => setTestEmail(e.target.value)}
           placeholder="ton@email.com"
-          className="flex-1 bg-surface-100 border border-surface-300 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+          className="flex-1 bg-gray-100 border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
         />
         <button
           onClick={handleTest}
@@ -76,20 +76,20 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
-      <button className="w-full flex items-center justify-between p-5 hover:bg-surface-100 transition-colors" onClick={() => setOpen(!open)}>
+    <div className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden">
+      <button className="w-full flex items-center justify-between p-5 hover:bg-gray-100 transition-colors" onClick={() => setOpen(!open)}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-brand-orange/10 rounded-xl flex items-center justify-center">
             <Icon className="w-4 h-4 text-brand-orange" />
           </div>
           <div className="text-left">
-            <p className="text-white font-semibold text-sm">{title}</p>
+            <p className="text-gray-900 font-semibold text-sm">{title}</p>
             {description && <p className="text-gray-500 text-xs mt-0.5">{description}</p>}
           </div>
         </div>
         {open ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
       </button>
-      {open && <div className="px-5 pb-5 border-t border-surface-200 pt-4 space-y-4">{children}</div>}
+      {open && <div className="px-5 pb-5 border-t border-gray-200 pt-4 space-y-4">{children}</div>}
     </div>
   )
 }
@@ -100,7 +100,7 @@ function ToggleRow({ label, description, value, onChange }: {
   return (
     <div className="flex items-center justify-between py-2">
       <div>
-        <p className="text-white text-sm font-medium">{label}</p>
+        <p className="text-gray-900 text-sm font-medium">{label}</p>
         {description && <p className="text-gray-500 text-xs mt-0.5">{description}</p>}
       </div>
       <button onClick={() => onChange(!value)} className="flex-shrink-0 ml-4">
@@ -172,7 +172,7 @@ export default function SuperAdminSettingsPage() {
     <div className="p-6 sm:p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Paramètres plateforme</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Paramètres plateforme</h1>
           <p className="text-gray-500 text-sm mt-1">Configuration globale de TerangaLink</p>
         </div>
         <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
@@ -188,7 +188,7 @@ export default function SuperAdminSettingsPage() {
           { label: 'Admins', value: totalAdmins, color: 'text-blue-400' },
           { label: 'Version', value: 'v4.0', color: 'text-purple-400' },
         ].map(s => (
-          <div key={s.label} className="bg-surface-50 border border-surface-200 rounded-2xl p-4 text-center">
+          <div key={s.label} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             <p className="text-gray-500 text-xs mt-1">{s.label}</p>
           </div>
@@ -203,9 +203,9 @@ export default function SuperAdminSettingsPage() {
             <Input label="WhatsApp principal" value={whatsappPrincipal} onChange={e => setWhatsappPrincipal(e.target.value)} hint="Sans + ni espaces : 221771234567" />
             <Input label="Email support" type="email" value={emailSupport} onChange={e => setEmailSupport(e.target.value)} />
           </div>
-          <div className="bg-surface-100 rounded-xl p-3 flex items-start gap-2">
+          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
             <Info className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-            <p className="text-gray-400 text-xs">✅ Ces modifications s&apos;appliquent automatiquement partout : landing page, footer, emails, QR codes, liens d&apos;upgrade.</p>
+            <p className="text-gray-500 text-xs">✅ Ces modifications s&apos;appliquent automatiquement partout : landing page, footer, emails, QR codes, liens d&apos;upgrade.</p>
           </div>
         </Section>
 
@@ -216,14 +216,14 @@ export default function SuperAdminSettingsPage() {
               { label: 'Pro (FCFA/mois)', value: prixPro, set: setPrixPro },
             ].map(p => (
               <div key={p.label}>
-                <label className="text-gray-400 text-xs block mb-1.5">{p.label}</label>
-                <input type="number" value={p.value} onChange={e => p.set(e.target.value)} className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                <label className="text-gray-500 text-xs block mb-1.5">{p.label}</label>
+                <input type="number" value={p.value} onChange={e => p.set(e.target.value)} className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
               </div>
             ))}
           </div>
-          <div className="bg-surface-100 rounded-xl p-3 flex items-start gap-2">
+          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-            <p className="text-gray-400 text-xs">Pour changer les prix dans la logique des plans, modifie <code className="text-brand-orange">PLAN_PRICES</code> dans <code className="text-brand-orange">src/lib/plans.ts</code>.</p>
+            <p className="text-gray-500 text-xs">Pour changer les prix dans la logique des plans, modifie <code className="text-brand-orange">PLAN_PRICES</code> dans <code className="text-brand-orange">src/lib/plans.ts</code>.</p>
           </div>
         </Section>
 
@@ -242,29 +242,29 @@ export default function SuperAdminSettingsPage() {
         <Section icon={Palette} title="Branding dashboard" description="Identité visuelle TerangaLink" defaultOpen={false}>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-gray-400 text-xs block mb-2">Couleur principale</label>
+              <label className="text-gray-500 text-xs block mb-2">Couleur principale</label>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl border border-surface-300" style={{ backgroundColor: '#F97316' }} />
+                <div className="w-10 h-10 rounded-xl border border-gray-300" style={{ backgroundColor: '#F97316' }} />
                 <div>
-                  <p className="text-white text-sm font-mono">#F97316</p>
-                  <p className="text-gray-600 text-xs">Orange TerangaLink</p>
+                  <p className="text-gray-900 text-sm font-mono">#F97316</p>
+                  <p className="text-gray-500 text-xs">Orange TerangaLink</p>
                 </div>
               </div>
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-2">Fond dashboard</label>
+              <label className="text-gray-500 text-xs block mb-2">Fond dashboard</label>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl border border-surface-300" style={{ backgroundColor: '#0A0A0A' }} />
+                <div className="w-10 h-10 rounded-xl border border-gray-300" style={{ backgroundColor: '#FFFFFF' }} />
                 <div>
-                  <p className="text-white text-sm font-mono">#0A0A0A</p>
-                  <p className="text-gray-600 text-xs">Noir profond</p>
+                  <p className="text-gray-900 text-sm font-mono">#FFFFFF</p>
+                  <p className="text-gray-500 text-xs">Noir profond</p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="bg-surface-100 rounded-xl p-3 flex items-start gap-2">
+          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
             <Info className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
-            <p className="text-gray-400 text-xs">Couleurs dashboard fixes par design. Pour modifier, édite <code className="text-brand-orange">tailwind.config.ts</code>.</p>
+            <p className="text-gray-500 text-xs">Couleurs dashboard fixes par design. Pour modifier, édite <code className="text-brand-orange">tailwind.config.ts</code>.</p>
           </div>
         </Section>
 
@@ -272,9 +272,9 @@ export default function SuperAdminSettingsPage() {
           <ToggleRow label="Notification nouvelle inscription" description="Message WhatsApp à chaque nouveau restaurant." value={false} onChange={() => {}} />
           <ToggleRow label="Alerte abonnement expiré" description="Alerte 7 jours avant expiration." value={false} onChange={() => {}} />
           <ToggleRow label="Rapport hebdomadaire" description="Résumé automatique chaque lundi." value={false} onChange={() => {}} />
-          <div className="bg-surface-100 rounded-xl p-3 flex items-start gap-2">
+          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
             <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-            <p className="text-gray-400 text-xs">Les notifications automatiques nécessitent une intégration WhatsApp Business API. Disponible dans une prochaine version.</p>
+            <p className="text-gray-500 text-xs">Les notifications automatiques nécessitent une intégration WhatsApp Business API. Disponible dans une prochaine version.</p>
           </div>
         </Section>
 
@@ -283,7 +283,7 @@ export default function SuperAdminSettingsPage() {
         </Section>
 
         <Section icon={Mail} title="Contact & support" description="Résumé des coordonnées publiques" defaultOpen={false}>
-          <div className="bg-surface-100 rounded-xl p-4 space-y-2.5">
+          <div className="bg-gray-100 rounded-xl p-4 space-y-2.5">
             {[
               { label: 'Email support', value: emailSupport },
               { label: 'WhatsApp inscriptions', value: `+${whatsappPrincipal}` },
@@ -291,8 +291,8 @@ export default function SuperAdminSettingsPage() {
               { label: 'Nom plateforme', value: platformName },
             ].map(row => (
               <div key={row.label} className="flex justify-between text-sm">
-                <span className="text-gray-400">{row.label}</span>
-                <span className="text-white font-medium">{row.value}</span>
+                <span className="text-gray-500">{row.label}</span>
+                <span className="text-gray-900 font-medium">{row.value}</span>
               </div>
             ))}
           </div>

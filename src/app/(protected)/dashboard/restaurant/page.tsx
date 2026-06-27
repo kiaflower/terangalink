@@ -106,7 +106,7 @@ export default async function RestaurantDashboard() {
   return (
     <div className="p-6 sm:p-8 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-gray-900">
           {restaurant ? `Bienvenue, ${restaurant.name}` : 'Tableau de bord'}
         </h1>
         <p className="text-gray-500 text-sm mt-1">{profile?.full_name || user.email}</p>
@@ -123,13 +123,13 @@ export default async function RestaurantDashboard() {
       )}
 
       {restaurant && (
-        <div className="bg-surface-50 border border-brand-orange/10 rounded-2xl p-5 mb-6 flex items-center gap-4">
+        <div className="bg-gray-50 border border-brand-orange/10 rounded-2xl p-5 mb-6 flex items-center gap-4">
           <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center text-brand-orange font-bold text-lg flex-shrink-0">
             {restaurant.name.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-white font-semibold">{restaurant.name}</p>
+              <p className="text-gray-900 font-semibold">{restaurant.name}</p>
               {restaurant.is_verified && <CheckCircle2 className="w-4 h-4 text-brand-orange" />}
             </div>
             <p className="text-gray-500 text-sm">{(restaurant as Restaurant & { city?: string }).city || 'Dakar'}</p>
@@ -172,7 +172,7 @@ export default async function RestaurantDashboard() {
       </div>
 
       <Card>
-        <h2 className="text-white font-semibold mb-4">Actions rapides</h2>
+        <h2 className="text-gray-900 font-semibold mb-4">Actions rapides</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             { label: 'Gérer le menu', desc: 'Ajouter / modifier vos plats', href: '/dashboard/restaurant/menu', icon: UtensilsCrossed },
@@ -180,12 +180,12 @@ export default async function RestaurantDashboard() {
             { label: 'Profil du restaurant', desc: 'Modifier les informations', href: '/dashboard/restaurant/profile', icon: Users },
             { label: 'Paramètres', desc: 'Configuration du compte', href: '/dashboard/restaurant/settings', icon: TrendingUp },
           ].map((item) => (
-            <Link key={item.href} href={item.href} className="flex items-center gap-3 p-4 bg-surface-100 hover:bg-surface-200 border border-surface-300 rounded-xl transition-all group">
+            <Link key={item.href} href={item.href} className="flex items-center gap-3 p-4 bg-gray-100 hover:bg-gray-100 border border-gray-300 rounded-xl transition-all group">
               <div className="w-9 h-9 bg-brand-orange/10 rounded-lg flex items-center justify-center group-hover:bg-brand-orange/20 transition-colors">
                 <item.icon className="w-4 h-4 text-brand-orange" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium">{item.label}</p>
+                <p className="text-gray-900 text-sm font-medium">{item.label}</p>
                 <p className="text-gray-500 text-xs">{item.desc}</p>
               </div>
               <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-brand-orange transition-colors" />

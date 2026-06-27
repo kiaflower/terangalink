@@ -1,13 +1,15 @@
 /**
  * TerangaLink Theme System
- * Génère les variables CSS pour les pages publiques restaurants avec contraste
- * automatique pour garder textes, cartes et boutons lisibles.
+ * Génère les variables CSS pour les pages publiques restaurants.
+ *
+ * Starter → light par défaut (fond blanc)
+ * Pro/Premium → dark ou light selon choix du restaurant
  */
 
 export const DEFAULT_PRIMARY_COLOR = '#F97316'
 export const DEFAULT_BUTTON_COLOR = '#F97316'
 export const DEFAULT_DARK_BACKGROUND = '#0A0A0A'
-export const DEFAULT_LIGHT_BACKGROUND = '#F8F7F4'
+export const DEFAULT_LIGHT_BACKGROUND = '#FFFFFF'
 
 export interface RestaurantTheme {
   primary: string
@@ -22,23 +24,19 @@ export interface ThemeTokens {
   bgCardHover: string
   bgInput: string
   bgBadge: string
-
   border: string
   borderStrong: string
-
   textPrimary: string
   textSecondary: string
   textMuted: string
   textOnAccent: string
   textOnButton: string
-
   accent: string
   accentHover: string
   accentSubtle: string
   accentText: string
   button: string
   buttonHover: string
-
   openBg: string
   openText: string
   closedBg: string
@@ -55,18 +53,28 @@ function normalizeHex(hex: string, fallback = DEFAULT_PRIMARY_COLOR): string {
 }
 
 export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
-  const mode = theme.mode === 'light' ? 'light' : 'dark'
+  const mode = theme.mode === 'dark' ? 'dark' : 'light'
   const primary = normalizeHex(theme.primary, DEFAULT_PRIMARY_COLOR)
   const button = normalizeHex(theme.button || primary, primary)
   const fallbackBg = mode === 'light' ? DEFAULT_LIGHT_BACKGROUND : DEFAULT_DARK_BACKGROUND
   const bgPage = theme.background ? normalizeHex(theme.background, fallbackBg) : fallbackBg
   const pageIsDark = isDarkColor(bgPage)
-  const cardBase = pageIsDark ? mixColors(bgPage, '#FFFFFF', 8) : mixColors(bgPage, '#FFFFFF', 78)
-  const cardHover = pageIsDark ? mixColors(bgPage, '#FFFFFF', 13) : mixColors(bgPage, '#000000', 4)
-  const inputBg = pageIsDark ? mixColors(bgPage, '#FFFFFF', 12) : mixColors(bgPage, '#000000', 5)
+  const cardBase = pageIsDark
+    ? mixColors(bgPage, '#FFFFFF', 8)
+    : mixColors(bgPage, '#000000', 4)
+  const cardHover = pageIsDark
+    ? mixColors(bgPage, '#FFFFFF', 13)
+    : mixColors(bgPage, '#000000', 7)
+  const inputBg = pageIsDark
+    ? mixColors(bgPage, '#FFFFFF', 12)
+    : mixColors(bgPage, '#000000', 5)
   const textPrimary = readableTextOn(bgPage)
-  const textSecondary = withReadableContrast(pageIsDark ? '#A3A3A3' : '#555555', bgPage, textPrimary)
-  const textMuted = withReadableContrast(pageIsDark ? '#8A8A8A' : '#6B7280', bgPage, textPrimary)
+  const textSecondary = withReadableContrast(
+    pageIsDark ? '#A3A3A3' : '#555555', bgPage, textPrimary
+  )
+  const textMuted = withReadableContrast(
+    pageIsDark ? '#8A8A8A' : '#6B7280', bgPage, textPrimary
+  )
   const accentText = pickReadableColor(primary, bgPage)
 
   return {
@@ -88,9 +96,9 @@ export function generateThemeTokens(theme: RestaurantTheme): ThemeTokens {
     accentText,
     button,
     buttonHover: adjustForHover(button),
-    openBg: pageIsDark ? 'rgba(34,197,94,0.14)' : 'rgba(22,163,74,0.12)',
+    openBg: pageIsDark ? 'rgba(34,197,94,0.14)' : 'rgba(22,163,74,0.10)',
     openText: pageIsDark ? '#86EFAC' : '#15803D',
-    closedBg: pageIsDark ? 'rgba(239,68,68,0.14)' : 'rgba(220,38,38,0.12)',
+    closedBg: pageIsDark ? 'rgba(239,68,68,0.14)' : 'rgba(220,38,38,0.10)',
     closedText: pageIsDark ? '#FCA5A5' : '#B91C1C',
   }
 }

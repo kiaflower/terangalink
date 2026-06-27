@@ -13,20 +13,16 @@ export default async function SuperAdminLayout({ children }: { children: React.R
   if (profile?.role !== 'super_admin') redirect('/dashboard/restaurant')
 
   return (
-    <div className="flex min-h-screen bg-surface">
-      {/* Desktop sidebar — sticky, full height */}
+    // theme-dark : fond sombre uniquement pour le dashboard
+    <div className="flex min-h-screen" style={{ backgroundColor: '#F9FAFB' }}>
       <div className="hidden lg:block flex-shrink-0">
         <div className="sticky top-0 h-screen overflow-y-auto">
           <SuperAdminSidebar />
         </div>
       </div>
-
-      {/* Mobile burger + drawer */}
       <MobileSidebar>
         <SuperAdminSidebar mobile />
       </MobileSidebar>
-
-      {/* Main content */}
       <main className="flex-1 min-w-0 overflow-y-auto pt-16 lg:pt-0">
         {children}
       </main>

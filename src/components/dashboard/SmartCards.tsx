@@ -376,7 +376,7 @@ export function SmartCards(props: SmartCardsProps) {
     <div className={`fixed bottom-6 right-6 z-40 w-80 transition-all duration-300 ${
       leaving ? 'translate-y-2 opacity-0' : 'translate-y-0 opacity-100'
     }`}>
-      <div className={`bg-surface-50 border rounded-2xl shadow-2xl overflow-hidden ${card.color.split(' ')[0]}`}>
+      <div className={`bg-gray-50 border rounded-2xl shadow-2xl overflow-hidden ${card.color.split(' ')[0]}`}>
         {/* Ligne colorée en haut */}
         <div className={`h-0.5 ${
           card.color.includes('red') ? 'bg-red-400' :
@@ -391,11 +391,11 @@ export function SmartCards(props: SmartCardsProps) {
         <div className="px-4 pt-4 pb-2 flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className={card.color.split(' ')[1]}>{card.icon}</span>
-            <h3 className="text-white font-bold text-sm">{card.title}</h3>
+            <h3 className="text-gray-900 font-bold text-sm">{card.title}</h3>
           </div>
           <button
             onClick={handleDismiss}
-            className="text-gray-600 hover:text-gray-400 transition-colors flex-shrink-0"
+            className="text-gray-500 hover:text-gray-400 transition-colors flex-shrink-0"
           >
             <X className="w-3.5 h-3.5" />
           </button>

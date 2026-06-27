@@ -253,7 +253,7 @@ export function ImageCropUpload({
             <button onClick={() => changeZoom(-0.1)} className="w-8 h-8 bg-surface-200 hover:bg-surface-300 rounded-lg flex items-center justify-center transition-colors">
               <ZoomOut className="w-3.5 h-3.5 text-white" />
             </button>
-            <div className="flex-1 bg-surface-200 rounded-full h-1.5">
+            <div className="flex-1 bg-orange-500 rounded-full h-1.5">
               <div className="bg-brand-orange h-1.5 rounded-full transition-all" style={{ width: `${Math.round(((crop.scale - 0.5) / 3.5) * 100)}%` }} />
             </div>
             <button onClick={() => changeZoom(0.1)} className="w-8 h-8 bg-surface-200 hover:bg-surface-300 rounded-lg flex items-center justify-center transition-colors">

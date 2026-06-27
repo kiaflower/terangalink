@@ -20,6 +20,7 @@ import {
   generateThemeTokens, themeToStyle, type RestaurantTheme
 } from '@/lib/theme'
 import { canUseFeature, normalizePlan, isPremiumPlan } from '@/lib/plans'
+import { BackToAnnuaire } from '@/components/restaurant/BackToAnnuaire'
 import type { RestaurantPageData, MenuItem } from '@/lib/types'
 import type { Banner } from '@/components/restaurant/PromoBanners'
 
@@ -144,9 +145,10 @@ function RestaurantInner({ data }: Props) {
     background: restaurant.background_color || undefined,
     button: restaurant.button_color || restaurant.primary_color || DEFAULT_BUTTON_COLOR,
   } : {
+    // Starter : fond blanc par défaut, couleurs TerangaLink orange
     primary: DEFAULT_PRIMARY_COLOR,
-    mode: 'dark',
-    background: DEFAULT_DARK_BACKGROUND,
+    mode: 'light',
+    background: '#FFFFFF',
     button: DEFAULT_BUTTON_COLOR,
   }
 
@@ -239,6 +241,8 @@ function RestaurantInner({ data }: Props) {
             </div>
             <span className="font-bold text-sm truncate hidden sm:block" style={{ color: tokens.textPrimary }}>{restaurant.name}</span>
           </div>
+
+          <BackToAnnuaire tokens={tokens} />
 
           <div className="hidden md:flex items-center gap-6">
             {[

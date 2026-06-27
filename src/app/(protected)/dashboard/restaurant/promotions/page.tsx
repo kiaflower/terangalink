@@ -207,8 +207,8 @@ export default function PromotionsPage() {
       <div className="p-6 max-w-3xl mx-auto">
         <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-8 text-center">
           <Crown className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
-          <h2 className="text-white font-bold text-lg mb-2">Fonctionnalité Premium</h2>
-          <p className="text-gray-400 text-sm">Les codes promo sont disponibles avec le plan <strong className="text-white">Premium</strong>.</p>
+          <h2 className="text-gray-900 font-bold text-lg mb-2">Fonctionnalité Premium</h2>
+          <p className="text-gray-500 text-sm">Les codes promo sont disponibles avec le plan <strong className="text-gray-900">Premium</strong>.</p>
         </div>
       </div>
     )
@@ -219,7 +219,7 @@ export default function PromotionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white font-bold text-xl">Codes Promo</h1>
+          <h1 className="text-gray-900 font-bold text-xl">Codes Promo</h1>
           <p className="text-gray-500 text-sm mt-0.5">{codes.length} code{codes.length !== 1 ? 's' : ''} créé{codes.length !== 1 ? 's' : ''}</p>
         </div>
         <Button onClick={openCreate} variant="primary">
@@ -233,7 +233,7 @@ export default function PromotionsPage() {
         <div className="space-y-2">{[...Array(3)].map((_, i) => <SkeletonRow key={i} />)}</div>
       ) : codes.length === 0 ? (
         <EmptyState
-          icon={<Tag className="w-8 h-8 text-gray-600" />}
+          icon={<Tag className="w-8 h-8 text-gray-500" />}
           title="Aucun code promo"
           description="Créez votre premier code promo pour fidéliser vos clients."
           action={<Button onClick={openCreate} variant="primary"><PlusCircle className="w-4 h-4 mr-2" />Créer un code</Button>}
@@ -245,12 +245,12 @@ export default function PromotionsPage() {
             return (
               <div
                 key={code.id}
-                className="rounded-2xl p-4 bg-surface-50 border border-surface-200 flex items-center gap-4"
+                className="rounded-2xl p-4 bg-gray-50 border border-gray-200 flex items-center gap-4"
               >
                 {/* Code + discount */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono font-bold text-white text-sm tracking-wider">{code.code}</span>
+                    <span className="font-mono font-bold text-gray-900 text-sm tracking-wider">{code.code}</span>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-orange/15 text-brand-orange">
                       {discountLabel(code)}
                     </span>
@@ -279,7 +279,7 @@ export default function PromotionsPage() {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => toggleActive(code)}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-500 hover:text-gray-900 transition-colors"
                     title={code.is_active ? 'Désactiver' : 'Activer'}
                   >
                     {code.is_active
@@ -288,13 +288,13 @@ export default function PromotionsPage() {
                   </button>
                   <button
                     onClick={() => openEdit(code)}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-500 hover:text-gray-900 transition-colors"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setDeleteConfirm(code.id)}
-                    className="text-gray-400 hover:text-red-400 transition-colors"
+                    className="text-gray-500 hover:text-red-400 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -314,7 +314,7 @@ export default function PromotionsPage() {
         <div className="space-y-4">
           {/* Code */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Code</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Code</label>
             <Input
               value={form.code}
               onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
@@ -325,7 +325,7 @@ export default function PromotionsPage() {
 
           {/* Type */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Type de réduction</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Type de réduction</label>
             <div className="grid grid-cols-2 gap-2">
               {(['percent', 'fixed'] as const).map(type => (
                 <button
@@ -334,7 +334,7 @@ export default function PromotionsPage() {
                   className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
                     form.discount_type === type
                       ? 'border-brand-orange bg-brand-orange/10 text-brand-orange'
-                      : 'border-surface-200 bg-surface-50 text-gray-400 hover:text-white'
+                      : 'border-gray-200 bg-gray-50 text-gray-500 hover:text-gray-900'
                   }`}
                 >
                   {type === 'percent' ? <Percent className="w-4 h-4" /> : <DollarSign className="w-4 h-4" />}
@@ -346,7 +346,7 @@ export default function PromotionsPage() {
 
           {/* Value */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">
               Valeur {form.discount_type === 'percent' ? '(%)' : '(FCFA)'}
             </label>
             <Input
@@ -360,7 +360,7 @@ export default function PromotionsPage() {
 
           {/* Min order */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Commande minimum (FCFA, optionnel)</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Commande minimum (FCFA, optionnel)</label>
             <Input
               type="number"
               value={form.min_order_amount}
@@ -372,7 +372,7 @@ export default function PromotionsPage() {
 
           {/* Expiration */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Date d&apos;expiration (optionnel)</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Date d&apos;expiration (optionnel)</label>
             <Input
               type="datetime-local"
               value={form.expires_at}
@@ -382,7 +382,7 @@ export default function PromotionsPage() {
 
           {/* Max uses */}
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase mb-1.5">Limite d&apos;utilisation (optionnel)</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5">Limite d&apos;utilisation (optionnel)</label>
             <Input
               type="number"
               value={form.max_uses}
@@ -394,7 +394,7 @@ export default function PromotionsPage() {
 
           {/* Active */}
           <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-gray-300 font-medium">Actif</span>
+            <span className="text-sm text-gray-500 font-medium">Actif</span>
             <button
               onClick={() => setForm(f => ({ ...f, is_active: !f.is_active }))}
               className="transition-colors"
@@ -422,7 +422,7 @@ export default function PromotionsPage() {
         onClose={() => setDeleteConfirm(null)}
         title="Supprimer ce code promo ?"
       >
-        <p className="text-gray-400 text-sm mb-4">Cette action est irréversible.</p>
+        <p className="text-gray-500 text-sm mb-4">Cette action est irréversible.</p>
         <div className="flex gap-2">
           <Button variant="secondary" fullWidth onClick={() => setDeleteConfirm(null)}>Annuler</Button>
           <Button variant="danger" fullWidth onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>

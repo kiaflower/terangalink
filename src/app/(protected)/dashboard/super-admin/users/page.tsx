@@ -75,7 +75,7 @@ export default function UsersPage() {
     <div className="p-6 sm:p-8 max-w-7xl">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Utilisateurs</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Utilisateurs</h1>
           <p className="text-gray-500 text-sm mt-1">{profiles.length} compte(s) enregistré(s)</p>
         </div>
         <Link href="/dashboard/super-admin/create-admin" className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors">
@@ -87,17 +87,17 @@ export default function UsersPage() {
         <div className="text-gray-500 text-sm text-center py-12">Chargement...</div>
       ) : !profiles.length ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 bg-surface-100 rounded-2xl flex items-center justify-center mb-4">
-            <Users className="w-8 h-8 text-gray-600" />
+          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+            <Users className="w-8 h-8 text-gray-500" />
           </div>
-          <h3 className="text-white font-semibold text-lg mb-2">Aucun utilisateur</h3>
+          <h3 className="text-gray-900 font-semibold text-lg mb-2">Aucun utilisateur</h3>
         </div>
       ) : (
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-surface-200 bg-surface-100">
+                <tr className="border-b border-gray-200 bg-gray-100">
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Utilisateur</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Rôle</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Restaurant</th>
@@ -107,15 +107,15 @@ export default function UsersPage() {
               </thead>
               <tbody>
                 {profiles.map((p: Profile) => (
-                  <tr key={p.id} className="border-b border-surface-200 hover:bg-surface-100 transition-colors">
+                  <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-100 transition-colors">
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-surface-300 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        <div className="w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                           {getInitials(p.full_name || p.email)}
                         </div>
                         <div>
-                          <p className="text-white text-sm font-medium">{p.full_name || 'Sans nom'}</p>
-                          <p className="text-gray-600 text-xs truncate max-w-[200px]">{p.email}</p>
+                          <p className="text-gray-900 text-sm font-medium">{p.full_name || 'Sans nom'}</p>
+                          <p className="text-gray-500 text-xs truncate max-w-[200px]">{p.email}</p>
                         </div>
                       </div>
                     </td>
@@ -135,7 +135,7 @@ export default function UsersPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => openReset(p)}
-                            className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                            className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-200 text-gray-500 hover:text-gray-900 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                           >
                             <Key className="w-3 h-3" />Mot de passe
                           </button>
@@ -161,33 +161,33 @@ export default function UsersPage() {
         {resetSuccess ? (
           <div className="flex flex-col items-center text-center py-4 gap-3">
             <CheckCircle className="w-12 h-12 text-green-400" />
-            <p className="text-white font-semibold">Mot de passe mis à jour !</p>
+            <p className="text-gray-900 font-semibold">Mot de passe mis à jour !</p>
             <p className="text-gray-500 text-sm">Le nouveau mot de passe a été enregistré avec succès.</p>
-            <div className="w-full bg-surface-100 rounded-xl px-4 py-3 font-mono text-brand-orange text-sm break-all text-center">
+            <div className="w-full bg-gray-100 rounded-xl px-4 py-3 font-mono text-brand-orange text-sm break-all text-center">
               {newPassword}
             </div>
-            <p className="text-gray-600 text-xs">Copiez et transmettez ce mot de passe à l&apos;administrateur.</p>
+            <p className="text-gray-500 text-xs">Copiez et transmettez ce mot de passe à l&apos;administrateur.</p>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="bg-surface-100 rounded-xl px-4 py-3">
-              <p className="text-gray-400 text-xs mb-0.5">Compte</p>
-              <p className="text-white text-sm font-medium">{selectedUser?.full_name || selectedUser?.email}</p>
+            <div className="bg-gray-100 rounded-xl px-4 py-3">
+              <p className="text-gray-500 text-xs mb-0.5">Compte</p>
+              <p className="text-gray-900 text-sm font-medium">{selectedUser?.full_name || selectedUser?.email}</p>
             </div>
             {resetError && (
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">{resetError}</div>
             )}
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Nouveau mot de passe</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Nouveau mot de passe</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   placeholder="Minimum 8 caractères"
-                  className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 pr-10"
+                  className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 pr-10"
                 />
-                <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">
+                <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -196,7 +196,7 @@ export default function UsersPage() {
               Générer un mot de passe aléatoire
             </button>
             <div className="flex gap-3 pt-2">
-              <button onClick={() => setResetModal(false)} className="flex-1 bg-surface-100 hover:bg-surface-200 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors">
+              <button onClick={() => setResetModal(false)} className="flex-1 bg-gray-100 hover:bg-gray-100 text-gray-900 py-2.5 rounded-xl text-sm font-semibold transition-colors">
                 Annuler
               </button>
               <button

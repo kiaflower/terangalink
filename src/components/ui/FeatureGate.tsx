@@ -33,13 +33,13 @@ export function FeatureGate({ feature, hasAccess, children, className }: Feature
       </div>
 
       {/* Lock overlay */}
-      <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-surface-50/80 backdrop-blur-sm border border-surface-200">
+      <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-gray-50/80 backdrop-blur-sm border border-gray-200">
         <div className="text-center px-6 py-4">
           <div className="w-10 h-10 bg-brand-orange/10 rounded-xl flex items-center justify-center mx-auto mb-3">
             <Lock className="w-5 h-5 text-brand-orange" />
           </div>
-          <p className="text-white font-semibold text-sm mb-1">Fonctionnalité premium</p>
-          <p className="text-gray-400 text-xs mb-3">{upgradeLabel}</p>
+          <p className="text-gray-900 font-semibold text-sm mb-1">Fonctionnalité premium</p>
+          <p className="text-gray-500 text-xs mb-3">{upgradeLabel}</p>
           <a
             href={upgradeUrl}
             target="_blank"

@@ -56,13 +56,16 @@ export default function LoginPage() {
       {/* Logo */}
       <div className="flex items-center gap-2.5 justify-center mb-8">
         <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-10 h-10 rounded-xl object-cover" />
-        <span className="font-bold text-white text-2xl">TerangaLink</span>
+        <span className="font-bold text-2xl">
+          <span style={{ color: '#F97316' }}>Teranga</span>
+          <span style={{ color: '#111111' }}>Link</span>
+        </span>
       </div>
 
       {/* Card */}
       <div className="form-card">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Connexion</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Connexion</h1>
           <p className="text-gray-500 text-sm mt-1">
             Accédez à votre tableau de bord
           </p>

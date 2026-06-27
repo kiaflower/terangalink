@@ -151,7 +151,7 @@ export default function NewRestaurantPage() {
           <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4">
             <CheckCircle2 className="w-8 h-8 text-green-400" />
           </div>
-          <h2 className="text-white text-xl font-bold mb-2">Restaurant créé avec succès !</h2>
+          <h2 className="text-gray-900 text-xl font-bold mb-2">Restaurant créé avec succès !</h2>
           <p className="text-gray-500 text-sm">Le restaurant et son administrateur sont prêts. Redirection...</p>
           {emailFailed && (
             <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 text-sm text-yellow-400 max-w-sm">
@@ -167,11 +167,11 @@ export default function NewRestaurantPage() {
   return (
     <div className="p-6 sm:p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/dashboard/super-admin/restaurants" className="text-gray-500 hover:text-white transition-colors">
+        <Link href="/dashboard/super-admin/restaurants" className="text-gray-500 hover:text-gray-900 transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Nouveau restaurant</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Nouveau restaurant</h1>
           <p className="text-gray-500 text-sm mt-0.5">Crée le restaurant et son admin en une seule étape</p>
         </div>
       </div>
@@ -179,8 +179,8 @@ export default function NewRestaurantPage() {
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3 mb-6">{error}</div>}
 
       <div className="space-y-5">
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-4"><Store className="w-4 h-4 text-brand-orange" /><h2 className="text-white font-semibold text-sm">Informations du restaurant</h2></div>
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4"><Store className="w-4 h-4 text-brand-orange" /><h2 className="text-gray-900 font-semibold text-sm">Informations du restaurant</h2></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2"><Input label="Nom du restaurant *" placeholder="Chez Ama" value={restName} onChange={e => handleRestNameChange(e.target.value)} /></div>
             <Input label="Slug (URL)" placeholder="chez-ama" value={restSlug} onChange={e => setRestSlug(e.target.value)} hint={`${settings.platform_url.replace('https://', '')}/${restSlug}`} />
@@ -192,16 +192,16 @@ export default function NewRestaurantPage() {
           </div>
         </div>
 
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-4"><User className="w-4 h-4 text-brand-orange" /><h2 className="text-white font-semibold text-sm">Compte administrateur</h2></div>
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4"><User className="w-4 h-4 text-brand-orange" /><h2 className="text-gray-900 font-semibold text-sm">Compte administrateur</h2></div>
           <div className="space-y-4">
             <Input label="Nom complet *" placeholder="Aminata Diallo" value={adminName} onChange={e => setAdminName(e.target.value)} />
             <Input label="Email *" type="email" placeholder="admin@restaurant.com" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} />
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Mot de passe *</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Mot de passe *</label>
               <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="Minimum 8 caractères" className="w-full bg-surface-100 border border-surface-300 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 pr-10" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors">{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+                <input type={showPassword ? 'text' : 'password'} value={adminPassword} onChange={e => setAdminPassword(e.target.value)} placeholder="Minimum 8 caractères" className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 pr-10" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors">{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
               </div>
               <button type="button" onClick={generatePassword} className="text-brand-orange text-xs hover:text-brand-orange-dark mt-1.5 transition-colors">Générer un mot de passe sécurisé</button>
             </div>

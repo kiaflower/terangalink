@@ -115,20 +115,20 @@ export default function QRCodePage() {
   return (
     <div className="p-6 sm:p-8 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">QR Code</h1>
+        <h1 className="text-2xl font-bold text-gray-900">QR Code</h1>
         <p className="text-gray-500 text-sm mt-1">
           Partagez votre menu en un scan
         </p>
       </div>
 
       {/* Carte QR code */}
-      <div className="bg-surface-50 border border-surface-200 rounded-2xl p-8 flex flex-col items-center">
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 flex flex-col items-center">
         {/* Badge TerangaLink */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-7 h-7 bg-brand-orange rounded-lg flex items-center justify-center">
-            <QrCode className="w-4 h-4 text-white" />
+            <QrCode className="w-4 h-4 text-gray-900" />
           </div>
-          <span className="text-white font-bold text-lg">TerangaLink</span>
+          <span className="text-gray-900 font-bold text-lg">TerangaLink</span>
         </div>
 
         {/* Cadre QR */}
@@ -145,7 +145,7 @@ export default function QRCodePage() {
           />
           {!qrReady && (
             <div className="w-[280px] h-[280px] flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
             </div>
           )}
         </div>
@@ -159,13 +159,13 @@ export default function QRCodePage() {
             href={publicUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 text-gray-500 hover:text-white hover:bg-surface-100 rounded-lg transition-colors"
+            className="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
 
-        <p className="text-gray-600 text-xs text-center mb-8 max-w-xs">
+        <p className="text-gray-500 text-xs text-center mb-8 max-w-xs">
           Imprimez ce QR code et placez-le sur vos tables, votre vitrine ou vos emballages.
         </p>
 
@@ -189,10 +189,10 @@ export default function QRCodePage() {
         ].map(tip => (
           <div
             key={tip.title}
-            className="bg-surface-50 border border-surface-200 rounded-xl p-4"
+            className="bg-gray-50 border border-gray-200 rounded-xl p-4"
           >
-            <p className="text-white text-sm font-semibold mb-1">{tip.title}</p>
-            <p className="text-gray-600 text-xs">{tip.desc}</p>
+            <p className="text-gray-900 text-sm font-semibold mb-1">{tip.title}</p>
+            <p className="text-gray-500 text-xs">{tip.desc}</p>
           </div>
         ))}
       </div>

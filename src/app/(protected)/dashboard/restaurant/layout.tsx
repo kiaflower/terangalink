@@ -13,7 +13,6 @@ export default async function RestaurantLayout({ children }: { children: React.R
     .from('profiles').select('role, restaurant_id').eq('id', user.id).single()
   if (profile?.role === 'super_admin') redirect('/dashboard/super-admin')
 
-  // Récupérer le slug pour le bouton "Voir mon site"
   let restaurantSlug: string | undefined
   if (profile?.restaurant_id) {
     const { data: resto } = await supabase
@@ -25,25 +24,19 @@ export default async function RestaurantLayout({ children }: { children: React.R
   }
 
   return (
-    <div className="flex min-h-screen bg-surface">
-      {/* Desktop sidebar */}
+    // theme-dark : force le fond sombre uniquement sur le dashboard
+    <div className="flex min-h-screen" style={{ backgroundColor: '#F9FAFB' }}>
       <div className="hidden lg:block flex-shrink-0">
         <div className="sticky top-0 h-screen overflow-y-auto">
           <RestaurantSidebar />
         </div>
       </div>
-
-      {/* Mobile burger button + drawer */}
       <MobileSidebar>
         <RestaurantSidebar mobile />
       </MobileSidebar>
-
-      {/* Main content */}
       <main className="flex-1 min-w-0 overflow-y-auto pt-16 lg:pt-0">
         {children}
       </main>
-
-      {/* Guide de démarrage — flottant en bas à droite */}
       <OnboardingWrapper restaurantSlug={restaurantSlug} />
     </div>
   )

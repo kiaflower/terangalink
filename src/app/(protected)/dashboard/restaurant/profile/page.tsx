@@ -21,19 +21,19 @@ export default async function RestaurantProfilePage() {
   return (
     <div className="p-6 sm:p-8 max-w-2xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">Profil</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Profil</h1>
         <p className="text-gray-500 text-sm mt-1">Informations de votre restaurant et de votre compte</p>
       </div>
 
       <div className="space-y-6">
         <Card>
-          <h2 className="text-white font-semibold mb-4">Mon compte</h2>
+          <h2 className="text-gray-900 font-semibold mb-4">Mon compte</h2>
           <div className="flex items-center gap-4 mb-4">
             <div className="w-14 h-14 bg-brand-orange/10 rounded-full flex items-center justify-center text-brand-orange text-xl font-bold">
               {(profile?.full_name || user.email || 'U').charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-white font-semibold">{profile?.full_name || 'Sans nom'}</p>
+              <p className="text-gray-900 font-semibold">{profile?.full_name || 'Sans nom'}</p>
               <p className="text-gray-500 text-sm">{user.email}</p>
               <Badge variant="info" className="mt-1">Restaurant Admin</Badge>
             </div>
@@ -42,7 +42,7 @@ export default async function RestaurantProfilePage() {
 
         {restaurant ? (
           <Card>
-            <h2 className="text-white font-semibold mb-4">Mon restaurant</h2>
+            <h2 className="text-gray-900 font-semibold mb-4">Mon restaurant</h2>
             <div className="space-y-3">
               {[
                 ['Nom', String(restaurant.name || '—')],
@@ -57,9 +57,9 @@ export default async function RestaurantProfilePage() {
                 ['Fond', String(restaurant.background_color || '—')],
                 ['Mode thème', String(restaurant.theme_mode || '—')],
               ].map(([label, value]) => (
-                <div key={label} className="flex justify-between items-center py-2 border-b border-surface-200 last:border-0 gap-4">
+                <div key={label} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0 gap-4">
                   <span className="text-gray-500 text-sm">{label}</span>
-                  <span className="text-white text-sm font-medium text-right break-all">{value}</span>
+                  <span className="text-gray-900 text-sm font-medium text-right break-all">{value}</span>
                 </div>
               ))}
               <div className="flex justify-between items-center py-2">

@@ -38,11 +38,11 @@ const STATUS_CONFIG: Record<SubStatus, { label: string; color: string; bg: strin
   active:    { label: 'Actif',     color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/20',    icon: <CheckCircle className="w-3 h-3" /> },
   overdue:   { label: 'En retard', color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/20',        icon: <AlertTriangle className="w-3 h-3" /> },
   suspended: { label: 'Suspendu',  color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20',  icon: <PauseCircle className="w-3 h-3" /> },
-  cancelled: { label: 'Annulé',    color: 'text-gray-400',   bg: 'bg-gray-500/10 border-gray-500/20',      icon: <XCircle className="w-3 h-3" /> },
+  cancelled: { label: 'Annulé',    color: 'text-gray-500',   bg: 'bg-gray-500/10 border-gray-500/20',      icon: <XCircle className="w-3 h-3" /> },
 }
 
 const PLAN_COLORS: Record<PlanType, string> = {
-  starter: 'bg-surface-200 text-gray-400 border-surface-300',
+  starter: 'bg-gray-200 text-gray-500 border-gray-300',
   pro:     'bg-purple-500/10 text-purple-400 border-purple-500/20',
   premium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
 }
@@ -300,12 +300,12 @@ export default function SubscriptionsPage() {
     <div className="p-6 sm:p-8 max-w-7xl">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Abonnements</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Abonnements</h1>
           <p className="text-gray-500 text-sm mt-1">{rows.length} restaurant(s) — suivi des paiements et échéances</p>
         </div>
         <button
           onClick={() => loadData()}
-          className="inline-flex items-center gap-2 bg-surface-100 hover:bg-surface-200 border border-surface-300 text-gray-300 hover:text-white px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+          className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-100 border border-gray-300 text-gray-500 hover:text-gray-900 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
         >
           <RefreshCw className="w-4 h-4" />Actualiser
         </button>
@@ -322,7 +322,7 @@ export default function SubscriptionsPage() {
           { label: 'Revenus est.',  value: `${stats.revenueEstimated.toLocaleString('fr-SN')} F`, color: 'text-purple-400', icon: <TrendingUp className="w-4 h-4" /> },
           { label: 'Revenus réels', value: `${stats.revenueReal.toLocaleString('fr-SN')} F`,      color: 'text-green-400',  icon: <CreditCard className="w-4 h-4" /> },
         ].map((s, i) => (
-          <div key={i} className="bg-surface-50 border border-surface-200 rounded-2xl p-4">
+          <div key={i} className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
             <div className={`flex items-center gap-1.5 mb-2 ${s.color}`}>{s.icon}<span className="text-xs font-medium">{s.label}</span></div>
             <div className={`text-xl font-black ${s.color}`}>{s.value}</div>
           </div>
@@ -338,7 +338,7 @@ export default function SubscriptionsPage() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
               filter === f
                 ? 'bg-brand-orange text-white border-brand-orange'
-                : 'bg-surface-100 text-gray-400 border-surface-200 hover:text-white'
+                : 'bg-gray-100 text-gray-500 border-gray-200 hover:text-gray-900'
             }`}
           >
             {f === 'all' ? 'Tous' : STATUS_CONFIG[f as SubStatus]?.label ?? f}
@@ -355,7 +355,7 @@ export default function SubscriptionsPage() {
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
               planFilter === p
                 ? 'bg-brand-orange text-white border-brand-orange'
-                : 'bg-surface-100 text-gray-400 border-surface-200 hover:text-white'
+                : 'bg-gray-100 text-gray-500 border-gray-200 hover:text-gray-900'
             }`}
           >
             {label}
@@ -375,24 +375,24 @@ export default function SubscriptionsPage() {
           const isExpanded = expandedId === row.restaurant_id
 
           return (
-            <div key={row.restaurant_id} className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
+            <div key={row.restaurant_id} className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden">
               {/* Row principale */}
               <div
-                className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-surface-100 transition-colors"
+                className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-gray-100 transition-colors"
                 onClick={() => setExpandedId(isExpanded ? null : row.restaurant_id)}
               >
                 {/* Logo */}
-                <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-surface-200 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
                   {row.restaurant_logo ? (
                     <Image src={row.restaurant_logo} alt={row.restaurant_name} width={36} height={36} className="object-cover w-full h-full" unoptimized />
                   ) : (
-                    <span className="text-gray-600 text-xs font-bold">{row.restaurant_name.slice(0, 2).toUpperCase()}</span>
+                    <span className="text-gray-500 text-xs font-bold">{row.restaurant_name.slice(0, 2).toUpperCase()}</span>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-white font-semibold text-sm">{row.restaurant_name}</span>
+                    <span className="text-gray-900 font-semibold text-sm">{row.restaurant_name}</span>
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${cfg.bg} ${cfg.color}`}>
                       {cfg.icon}{cfg.label}
                     </span>
@@ -417,7 +417,7 @@ export default function SubscriptionsPage() {
 
               {/* Détail */}
               {isExpanded && (
-                <div className="border-t border-surface-200 px-5 py-4 space-y-4">
+                <div className="border-t border-gray-200 px-5 py-4 space-y-4">
 
                   {/* Modifier le plan */}
                   <div className="flex items-center gap-3">
@@ -427,7 +427,7 @@ export default function SubscriptionsPage() {
                         <select
                           value={planValue}
                           onChange={e => setPlanValue(e.target.value as PlanType)}
-                          className="bg-surface-100 border border-surface-300 rounded-lg px-2 py-1 text-sm text-white focus:outline-none"
+                          className="bg-gray-100 border border-gray-300 rounded-lg px-2 py-1 text-sm text-gray-900 focus:outline-none"
                         >
                           <option value="starter">Starter — 9 000 FCFA</option>
                           <option value="pro">Pro — 15 000 FCFA</option>
@@ -436,14 +436,14 @@ export default function SubscriptionsPage() {
                         <button onClick={() => savePlan(row.restaurant_id)} disabled={savingPlan} className="p-1.5 text-green-400 hover:text-green-300">
                           {savingPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                         </button>
-                        <button onClick={() => setEditingPlan(null)} className="p-1.5 text-gray-500 hover:text-gray-300">
+                        <button onClick={() => setEditingPlan(null)} className="p-1.5 text-gray-500 hover:text-gray-500">
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${PLAN_COLORS[plan]}`}>{PLAN_LABELS[plan]}</span>
-                        <button onClick={() => { setEditingPlan(row.restaurant_id); setPlanValue(plan) }} className="text-gray-500 hover:text-white">
+                        <button onClick={() => { setEditingPlan(row.restaurant_id); setPlanValue(plan) }} className="text-gray-500 hover:text-gray-900">
                           <Pencil className="w-3 h-3" />
                         </button>
                       </div>
@@ -460,9 +460,9 @@ export default function SubscriptionsPage() {
                       { label: 'Dernier paiement',   value: row.last_payment_date ? formatDate(row.last_payment_date) : '—' },
                       { label: 'Montant payé',       value: (row.amount_paid ?? 0) > 0 ? `${(row.amount_paid ?? 0).toLocaleString('fr-SN')} FCFA` : '—' },
                     ].map((info, i) => (
-                      <div key={i} className="bg-surface-100 rounded-xl p-3">
+                      <div key={i} className="bg-gray-100 rounded-xl p-3">
                         <div className="text-xs text-gray-500 mb-1">{info.label}</div>
-                        <div className="text-sm font-semibold text-white">{info.value}</div>
+                        <div className="text-sm font-semibold text-gray-900">{info.value}</div>
                       </div>
                     ))}
                   </div>
@@ -480,13 +480,13 @@ export default function SubscriptionsPage() {
                           onChange={e => setNotesValue(e.target.value)}
                           rows={2}
                           placeholder="Notes visibles uniquement par les super-admins..."
-                          className="flex-1 bg-surface-100 border border-surface-300 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 resize-none"
+                          className="flex-1 bg-gray-100 border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40 resize-none"
                         />
                         <div className="flex flex-col gap-1">
                           <button onClick={() => saveNotes(row.restaurant_id)} disabled={savingNotes} className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20">
                             {savingNotes ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                           </button>
-                          <button onClick={() => setEditingNotes(null)} className="p-2 rounded-lg bg-surface-200 text-gray-400 hover:text-white">
+                          <button onClick={() => setEditingNotes(null)} className="p-2 rounded-lg bg-gray-200 text-gray-500 hover:text-gray-900">
                             <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -494,11 +494,11 @@ export default function SubscriptionsPage() {
                     ) : (
                       <div
                         onClick={() => { setEditingNotes(row.restaurant_id); setNotesValue(row.notes_admin || '') }}
-                        className="min-h-[40px] bg-surface-100 hover:bg-surface-200 border border-surface-200 hover:border-surface-300 rounded-xl px-3 py-2.5 text-sm cursor-pointer transition-colors"
+                        className="min-h-[40px] bg-gray-100 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 rounded-xl px-3 py-2.5 text-sm cursor-pointer transition-colors"
                       >
                         {row.notes_admin
-                          ? <span className="text-gray-300">{row.notes_admin}</span>
-                          : <span className="text-gray-600 flex items-center gap-1"><Pencil className="w-3 h-3" />Cliquer pour ajouter une note...</span>}
+                          ? <span className="text-gray-500">{row.notes_admin}</span>
+                          : <span className="text-gray-500 flex items-center gap-1"><Pencil className="w-3 h-3" />Cliquer pour ajouter une note...</span>}
                       </div>
                     )}
                   </div>
@@ -507,7 +507,7 @@ export default function SubscriptionsPage() {
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => openDatesModal(row)}
-                      className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white border border-surface-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                      className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-200 text-gray-500 hover:text-gray-900 border border-gray-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
                     >
                       <Pencil className="w-3.5 h-3.5" />Modifier les dates
                     </button>
@@ -521,7 +521,7 @@ export default function SubscriptionsPage() {
 
                     <button
                       onClick={() => openDueModal(row)}
-                      className="inline-flex items-center gap-1.5 bg-surface-200 hover:bg-surface-300 text-gray-300 hover:text-white border border-surface-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                      className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-200 text-gray-500 hover:text-gray-900 border border-gray-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
                     >
                       <Calendar className="w-3.5 h-3.5" />Modifier échéance
                     </button>
@@ -554,7 +554,7 @@ export default function SubscriptionsPage() {
       {/* Modal paiement */}
       <Modal open={payModal} onClose={() => setPayModal(false)} title="Marquer comme payé">
         <div className="space-y-4">
-          <p className="text-gray-400 text-sm">{payRow?.restaurant_name} — {PLAN_LABELS[normalizePlan(payRow?.plan ?? 'starter') as PlanType]}</p>
+          <p className="text-gray-500 text-sm">{payRow?.restaurant_name} — {PLAN_LABELS[normalizePlan(payRow?.plan ?? 'starter') as PlanType]}</p>
           <Input label="Montant payé (FCFA)" value={payAmount} onChange={e => setPayAmount(e.target.value)} type="number" placeholder="15000" />
           <Input label="Date du paiement" value={payDate} onChange={e => setPayDate(e.target.value)} type="date" />
           <Input label="Prochaine échéance" value={payNextDue} onChange={e => setPayNextDue(e.target.value)} type="date" />
@@ -573,7 +573,7 @@ export default function SubscriptionsPage() {
       {/* Modal échéance */}
       <Modal open={dueModal} onClose={() => setDueModal(false)} title="Modifier l'échéance">
         <div className="space-y-4">
-          <p className="text-gray-400 text-sm">{dueRow?.restaurant_name}</p>
+          <p className="text-gray-500 text-sm">{dueRow?.restaurant_name}</p>
           <Input label="Nouvelle date d'échéance" value={dueDate} onChange={e => setDueDate(e.target.value)} type="date" />
           <Input label="Notes (optionnel)" value={dueNotes} onChange={e => setDueNotes(e.target.value)} placeholder="Raison du changement..." />
           <button
@@ -589,7 +589,7 @@ export default function SubscriptionsPage() {
       {/* Modal dates manuelles */}
       <Modal open={datesModal} onClose={() => setDatesModal(false)} title="Modifier les dates & montant">
         <div className="space-y-3">
-          <p className="text-gray-400 text-sm mb-2">{datesRow?.restaurant_name}</p>
+          <p className="text-gray-500 text-sm mb-2">{datesRow?.restaurant_name}</p>
 
           <div className="grid grid-cols-2 gap-3">
             <Input

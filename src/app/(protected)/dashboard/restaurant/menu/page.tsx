@@ -33,7 +33,7 @@ function preorderBadge(item: MenuItem) {
   if (!item.preorder_enabled) return null
   const now = new Date()
   const close = item.preorder_close_at ? new Date(item.preorder_close_at) : null
-  if (close && now > close) return <span className="text-xs font-semibold text-gray-400 bg-surface-200 px-2 py-0.5 rounded-full">Précommandes terminées</span>
+  if (close && now > close) return <span className="text-xs font-semibold text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">Précommandes terminées</span>
   const reserved = item.preorder_reserved ?? 0
   const max = item.preorder_max_qty
   return <span className="text-xs font-semibold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">
@@ -307,7 +307,7 @@ export default function MenuPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Menu</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Menu</h1>
           <p className="text-gray-500 text-sm mt-1">{items.length} plat(s) · {categories.length} catégorie(s)</p>
         </div>
         <Button size="sm" onClick={openCreate}>
@@ -318,11 +318,11 @@ export default function MenuPage() {
 
       {/* ── Menu complet Premium ── */}
       {isPremium && (
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 mb-6">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-brand-orange" />
-              <h2 className="text-white font-semibold text-sm">Menu complet</h2>
+              <h2 className="text-gray-900 font-semibold text-sm">Menu complet</h2>
             </div>
             <div className="flex items-center gap-3">
               {fullMenuSaving && <span className="text-xs text-gray-500">Sauvegarde...</span>}
@@ -366,11 +366,11 @@ export default function MenuPage() {
       )}
 
       {/* ── Gestion des catégories ── */}
-      <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 mb-6">
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-brand-orange" />
-            <h2 className="text-white font-semibold text-sm">Catégories</h2>
+            <h2 className="text-gray-900 font-semibold text-sm">Catégories</h2>
             <span className="text-gray-500 text-xs">({categories.length})</span>
           </div>
           <button onClick={() => setCatModal(true)} className="flex items-center gap-1.5 text-brand-orange hover:text-brand-orange-dark text-xs font-semibold transition-colors">
@@ -386,21 +386,21 @@ export default function MenuPage() {
               const count = items.filter(i => i.category_id === cat.id).length
               const isEditing = editingCatId === cat.id
               return (
-                <div key={cat.id} className="flex items-center gap-3 bg-surface-100 border border-surface-200 rounded-xl px-4 py-2.5">
-                  <GripVertical className="w-4 h-4 text-gray-600 flex-shrink-0" />
+                <div key={cat.id} className="flex items-center gap-3 bg-gray-100 border border-gray-200 rounded-xl px-4 py-2.5">
+                  <GripVertical className="w-4 h-4 text-gray-500 flex-shrink-0" />
                   {isEditing ? (
                     <>
                       <input autoFocus value={editingCatName} onChange={e => setEditingCatName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') saveEditCat(cat.id); if (e.key === 'Escape') setEditingCatId(null) }}
-                        className="flex-1 bg-surface-50 border border-surface-300 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                        className="flex-1 bg-gray-50 border border-gray-300 rounded-lg px-3 py-1 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
                       <button onClick={() => saveEditCat(cat.id)} disabled={catSaving} className="p-1.5 text-green-400 hover:text-green-300"><Check className="w-4 h-4" /></button>
-                      <button onClick={() => setEditingCatId(null)} className="p-1.5 text-gray-500 hover:text-white"><XIcon className="w-4 h-4" /></button>
+                      <button onClick={() => setEditingCatId(null)} className="p-1.5 text-gray-500 hover:text-gray-900"><XIcon className="w-4 h-4" /></button>
                     </>
                   ) : (
                     <>
-                      <span className="flex-1 text-white text-sm font-medium">{cat.name}</span>
+                      <span className="flex-1 text-gray-900 text-sm font-medium">{cat.name}</span>
                       <span className="text-gray-500 text-xs">{count} plat{count > 1 ? 's' : ''}</span>
-                      <button onClick={() => { setEditingCatId(cat.id); setEditingCatName(cat.name) }} className="p-1.5 text-gray-500 hover:text-white"><Pencil className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => { setEditingCatId(cat.id); setEditingCatName(cat.name) }} className="p-1.5 text-gray-500 hover:text-gray-900"><Pencil className="w-3.5 h-3.5" /></button>
                       <button onClick={() => deleteCategory(cat.id)} className="p-1.5 text-gray-500 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
                     </>
                   )}
@@ -425,10 +425,10 @@ export default function MenuPage() {
             return (
               <div key={cat.id ?? 'none'} className="mb-6">
                 <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-2 px-1">{cat.name}</p>
-                <div className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
+                <div className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden">
                   {catItems.map((item, idx) => (
-                    <div key={item.id} className={`flex items-center gap-4 px-5 py-4 hover:bg-surface-100 transition-colors ${idx < catItems.length - 1 ? 'border-b border-surface-200' : ''}`}>
-                      <div className="w-12 h-12 rounded-xl bg-surface-200 flex-shrink-0 overflow-hidden">
+                    <div key={item.id} className={`flex items-center gap-4 px-5 py-4 hover:bg-gray-100 transition-colors ${idx < catItems.length - 1 ? 'border-b border-gray-200' : ''}`}>
+                      <div className="w-12 h-12 rounded-xl bg-gray-200 flex-shrink-0 overflow-hidden">
                         {item.image_url
                           // eslint-disable-next-line @next/next/no-img-element
                           ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
@@ -436,7 +436,7 @@ export default function MenuPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-white text-sm font-semibold truncate">{item.name}</p>
+                          <p className="text-gray-900 text-sm font-semibold truncate">{item.name}</p>
                           {(item.variants ?? []).length > 0 && (
                             <span className="text-xs text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded-full">{item.variants!.length} variantes</span>
                           )}
@@ -453,7 +453,7 @@ export default function MenuPage() {
                           {item.is_available ? <ToggleRight className="w-5 h-5 text-green-400" /> : <ToggleLeft className="w-5 h-5" />}
                         </button>
                         <Badge variant={item.is_available ? 'success' : 'warning'}>{item.is_available ? 'Dispo' : 'Indispo'}</Badge>
-                        <button onClick={() => openEdit(item)} className="text-gray-500 hover:text-white transition-colors"><Pencil className="w-4 h-4" /></button>
+                        <button onClick={() => openEdit(item)} className="text-gray-500 hover:text-gray-900 transition-colors"><Pencil className="w-4 h-4" /></button>
                         <button onClick={() => deleteItem(item.id)} className="text-gray-500 hover:text-red-400 transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </div>
@@ -488,7 +488,7 @@ export default function MenuPage() {
 
           <div className="flex items-center gap-3">
             <input type="checkbox" id="available" checked={form.is_available} onChange={e => setForm(p => ({ ...p, is_available: e.target.checked }))} className="w-4 h-4 accent-brand-orange" />
-            <label htmlFor="available" className="text-gray-300 text-sm">Disponible à la commande</label>
+            <label htmlFor="available" className="text-gray-500 text-sm">Disponible à la commande</label>
           </div>
 
           {/* ── PREMIUM : Variantes ── */}
@@ -503,9 +503,9 @@ export default function MenuPage() {
                 {variants.map((v, i) => (
                   <div key={i} className="flex gap-2 items-center">
                     <input value={v.name} onChange={e => setVariants(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                      placeholder="Ex: Grand" className="flex-1 min-w-0 bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40" />
+                      placeholder="Ex: Grand" className="flex-1 min-w-0 bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40" />
                     <input value={v.price} onChange={e => setVariants(prev => prev.map((x, j) => j === i ? { ...x, price: e.target.value } : x))}
-                      placeholder="Prix" type="number" className="w-20 flex-shrink-0 bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40" />
+                      placeholder="Prix" type="number" className="w-20 flex-shrink-0 bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40" />
                     <button onClick={() => setVariants(prev => prev.filter((_, j) => j !== i))} className="flex-shrink-0 p-2 text-gray-500 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
@@ -523,10 +523,10 @@ export default function MenuPage() {
 
           {/* ── PREMIUM : Stock ── */}
           {isPremium && (
-            <div className="border border-surface-200 rounded-xl p-4">
+            <div className="border border-gray-200 rounded-xl p-4">
               <div className="flex items-center gap-3 mb-3">
                 <input type="checkbox" id="stock" checked={stockEnabled} onChange={e => setStockEnabled(e.target.checked)} className="w-4 h-4 accent-brand-orange" />
-                <label htmlFor="stock" className="flex items-center gap-2 text-sm font-semibold text-gray-300 cursor-pointer">
+                <label htmlFor="stock" className="flex items-center gap-2 text-sm font-semibold text-gray-500 cursor-pointer">
                   <Package className="w-4 h-4 text-brand-orange" />
                   Activer la gestion de stock
                 </label>
@@ -534,14 +534,14 @@ export default function MenuPage() {
               {stockEnabled && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Stock disponible</label>
+                    <label className="text-xs text-gray-500 block mb-1">Stock disponible</label>
                     <input value={stockQty} onChange={e => setStockQty(e.target.value)} type="number" placeholder="Ex: 50"
-                      className="w-full bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Alerte stock faible</label>
+                    <label className="text-xs text-gray-500 block mb-1">Alerte stock faible</label>
                     <input value={stockThreshold} onChange={e => setStockThreshold(e.target.value)} type="number" placeholder="Ex: 5"
-                      className="w-full bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
                   </div>
                 </div>
               )}
@@ -550,10 +550,10 @@ export default function MenuPage() {
 
           {/* ── PREMIUM : Précommandes ── */}
           {isPremium && (
-            <div className="border border-surface-200 rounded-xl p-4">
+            <div className="border border-gray-200 rounded-xl p-4">
               <div className="flex items-center gap-3 mb-3">
                 <input type="checkbox" id="preorder" checked={preorderEnabled} onChange={e => setPreorderEnabled(e.target.checked)} className="w-4 h-4 accent-brand-orange" />
-                <label htmlFor="preorder" className="flex items-center gap-2 text-sm font-semibold text-gray-300 cursor-pointer">
+                <label htmlFor="preorder" className="flex items-center gap-2 text-sm font-semibold text-gray-500 cursor-pointer">
                   <Clock className="w-4 h-4 text-blue-400" />
                   Produit en précommande
                 </label>
@@ -562,25 +562,25 @@ export default function MenuPage() {
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-400 block mb-1">Ouverture des commandes</label>
+                      <label className="text-xs text-gray-500 block mb-1">Ouverture des commandes</label>
                       <input value={preorderOpenAt} onChange={e => setPreorderOpenAt(e.target.value)} type="datetime-local"
-                        className="w-full bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                        className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-400 block mb-1">Fermeture des commandes</label>
+                      <label className="text-xs text-gray-500 block mb-1">Fermeture des commandes</label>
                       <input value={preorderCloseAt} onChange={e => setPreorderCloseAt(e.target.value)} type="datetime-local"
-                        className="w-full bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                        className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Date / heure de livraison (texte libre)</label>
+                    <label className="text-xs text-gray-500 block mb-1">Date / heure de livraison (texte libre)</label>
                     <input value={preorderDelivery} onChange={e => setPreorderDelivery(e.target.value)} placeholder="Ex: Samedi 12h00"
-                      className="w-full bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1">Quantité maximale</label>
+                    <label className="text-xs text-gray-500 block mb-1">Quantité maximale</label>
                     <input value={preorderMaxQty} onChange={e => setPreorderMaxQty(e.target.value)} type="number" placeholder="Ex: 100"
-                      className="w-full bg-surface-100 border border-surface-300 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+                      className="w-full bg-gray-100 border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
                   </div>
                   <div className="flex items-start gap-2 bg-blue-500/10 rounded-lg p-3">
                     <AlertTriangle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
@@ -593,9 +593,9 @@ export default function MenuPage() {
 
           {/* ── PREMIUM : Produit mis en avant ── */}
           {isPremium && (
-            <div className="border border-surface-200 rounded-xl p-4 space-y-3">
+            <div className="border border-gray-200 rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-300 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-500 cursor-pointer">
                   <Crown className="w-4 h-4 text-yellow-400" />
                   Produit mis en avant
                 </label>
@@ -610,7 +610,7 @@ export default function MenuPage() {
               {isFeatured && (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs text-gray-400 block mb-1.5">Badge d&apos;affichage</label>
+                    <label className="text-xs text-gray-500 block mb-1.5">Badge d&apos;affichage</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(['Best Seller', 'Nouveau', 'Promotion', 'Recommandé'] as const).map(label => (
                         <button
@@ -620,7 +620,7 @@ export default function MenuPage() {
                           className={`text-xs font-semibold py-2 px-3 rounded-lg border transition-colors ${
                             featuredLabel === label
                               ? 'bg-brand-orange/20 border-brand-orange text-brand-orange'
-                              : 'bg-surface-100 border-surface-300 text-gray-400 hover:border-gray-400'
+                              : 'bg-gray-100 border-gray-300 text-gray-500 hover:border-gray-400'
                           }`}
                         >
                           {label}
@@ -629,7 +629,7 @@ export default function MenuPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <label className="text-xs text-gray-400">Épingler en tête de liste</label>
+                    <label className="text-xs text-gray-500">Épingler en tête de liste</label>
                     <button
                       type="button"
                       onClick={() => setIsPinned(v => !v)}

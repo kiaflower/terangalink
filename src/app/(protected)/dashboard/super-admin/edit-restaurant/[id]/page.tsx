@@ -292,17 +292,17 @@ export default function EditRestaurantPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/super-admin/restaurants" className="text-gray-500 hover:text-white transition-colors">
+          <Link href="/dashboard/super-admin/restaurants" className="text-gray-500 hover:text-gray-900 transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">{restaurantName}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{restaurantName}</h1>
             <p className="text-gray-500 text-sm mt-0.5">Modifier le restaurant</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <a href={`${baseUrl.replace(/\/$/, '')}/${slug}`} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-surface-100 hover:bg-surface-200 text-gray-300 px-3 py-2 rounded-xl text-sm font-medium transition-colors">
+            className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-100 text-gray-500 px-3 py-2 rounded-xl text-sm font-medium transition-colors">
             <ExternalLink className="w-3.5 h-3.5" />Voir le site
           </a>
           <button onClick={handleSave} disabled={saving}
@@ -316,11 +316,11 @@ export default function EditRestaurantPage() {
       <div className="space-y-5">
 
         {/* ── Admins section ────────────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-brand-orange" />
-              <h2 className="text-white font-semibold text-sm">
+              <h2 className="text-gray-900 font-semibold text-sm">
                 Administrateurs
               </h2>
               <span className="text-xs text-gray-500">
@@ -344,13 +344,13 @@ export default function EditRestaurantPage() {
 
           <div className="space-y-2">
             {admins.map(a => (
-              <div key={a.id} className="bg-surface-100 border border-surface-200 rounded-xl p-3 flex items-center justify-between">
+              <div key={a.id} className="bg-gray-100 border border-gray-200 rounded-xl p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-sm font-bold">
                     {getInitials(a.full_name || a.email || '?')}
                   </div>
                   <div>
-                    <p className="text-white text-sm font-medium">{a.full_name || 'Sans nom'}</p>
+                    <p className="text-gray-900 text-sm font-medium">{a.full_name || 'Sans nom'}</p>
                     <p className="text-gray-500 text-xs">{a.email}</p>
                   </div>
                 </div>
@@ -371,8 +371,8 @@ export default function EditRestaurantPage() {
         </div>
 
         {/* ── Restaurant core section ───────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
-          <h2 className="text-white font-semibold text-sm">Informations du restaurant</h2>
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-gray-900 font-semibold text-sm">Informations du restaurant</h2>
 
           <Input label="Nom" value={name} onChange={e => setName(e.target.value)} />
           <Input label="Slug" value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))} hint="Ex: chez-teranga" />
@@ -401,9 +401,9 @@ export default function EditRestaurantPage() {
             />
           </div>
 
-          <div className="flex items-center justify-between bg-surface-100 rounded-xl px-3 py-2">
+          <div className="flex items-center justify-between bg-gray-100 rounded-xl px-3 py-2">
             <div>
-              <p className="text-white text-sm font-medium">Restaurant actif</p>
+              <p className="text-gray-900 text-sm font-medium">Restaurant actif</p>
               <p className="text-gray-500 text-xs">Désactiver rend le site public inaccessible</p>
             </div>
             <button onClick={() => setIsActive(v => !v)} className="text-brand-orange">
@@ -413,27 +413,27 @@ export default function EditRestaurantPage() {
         </div>
 
         {/* ── Theme section ────────────────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
-          <h2 className="text-white font-semibold mb-1 text-sm">Thème du site</h2>
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-gray-900 font-semibold mb-1 text-sm">Thème du site</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Couleur primaire</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Couleur primaire</label>
               <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} disabled={!canCustomize}
-                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
+                className="w-full h-11 bg-gray-100 border border-gray-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Fond</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Fond</label>
               <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} disabled={!canCustomize}
-                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
+                className="w-full h-11 bg-gray-100 border border-gray-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Boutons</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Boutons</label>
               <input type="color" value={buttonColor} onChange={e => setButtonColor(e.target.value)} disabled={!canCustomize}
-                className="w-full h-11 bg-surface-100 border border-surface-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
+                className="w-full h-11 bg-gray-100 border border-gray-300 rounded-xl p-1 cursor-pointer disabled:opacity-40" />
             </div>
             <div>
-              <label className="text-gray-400 text-xs block mb-1.5">Mode</label>
+              <label className="text-gray-500 text-xs block mb-1.5">Mode</label>
               <Select
                 value={themeMode}
                 onChange={e => setThemeMode(e.target.value as 'dark' | 'light')}
@@ -483,8 +483,8 @@ export default function EditRestaurantPage() {
         </div>
 
         {/* ── Delivery / hours section ─────────────────────────────────── */}
-        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
-          <h2 className="text-white font-semibold text-sm">Livraison & horaires</h2>
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-gray-900 font-semibold text-sm">Livraison & horaires</h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
@@ -493,9 +493,9 @@ export default function EditRestaurantPage() {
               onChange={e => setDeliveryFee(e.target.value)}
               type="number"
             />
-            <div className="flex items-center justify-between bg-surface-100 rounded-xl px-3 py-2 mt-6 sm:mt-0">
+            <div className="flex items-center justify-between bg-gray-100 rounded-xl px-3 py-2 mt-6 sm:mt-0">
               <div>
-                <p className="text-white text-sm font-medium">Afficher frais de livraison</p>
+                <p className="text-gray-900 text-sm font-medium">Afficher frais de livraison</p>
                 <p className="text-gray-500 text-xs">Visible sur le site public</p>
               </div>
               <button onClick={() => setShowDeliveryFee(v => !v)} className="text-brand-orange">
@@ -508,8 +508,8 @@ export default function EditRestaurantPage() {
             {JOURS.map(j => {
               const v = openingHours[j.key] || { ouverture: '08:00', fermeture: '22:00', ferme: false }
               return (
-                <div key={j.key} className="grid grid-cols-12 gap-2 items-center bg-surface-100 rounded-xl p-2.5">
-                  <div className="col-span-3 sm:col-span-2 text-gray-300 text-xs font-semibold">{j.label}</div>
+                <div key={j.key} className="grid grid-cols-12 gap-2 items-center bg-gray-100 rounded-xl p-2.5">
+                  <div className="col-span-3 sm:col-span-2 text-gray-500 text-xs font-semibold">{j.label}</div>
                   <div className="col-span-3 sm:col-span-3">
                     <Input
                       value={v.ouverture}
@@ -545,7 +545,7 @@ export default function EditRestaurantPage() {
           <Input label="Nom complet" value={newAdminName} onChange={e => setNewAdminName(e.target.value)} />
           <Input label="Email" value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} type="email" />
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">Mot de passe</label>
+            <label className="text-gray-500 text-xs block mb-1.5">Mot de passe</label>
             <div className="relative">
               <Input
                 value={newAdminPassword}
@@ -555,7 +555,7 @@ export default function EditRestaurantPage() {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900"
               >
                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -578,11 +578,11 @@ export default function EditRestaurantPage() {
       {/* Reset password modal */}
       <Modal open={resetModal} onClose={() => setResetModal(false)} title="Réinitialiser mot de passe">
         <div className="space-y-3">
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             {selectedAdmin ? `Nouveau mot de passe pour ${selectedAdmin.email}` : ''}
           </p>
           <div>
-            <label className="text-gray-400 text-xs block mb-1.5">Nouveau mot de passe</label>
+            <label className="text-gray-500 text-xs block mb-1.5">Nouveau mot de passe</label>
             <div className="relative">
               <Input
                 value={resetPassword}
@@ -592,7 +592,7 @@ export default function EditRestaurantPage() {
               <button
                 type="button"
                 onClick={() => setShowResetPassword(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900"
               >
                 {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>

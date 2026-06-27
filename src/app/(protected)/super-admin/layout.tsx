@@ -23,7 +23,7 @@ export default async function SuperAdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-surface">
+    <div className="flex min-h-screen bg-white">
       {/* Desktop sidebar */}
       <div className="hidden lg:block">
         <SuperAdminSidebar />

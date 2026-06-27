@@ -39,7 +39,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        'bg-surface-50 border rounded-2xl p-5 flex flex-col gap-3',
+        'bg-gray-50 border rounded-2xl p-5 flex flex-col gap-3',
         colors[color].border
       )}
     >
@@ -51,9 +51,9 @@ export function StatCard({
       </div>
 
       <div>
-        <p className="text-3xl font-bold text-white tracking-tight">{value}</p>
+        <p className="text-3xl font-bold text-gray-900 tracking-tight">{value}</p>
         {subtitle && (
-          <p className="text-gray-600 text-xs mt-1">{subtitle}</p>
+          <p className="text-gray-500 text-xs mt-1">{subtitle}</p>
         )}
       </div>
 
@@ -67,7 +67,7 @@ export function StatCard({
           >
             {trend.positive ? '+' : ''}{trend.value}%
           </span>
-          <span className="text-gray-600 text-xs">ce mois</span>
+          <span className="text-gray-500 text-xs">ce mois</span>
         </div>
       )}
     </div>

@@ -2,16 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { LayoutDashboard, Store, Users, Settings, LogOut, Zap, CreditCard } from 'lucide-react'
+import { LayoutDashboard, Store, Users, Settings, LogOut, CreditCard, Tag, LayoutGrid } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 
-// "Créer admin" removed — admin creation is now inside each restaurant page
 const navItems = [
   { label: "Vue d'ensemble", href: '/dashboard/super-admin', icon: LayoutDashboard, exact: true },
   { label: 'Restaurants', href: '/dashboard/super-admin/restaurants', icon: Store },
+  { label: 'Annuaire', href: '/dashboard/super-admin/annuaire', icon: LayoutGrid },
   { label: 'Abonnements', href: '/dashboard/super-admin/subscriptions', icon: CreditCard },
   { label: 'Utilisateurs', href: '/dashboard/super-admin/users', icon: Users },
+  { label: 'Codes promo', href: '/dashboard/super-admin/promo-codes', icon: Tag },
   { label: 'Paramètres', href: '/dashboard/super-admin/settings', icon: Settings },
 ]
 
@@ -22,12 +22,13 @@ export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
   const inner = (
     <>
       {!mobile && (
-        <div className="p-6 border-b border-surface-200">
+        <div className="p-6" style={{ borderBottom: '1px solid #E5E7EB' }}>
           <Link href="/dashboard/super-admin" className="flex items-center gap-2.5">
             <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
-            <span className="font-bold text-white text-lg">TerangaLink</span>
+            <span className="font-bold text-lg" style={{ color: '#111111' }}>TerangaLink</span>
           </Link>
-          <span className="mt-2 inline-block text-xs font-semibold text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded-full">
+          <span className="mt-2 inline-block text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{ color: '#F97316', backgroundColor: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}>
             Super Admin
           </span>
         </div>
@@ -37,10 +38,17 @@ export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
         {navItems.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
           return (
-            <Link key={item.href} href={item.href} className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
-              isActive ? 'bg-brand-orange/10 text-brand-orange' : 'text-gray-500 hover:bg-surface-100 hover:text-white'
-            )}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+              style={{
+                backgroundColor: isActive ? 'rgba(249,115,22,0.08)' : 'transparent',
+                color: isActive ? '#F97316' : '#6B7280',
+              }}
+              onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'; (e.currentTarget as HTMLElement).style.color = '#111111' } }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = isActive ? 'rgba(249,115,22,0.08)' : 'transparent'; (e.currentTarget as HTMLElement).style.color = isActive ? '#F97316' : '#6B7280' }}
+            >
               <item.icon className="w-4 h-4 flex-shrink-0" />
               {item.label}
             </Link>
@@ -48,17 +56,24 @@ export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
         })}
       </nav>
 
-      <div className="p-4 border-t border-surface-200">
+      <div className="p-4" style={{ borderTop: '1px solid #E5E7EB' }}>
         <div className="flex items-center gap-3 px-3 py-2 mb-2">
-          <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-gray-900"
+            style={{ backgroundColor: '#F97316' }}>
             {user?.full_name?.charAt(0).toUpperCase() || 'A'}
           </div>
           <div className="min-w-0">
-            <p className="text-white text-sm font-medium truncate">{user?.full_name || 'Admin'}</p>
-            <p className="text-gray-600 text-xs truncate">{user?.email}</p>
+            <p className="text-sm font-medium truncate" style={{ color: '#111111' }}>{user?.full_name || 'Admin'}</p>
+            <p className="text-xs truncate" style={{ color: '#9CA3AF' }}>{user?.email}</p>
           </div>
         </div>
-        <button onClick={signOut} className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150">
+        <button
+          onClick={signOut}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
+          style={{ color: '#6B7280' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = '#FEF2F2'; (e.currentTarget as HTMLElement).style.color = '#EF4444' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#6B7280' }}
+        >
           <LogOut className="w-4 h-4" />
           Déconnexion
         </button>
@@ -67,5 +82,9 @@ export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
   )
 
   if (mobile) return <div className="flex flex-col h-full">{inner}</div>
-  return <aside className="w-64 min-h-screen bg-surface-50 border-r border-surface-200 flex flex-col">{inner}</aside>
+  return (
+    <aside className="w-64 min-h-screen flex flex-col" style={{ backgroundColor: '#FFFFFF', borderRight: '1px solid #E5E7EB' }}>
+      {inner}
+    </aside>
+  )
 }
