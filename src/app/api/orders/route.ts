@@ -50,14 +50,11 @@ function buildOwnerMessage(params: {
   const promoLine = params.discountAmount > 0
     ? `\nRéduction : −${params.discountAmount.toLocaleString('fr-SN')} FCFA`
     : ''
-
   const noteLine = params.notes ? `\nNote : ${params.notes}` : ''
   const addressLine = params.customerAddress ? `\nAdresse : ${params.customerAddress}` : ''
-
   const header = params.isPreorder
     ? `📅 Précommande ${params.orderNumber} — ${params.restaurantName}`
     : `🍽 Commande ${params.orderNumber} — ${params.restaurantName}`
-
   const deliveryLine = params.isPreorder && params.deliveryDate
     ? `\nLivraison : ${params.deliveryDate}`
     : ''
@@ -78,8 +75,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
-      restaurant_id, customer_name, customer_phone, customer_address, items, total,
-      notes, promo_code_id, discount_amount,
+      restaurant_id, customer_name, customer_phone, customer_address,
+      items, total, notes, promo_code_id, discount_amount,
     } = body
 
     const payment_method: PaymentMethod = ['cash', 'wave', 'orange_money'].includes(body.payment_method)
@@ -90,16 +87,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Données manquantes' }, { status: 400 })
     }
 
-    const adminClient = createAdminClient()
+    const admin = createAdminClient()
 
-    const { data: restaurant, error: restaurantError } = await adminClient
+    const { data: restaurant, error: restaurantError } = await admin
       .from('restaurants')
-      .select('name, phone, whatsapp_number')
+      .select('name, slug, phone, whatsapp_number')
       .eq('id', restaurant_id)
       .eq('is_active', true)
       .single()
 
     if (restaurantError || !restaurant) {
+      console.error('[orders POST] restaurant error:', restaurantError)
       return NextResponse.json({ error: 'Restaurant introuvable' }, { status: 404 })
     }
 
@@ -108,13 +106,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Numéro WhatsApp du restaurant non configuré' }, { status: 400 })
     }
 
-    // Normaliser les items en préservant preorder_delivery_date
+    // Normaliser les items — s'assurer que id est toujours un UUID simple
     const normalizedItems = (items as Array<{
-      id: string; name: string; price: number; quantity: number;
-      variant_id?: string | null; variant_name?: string | null;
-      preorder_delivery_date?: string | null;
+      id: string; name: string; price: number; quantity: number
+      variant_id?: string | null; variant_name?: string | null
+      preorder_delivery_date?: string | null
     }>).map(i => ({
-      id: i.id,
+      id: i.id.includes('__') ? i.id.split('__')[0] : i.id, // sécurité : nettoyer si corrompu
       name: i.name,
       price: i.price,
       quantity: i.quantity,
@@ -123,78 +121,73 @@ export async function POST(request: NextRequest) {
       preorder_delivery_date: i.preorder_delivery_date ?? null,
     }))
 
-    // Insérer la commande (le trigger SQL génère order_number automatiquement)
-    let { data, error } = await adminClient
+    // Construire le payload d'insertion progressivement
+    // pour gérer les colonnes qui n'existent pas encore en BDD
+    const basePayload = {
+      restaurant_id,
+      customer_name: (customer_name || '').trim() || 'Client',
+      customer_phone: customer_phone.trim(),
+      items: normalizedItems,
+      total,
+      status: 'pending' as const,
+      notes: notes || null,
+    }
+
+    // Essai complet avec toutes les colonnes optionnelles
+    let { data, error } = await admin
       .from('orders')
       .insert({
-        restaurant_id,
-        customer_name: (customer_name || '').trim() || 'Client',
-        customer_phone: customer_phone.trim(),
-        customer_address: (customer_address || '').trim() || null,
-        items: normalizedItems,
-        total,
+        ...basePayload,
         payment_method,
-        notes: notes || null,
-        status: 'pending',
+        customer_address: (customer_address || '').trim() || null,
         promo_code_id: promo_code_id || null,
         discount_amount: discount_amount || 0,
       })
       .select()
       .single()
 
-    // Fallback si la colonne customer_address n'existe pas encore (migration pas appliquée)
-    if (error && error.message.includes('customer_address')) {
-      const fallback = await adminClient
-        .from('orders')
-        .insert({
-          restaurant_id,
-          customer_name: (customer_name || '').trim() || 'Client',
-          customer_phone: customer_phone.trim(),
-          items: normalizedItems,
-          total,
-          payment_method,
-          notes: notes || null,
-          status: 'pending',
-          promo_code_id: promo_code_id || null,
-          discount_amount: discount_amount || 0,
-        })
-        .select()
-        .single()
-      data = fallback.data
-      error = fallback.error
-    }
+    // Fallbacks progressifs si certaines colonnes manquent en BDD
+    if (error) {
+      console.error('[orders POST] insert error (full):', error.message)
 
-    if (error && error.message.includes('payment_method')) {
-      const fallback = await adminClient
-        .from('orders')
-        .insert({
-          restaurant_id,
-          customer_name: (customer_name || '').trim() || 'Client',
-          customer_phone: customer_phone.trim(),
-          items: normalizedItems,
-          total,
-          notes: notes || null,
-          status: 'pending',
-          promo_code_id: promo_code_id || null,
-          discount_amount: discount_amount || 0,
-        })
-        .select()
-        .single()
-      data = fallback.data
-      error = fallback.error
+      if (error.message.includes('promo_code_id') || error.message.includes('discount_amount')) {
+        // Sans promo
+        const r = await admin.from('orders').insert({
+          ...basePayload,
+          payment_method,
+          customer_address: (customer_address || '').trim() || null,
+        }).select().single()
+        data = r.data; error = r.error
+        if (error) console.error('[orders POST] insert error (no promo):', error.message)
+      }
+
+      if (error && error.message.includes('customer_address')) {
+        // Sans adresse
+        const r = await admin.from('orders').insert({
+          ...basePayload,
+          payment_method,
+        }).select().single()
+        data = r.data; error = r.error
+        if (error) console.error('[orders POST] insert error (no address):', error.message)
+      }
+
+      if (error && error.message.includes('payment_method')) {
+        // Sans payment_method
+        const r = await admin.from('orders').insert(basePayload).select().single()
+        data = r.data; error = r.error
+        if (error) console.error('[orders POST] insert error (base):', error.message)
+      }
     }
 
     if (error || !data) {
+      console.error('[orders POST] final error:', error)
       return NextResponse.json({ error: error?.message || 'Erreur insertion' }, { status: 500 })
     }
 
     const orderNumber = (data as { order_number?: string }).order_number || data.id.slice(0, 8).toUpperCase()
     const origin = request.nextUrl.origin
+    const shortUrl = `${origin}/c/${restaurant.slug}/${orderNumber}`
 
-    // Lien court vers la commande
-    const shortUrl = `${origin}/c/${orderNumber}`
-
-    // Detect précommande
     const preorderItem = normalizedItems.find(i => i.preorder_delivery_date)
     const isPreorder = !!preorderItem
     const deliveryDate = preorderItem?.preorder_delivery_date ?? null
@@ -204,7 +197,7 @@ export async function POST(request: NextRequest) {
       orderNumber,
       customerName: data.customer_name || 'Client',
       customerPhone: customer_phone.trim(),
-      customerAddress: (data as { customer_address?: string | null }).customer_address || (customer_address || '').trim() || null,
+      customerAddress: (data as { customer_address?: string | null }).customer_address || null,
       items: data.items as OrderItem[],
       total: data.total,
       paymentMethod: (data as { payment_method?: PaymentMethod }).payment_method || payment_method,
@@ -221,9 +214,11 @@ export async function POST(request: NextRequest) {
       data,
       order_number: orderNumber,
       short_url: shortUrl,
+      slug: restaurant.slug,
       whatsapp_url: `https://wa.me/${ownerPhone}?text=${whatsappMessage}`,
     })
-  } catch {
+  } catch (err) {
+    console.error('[orders POST] unexpected error:', err)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
 }

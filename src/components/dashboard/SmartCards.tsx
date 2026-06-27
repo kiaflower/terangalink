@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Lightbulb, AlertTriangle, Sparkles, TrendingDown, RefreshCw } from 'lucide-react'
+import { X, Lightbulb, AlertTriangle, Sparkles, RefreshCw, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
 interface SmartCard {
   id: string
-  type: 'audit' | 'inactivity' | 'seasonal' | 'product'
+  type: 'audit' | 'inactivity' | 'seasonal' | 'product' | 'unclosed_orders'
   icon: React.ReactNode
   title: string
   body: string
@@ -120,6 +121,21 @@ function getSeasonalCards(plan: string, isPremium: boolean): SmartCard[] {
   }
 
   return cards
+}
+
+function buildUnclosedOrdersCard(unclosedCount: number): SmartCard | null {
+  if (unclosedCount === 0) return null
+
+  return {
+    id: 'unclosed_orders_eod',
+    type: 'unclosed_orders',
+    icon: <Clock className="w-4 h-4" />,
+    title: `${unclosedCount} commande${unclosedCount > 1 ? 's' : ''} non clôturée${unclosedCount > 1 ? 's' : ''}`,
+    body: `Vous avez ${unclosedCount} commande${unclosedCount > 1 ? 's' : ''} du jour qui n'${unclosedCount > 1 ? 'ont' : 'a'} pas encore été marquée${unclosedCount > 1 ? 's' : ''} comme livrée${unclosedCount > 1 ? 's' : ''} ou annulée${unclosedCount > 1 ? 's' : ''}. Clôturez-les pour garder vos statistiques à jour.`,
+    cta: { label: 'Voir les commandes', href: '/dashboard/restaurant/orders' },
+    color: 'border-orange-500/30 text-orange-400',
+    dismissDays: 4 / 24, // re-afficher après 4h (fractional day)
+  }
 }
 
 function buildAllCards(props: SmartCardsProps): SmartCard[] {
@@ -273,10 +289,56 @@ export function SmartCards(props: SmartCardsProps) {
   const [card, setCard] = useState<SmartCard | null>(null)
   const [visible, setVisible] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const [unclosedCount, setUnclosedCount] = useState(0)
+  const supabase = createClient()
+
+  // Fetch des commandes non clôturées du jour (en background)
+  useEffect(() => {
+    async function fetchUnclosed() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles').select('restaurant_id').eq('id', user.id).single()
+      if (!profile?.restaurant_id) return
+
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+
+      const { count } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('restaurant_id', profile.restaurant_id)
+        .gte('created_at', todayStart.toISOString())
+        .not('status', 'in', '("delivered","cancelled","delivery_cancelled")')
+
+      setUnclosedCount(count ?? 0)
+    }
+
+    fetchUnclosed()
+    // Re-fetch toutes les 15 min
+    const interval = setInterval(fetchUnclosed, 15 * 60 * 1000)
+    return () => clearInterval(interval)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     // Attendre 3 secondes avant d'afficher pour ne pas surcharger au chargement
     const timer = setTimeout(() => {
+      // Heure locale (Dakar = UTC+0, pas de décalage)
+      const now = new Date()
+      const hour = now.getHours()
+      const isEndOfDay = hour >= 21 // à partir de 21h
+
+      // Carte "commandes non clôturées" en fin de journée — priorité absolue
+      if (isEndOfDay && unclosedCount > 0) {
+        const unclosedCard = buildUnclosedOrdersCard(unclosedCount)
+        if (unclosedCard && shouldShowCard(unclosedCard.id, unclosedCard.dismissDays)) {
+          setCard(unclosedCard)
+          setVisible(true)
+          return
+        }
+      }
+
       const allCards = buildAllCards(props)
 
       // Filtrer les cartes dismissées
@@ -296,7 +358,7 @@ export function SmartCards(props: SmartCardsProps) {
 
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [unclosedCount])
 
   function handleDismiss() {
     if (!card) return

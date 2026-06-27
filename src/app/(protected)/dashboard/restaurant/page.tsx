@@ -66,13 +66,13 @@ export default async function RestaurantDashboard() {
       { data: lastOrder },
     ] = await Promise.all([
       supabase.from('orders').select('*', { count: 'exact', head: true })
-        .eq('restaurant_id', rid).neq('status', 'cancelled').gte('created_at', todayStart),
+        .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")').gte('created_at', todayStart),
       supabase.from('orders').select('total')
         .eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', monthStart),
       supabase.from('menu_items').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).eq('is_available', true),
       supabase.from('orders').select('*', { count: 'exact', head: true })
-        .eq('restaurant_id', rid).neq('status', 'cancelled'),
+        .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")'),
       supabase.from('restaurants').select('wave_number, orange_money_number')
         .eq('id', rid).single(),
       supabase.from('menu_items').select('id').eq('restaurant_id', rid)

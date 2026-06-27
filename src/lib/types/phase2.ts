@@ -45,7 +45,7 @@ export interface MenuItem {
   variants?: MenuItemVariant[]
 }
 
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled' | 'delivery_cancelled'
 export type PaymentMethod = 'cash' | 'wave' | 'orange_money'
 
 export interface OrderItem {
@@ -107,13 +107,22 @@ export interface PromoCode {
 // ─── Cart Types ───────────────────────────────────────────────────────────────
 
 export interface CartItem {
+  // cart_key : clé interne du panier (jamais envoyée à la BDD)
+  // Format : "<menu_item_uuid>" ou "<menu_item_uuid>__<variant_uuid>"
+  cart_key: string
+
+  // id : vrai UUID du menu_item (envoyé dans orders.items.id)
   id: string
+
   name: string
   price: number
   quantity: number
   image_url?: string | null
+
+  // Envoyés séparément dans orders.items
   variant_id?: string | null
   variant_name?: string | null
+
   preorder_delivery_date?: string | null
 }
 
@@ -185,17 +194,21 @@ export interface MenuCategoryForm {
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: 'En attente',
-  preparing: 'En préparation',
-  ready: 'Prêt',
-  delivered: 'Livré',
-  cancelled: 'Annulé',
+  pending:            'En attente',
+  confirmed:          'Confirmée',
+  preparing:          'En préparation',
+  ready:              'Prête',
+  delivered:          'Livrée',
+  cancelled:          'Annulée',
+  delivery_cancelled: 'Livraison annulée',
 }
 
 export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
-  pending: 'warning',
-  preparing: 'info',
-  ready: 'success',
-  delivered: 'default',
-  cancelled: 'danger',
+  pending:            'warning',
+  confirmed:          'info',
+  preparing:          'info',
+  ready:              'success',
+  delivered:          'success',
+  cancelled:          'danger',
+  delivery_cancelled: 'danger',
 }

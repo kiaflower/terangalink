@@ -6,11 +6,27 @@ import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/Badge'
 import { SkeletonRow, EmptyState } from '@/components/ui/Loading'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { ShoppingBag, Phone, ChevronDown, MessageCircle, Search } from 'lucide-react'
+import {
+  ShoppingBag, Phone, ChevronDown, MessageCircle,
+  Search, CheckCircle2, XCircle, AlertTriangle, RefreshCw, Calendar
+} from 'lucide-react'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/types'
 import type { Order, OrderStatus } from '@/lib/types'
 import { ReceiptGenerator } from '@/components/orders/ReceiptGenerator'
 import { canUseFeature, normalizePlan } from '@/lib/plans'
+
+type OrderItemRaw = {
+  name: string
+  quantity: number
+  price: number
+  variant_name?: string
+  preorder_delivery_date?: string | null
+}
+
+function getDeliveryDate(order: Order): string | null {
+  const items = order.items as OrderItemRaw[]
+  return items.find(i => i.preorder_delivery_date)?.preorder_delivery_date ?? null
+}
 
 function OrdersInner() {
   const supabase = createClient()
@@ -27,6 +43,10 @@ function OrdersInner() {
   const [orangeMoneyNumber, setOrangeMoneyNumber] = useState('')
   const [isPro, setIsPro] = useState(false)
   const [search, setSearch] = useState('')
+  const [updateError, setUpdateError] = useState<string | null>(null)
+  const [updating, setUpdating] = useState<string | null>(null)
+  // Suivi des précommandes dont le paiement a été coché localement
+  const [paidPreorders, setPaidPreorders] = useState<Set<string>>(new Set())
 
   const fetchOrders = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -40,7 +60,7 @@ function OrdersInner() {
 
     if (!profile?.restaurant_id) { setLoading(false); return }
 
-    const [{ data: orderData }, { data: restaurant }, { data: subscription }] = await Promise.all([
+    const [ordersResult, restaurantResult, subscriptionResult] = await Promise.all([
       supabase
         .from('orders')
         .select('*')
@@ -58,7 +78,14 @@ function OrdersInner() {
         .single(),
     ])
 
-    setOrders((orderData as Order[]) ?? [])
+    if (ordersResult.error) {
+      console.error('fetch orders error:', ordersResult.error)
+    } else {
+      const clean = ((ordersResult.data as Order[]) ?? []).filter(o => o.id && !o.id.includes('__'))
+      setOrders(clean)
+    }
+
+    const restaurant = restaurantResult.data
     setRestaurantName(restaurant?.name || 'Restaurant')
     setRestaurantPhone(restaurant?.phone || '')
     setRestaurantAddress([restaurant?.address, restaurant?.city].filter(Boolean).join(', '))
@@ -66,20 +93,17 @@ function OrdersInner() {
     setWaveNumber(restaurant?.wave_number || restaurant?.phone || '')
     setOrangeMoneyNumber(restaurant?.orange_money_number || restaurant?.phone || '')
 
-    const plan = normalizePlan((subscription as { plan?: string } | null)?.plan || 'starter')
+    const plan = normalizePlan((subscriptionResult.data as { plan?: string } | null)?.plan || 'starter')
     setIsPro(canUseFeature(plan, 'suppressionBranding'))
-
     setLoading(false)
   }, [supabase])
 
+  useEffect(() => { fetchOrders() }, [fetchOrders])
+
   useEffect(() => {
-    fetchOrders()
-    const channel = supabase
-      .channel('orders-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchOrders())
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [fetchOrders, supabase])
+    const interval = setInterval(() => fetchOrders(), 15000)
+    return () => clearInterval(interval)
+  }, [fetchOrders])
 
   useEffect(() => {
     const targetOrderId = searchParams.get('order')
@@ -90,56 +114,107 @@ function OrdersInner() {
     const q = search.trim().toLowerCase()
     if (!q) return orders
     return orders.filter(o =>
-      (o.order_number || '').toLowerCase().includes(q) ||
+      ((o as unknown as { order_number?: string }).order_number || '').toLowerCase().includes(q) ||
       (o.customer_name || '').toLowerCase().includes(q) ||
       (o.customer_phone || '').toLowerCase().includes(q)
     )
   }, [orders, search])
 
-  function buildConfirmUrl(order: Order) {
+  async function updateStatus(order: Order, newStatus: OrderStatus) {
+    setUpdateError(null)
+    setUpdating(order.id)
+
+    const res = await fetch(`/api/orders/${order.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    })
+
+    setUpdating(null)
+
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}))
+      setUpdateError(
+        `Impossible de mettre à jour ${(order as unknown as { order_number?: string }).order_number || ''} : ${payload?.error || `Erreur ${res.status}`}`
+      )
+      return false
+    }
+
+    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: newStatus } : o))
+    setTimeout(() => fetchOrders(), 1500)
+    return true
+  }
+
+  function buildConfirmWhatsApp(order: Order) {
     const phone = (order.customer_phone || '').replace(/\D/g, '')
     if (!phone) return null
 
-    const items = (order.items as { name: string; quantity: number }[])
-      .map(i => `• ${i.name} x${i.quantity}`)
-      .join('\n')
+    const orderItems = order.items as OrderItemRaw[]
+    const itemLines = orderItems.map(i => `• ${i.name} x${i.quantity}`).join('\n')
+    const orderNum = (order as unknown as { order_number?: string }).order_number
+    const numStr = orderNum ? ` (${orderNum})` : ''
+    const deliveryDate = getDeliveryDate(order)
+    const isPreorder = !!deliveryDate
 
-    const numStr = order.order_number ? ` (${order.order_number})` : ''
+    let messageText: string
+    if (isPreorder) {
+      messageText =
+        `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été enregistrée par ${restaurantName} ! 🎉\n\n` +
+        `📅 Date de livraison : ${deliveryDate}\n\n` +
+        `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
+        `💳 Pour confirmer votre précommande, veuillez effectuer le paiement :\n` +
+        `• Wave : ${waveNumber || 'À confirmer'}\n` +
+        `• Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
+        `Envoyez-nous une capture de votre paiement pour valider définitivement votre commande. Merci ! 🙏`
+    } else {
+      messageText =
+        `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n` +
+        `Temps de préparation estimé : 25 min.\n` +
+        `Paiement Wave : ${waveNumber || 'À confirmer'}\n` +
+        `Paiement Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
+        `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
+        `Merci 🙏`
+    }
 
-    const message = encodeURIComponent(
-      `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n` +
-      `Temps de préparation estimé : 25 min.\n` +
-      `Paiement Wave : ${waveNumber || 'À confirmer'}\n` +
-      `Paiement Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
-      `${items ? `Résumé :\n${items}\n\n` : ''}` +
-      `Merci 🙏`
-    )
-    return `https://wa.me/${phone}?text=${message}`
+    return `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`
   }
 
-  async function handleConfirmAndOpen(order: Order) {
-    const url = buildConfirmUrl(order)
+  async function confirmerCommande(order: Order) {
+    const url = buildConfirmWhatsApp(order)
     if (url) window.open(url, '_blank')
-    await supabase.from('orders').update({ status: 'delivered' }).eq('id', order.id)
-    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'delivered' as OrderStatus } : o))
+    await updateStatus(order, 'confirmed')
+  }
+
+  async function marquerLivree(order: Order) {
+    await updateStatus(order, 'delivered')
   }
 
   async function annulerCommande(order: Order) {
     if (!confirm('Annuler cette commande ?')) return
-
-    // Ouvrir WhatsApp AVANT le await — Safari bloque window.open après un await
     const phone = (order.customer_phone || '').replace(/\D/g, '')
     if (phone) {
-      const numStr = order.order_number ? ` (${order.order_number})` : ''
+      const orderNum = (order as unknown as { order_number?: string }).order_number
+      const numStr = orderNum ? ` (${orderNum})` : ''
       const message = encodeURIComponent(
-        `Bonjour ${order.customer_name || ''}${numStr}, nous sommes désolés mais votre commande a été annulée par ${restaurantName}.\n\n` +
-        `N'hésitez pas à nous recontacter pour toute question. 🙏`
+        `Bonjour ${order.customer_name || ''}${numStr}, nous sommes désolés mais votre commande a été annulée par ${restaurantName}.\n\nN'hésitez pas à nous recontacter. 🙏`
       )
       window.open(`https://wa.me/${phone}?text=${message}`, '_blank')
     }
+    await updateStatus(order, 'cancelled')
+  }
 
-    await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
-    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' as OrderStatus } : o))
+  async function annulerLivraison(order: Order) {
+    if (!confirm('Annuler la livraison ? Elle ne sera pas comptabilisée dans les revenus.')) return
+    await updateStatus(order, 'delivery_cancelled')
+  }
+
+  function togglePaidPreorder(orderId: string) {
+    setPaidPreorders(prev => {
+      const next = new Set(prev)
+      if (next.has(orderId)) next.delete(orderId)
+      else next.add(orderId)
+      return next
+    })
   }
 
   const pendingCount = orders.filter(o => o.status === 'pending').length
@@ -158,9 +233,26 @@ function OrdersInner() {
           </h1>
           <p className="text-gray-500 text-sm mt-1">{orders.length} commande(s) au total</p>
         </div>
+        <button
+          onClick={() => fetchOrders()}
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          Actualiser
+        </button>
       </div>
 
-      {/* Barre de recherche */}
+      {updateError && (
+        <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-red-400 text-sm font-semibold">Erreur</p>
+            <p className="text-red-300 text-xs mt-0.5">{updateError}</p>
+          </div>
+          <button onClick={() => setUpdateError(null)} className="ml-auto text-red-400 hover:text-red-300 text-xs">✕</button>
+        </div>
+      )}
+
       <div className="relative mb-5">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
         <input
@@ -177,13 +269,21 @@ function OrdersInner() {
         <EmptyState
           icon={<ShoppingBag className="w-7 h-7" />}
           title={search ? 'Aucun résultat' : 'Aucune commande'}
-          description={search ? `Aucune commande correspondant à "${search}"` : 'Les commandes reçues via WhatsApp apparaîtront ici.'}
+          description={search ? `Aucune commande correspondant à "${search}"` : 'Les commandes reçues apparaîtront ici.'}
         />
       ) : (
         <div className="space-y-3">
           {filteredOrders.map(order => {
-            const dejaValidee = order.status === 'delivered'
-            const annulee = order.status === 'cancelled'
+            const orderNum = (order as unknown as { order_number?: string }).order_number
+            const discountAmt = (order as unknown as { discount_amount?: number }).discount_amount
+            const status = order.status
+            const annulee = status === 'cancelled' || status === 'delivery_cancelled'
+            const isPending = status === 'pending'
+            const isConfirmed = status === 'confirmed' || status === 'preparing' || status === 'ready'
+            const isUpdating = updating === order.id
+            const deliveryDate = getDeliveryDate(order)
+            const isPreorder = !!deliveryDate
+            const isPaid = paidPreorders.has(order.id)
 
             return (
               <div key={order.id} className="bg-surface-50 border border-surface-200 rounded-2xl overflow-hidden">
@@ -194,17 +294,33 @@ function OrdersInner() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-white font-semibold text-sm">{order.customer_name || 'Client anonyme'}</p>
-                      {order.order_number && (
+
+                      {/* Étiquette précommande */}
+                      {isPreorder && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: 'rgba(99,102,241,0.15)', color: '#A5B4FC' }}>
+                          <Calendar className="w-3 h-3" />
+                          Précommande
+                        </span>
+                      )}
+
+                      {orderNum && (
                         <span className="text-xs font-mono text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded-full">
-                          {order.order_number}
+                          {orderNum}
                         </span>
                       )}
                       <Badge variant={ORDER_STATUS_COLORS[order.status] as 'success' | 'warning' | 'info' | 'danger' | 'default'}>
-                        {ORDER_STATUS_LABELS[order.status]}
+                        {ORDER_STATUS_LABELS[order.status] ?? order.status}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-3 mt-1">
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
                       <p className="text-brand-orange text-sm font-bold">{formatCurrency(order.total)}</p>
+                      {/* Date de livraison visible directement dans la liste */}
+                      {isPreorder && deliveryDate && (
+                        <p className="text-xs font-semibold" style={{ color: '#818CF8' }}>
+                          📅 {deliveryDate}
+                        </p>
+                      )}
                       <p className="text-gray-600 text-xs">{formatDate(order.created_at)}</p>
                       {order.customer_phone && (
                         <a
@@ -223,8 +339,42 @@ function OrdersInner() {
 
                 {expandedId === order.id && (
                   <div className="border-t border-surface-200 px-5 py-4 space-y-4">
+
+                    {/* Bandeau précommande dans le détail */}
+                    {isPreorder && (
+                      <div className="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
+                        style={{ backgroundColor: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)' }}>
+                        <div>
+                          <p className="text-xs font-bold" style={{ color: '#A5B4FC' }}>📅 Précommande</p>
+                          {deliveryDate && (
+                            <p className="text-xs mt-0.5" style={{ color: '#818CF8' }}>
+                              Livraison : <span className="font-semibold text-white">{deliveryDate}</span>
+                            </p>
+                          )}
+                        </div>
+                        {/* Case à cocher paiement reçu */}
+                        <label className="flex items-center gap-2 cursor-pointer select-none"
+                          onClick={e => e.stopPropagation()}>
+                          <div
+                            onClick={() => togglePaidPreorder(order.id)}
+                            className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-all cursor-pointer"
+                            style={{
+                              backgroundColor: isPaid ? '#22C55E' : 'transparent',
+                              border: `2px solid ${isPaid ? '#22C55E' : 'rgba(255,255,255,0.2)'}`,
+                            }}
+                          >
+                            {isPaid && <CheckCircle2 className="w-3 h-3 text-white" />}
+                          </div>
+                          <span className="text-xs font-semibold" style={{ color: isPaid ? '#4ADE80' : '#9CA3AF' }}>
+                            {isPaid ? 'Paiement reçu ✓' : 'Paiement reçu ?'}
+                          </span>
+                        </label>
+                      </div>
+                    )}
+
+                    {/* Articles */}
                     <div className="space-y-2">
-                      {(order.items as { name: string; quantity: number; price: number; variant_name?: string }[]).map((item, i) => (
+                      {(order.items as OrderItemRaw[]).map((item, i) => (
                         <div key={i} className="flex justify-between text-sm">
                           <span className="text-gray-300">
                             {item.name}{item.variant_name ? ` (${item.variant_name})` : ''} × {item.quantity}
@@ -234,10 +384,10 @@ function OrdersInner() {
                       ))}
                     </div>
 
-                    {(order as Order & { discount_amount?: number }).discount_amount ? (
+                    {discountAmt ? (
                       <div className="flex justify-between text-sm text-green-400">
                         <span>Réduction</span>
-                        <span>−{formatCurrency((order as Order & { discount_amount?: number }).discount_amount!)}</span>
+                        <span>−{formatCurrency(discountAmt)}</span>
                       </div>
                     ) : null}
 
@@ -248,20 +398,45 @@ function OrdersInner() {
                     )}
 
                     <div className="flex flex-wrap gap-2 pt-1">
-                      {order.status === 'pending' && (
+                      {isPending && (
                         <>
                           <button
-                            onClick={() => handleConfirmAndOpen(order)}
-                            className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                            onClick={() => confirmerCommande(order)}
+                            disabled={isUpdating}
+                            className="inline-flex items-center gap-1.5 bg-[#25D366] hover:bg-[#1ebe5d] text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
                           >
                             <MessageCircle className="w-3.5 h-3.5" />
-                            Confirmer au client
+                            {isUpdating ? 'En cours...' : isPreorder ? 'Envoyer demande de paiement' : 'Confirmer au client'}
                           </button>
                           <button
                             onClick={() => annulerCommande(order)}
-                            className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                            disabled={isUpdating}
+                            className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
                           >
                             Annuler
+                          </button>
+                        </>
+                      )}
+
+                      {isConfirmed && (
+                        <>
+                          <button
+                            onClick={() => marquerLivree(order)}
+                            disabled={isUpdating || (isPreorder && !isPaid)}
+                            title={isPreorder && !isPaid ? 'Cochez "Paiement reçu" avant de marquer comme livré' : ''}
+                            className="inline-flex items-center gap-1.5 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            style={{ backgroundColor: restaurantAccent }}
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {isUpdating ? 'En cours...' : isPreorder ? 'Marquer comme livrée' : 'Livré'}
+                          </button>
+                          <button
+                            onClick={() => annulerLivraison(order)}
+                            disabled={isUpdating}
+                            className="inline-flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            Livraison annulée
                           </button>
                         </>
                       )}

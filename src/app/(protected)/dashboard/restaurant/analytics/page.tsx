@@ -84,12 +84,12 @@ export default function AnalyticsPage() {
       supabase.from('analytics_events').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).eq('event_type', 'add_to_cart').gte('created_at', monthStart),
       supabase.from('analytics_events').select('item_name')
-        .eq('restaurant_id', rid).eq('event_type', 'add_to_cart').not('item_name', 'is', null),
+        .eq('restaurant_id', rid).eq('event_type', 'add_to_cart').not('item_name', 'is', null).gte('created_at', monthStart),
       // Vraies commandes Supabase
       supabase.from('orders').select('*', { count: 'exact', head: true })
-        .eq('restaurant_id', rid).neq('status', 'cancelled').gte('created_at', todayStart),
+        .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")').gte('created_at', todayStart),
       supabase.from('orders').select('*', { count: 'exact', head: true })
-        .eq('restaurant_id', rid).neq('status', 'cancelled').gte('created_at', monthStart),
+        .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")').gte('created_at', monthStart),
       supabase.from('orders').select('total')
         .eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', monthStart),
       supabase.from('orders').select('*', { count: 'exact', head: true })

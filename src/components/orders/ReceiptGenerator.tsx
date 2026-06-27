@@ -45,7 +45,7 @@ function buildReceiptHTML(
   restaurantAddress?: string,
 ) {
   const items = order.items as OrderItem[]
-  const orderId = order.id.slice(0, 8).toUpperCase()
+  const orderId = (order as { order_number?: string }).order_number || order.id.slice(0, 8).toUpperCase()
   const paymentLabel = getPaymentLabel(order)
   const displayNotes = order.notes?.replace(/Paiement\s*:\s*.+/i, '').trim() || ''
 
@@ -165,7 +165,7 @@ export function ReceiptGenerator({
 }: Props) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const orderId = order.id.slice(0, 8).toUpperCase()
+  const orderId = (order as { order_number?: string }).order_number || order.id.slice(0, 8).toUpperCase()
   const items = order.items as OrderItem[]
 
   // Détection précommande depuis les items

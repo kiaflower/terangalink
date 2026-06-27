@@ -23,8 +23,6 @@ const DEFAULT_TOKENS: ThemeTokens = {
   openBg: 'rgba(34,197,94,0.12)', openText: '#4ADE80', closedBg: 'rgba(239,68,68,0.12)', closedText: '#F87171',
 }
 
-// ─── Promo hook ───────────────────────────────────────────────────────────────
-
 interface AppliedPromo {
   code: string
   discount_type: 'fixed' | 'percent'
@@ -76,8 +74,6 @@ function computeDiscount(total: number, promo: AppliedPromo | null): number {
   if (promo.discount_type === 'fixed') return Math.min(promo.discount_value, total)
   return Math.round((total * promo.discount_value) / 100)
 }
-
-// ─── Cart Item display ────────────────────────────────────────────────────────
 
 export function CartButton({ tokens = DEFAULT_TOKENS, isPremium = false }: { tokens?: ThemeTokens; isPremium?: boolean }) {
   const { totalItems } = useCart()
@@ -179,14 +175,21 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
 
       const order = payload.data as { id: string; created_at: string }
       const orderNumber: string = payload.order_number || order.id.slice(0, 8).toUpperCase()
-      const shortUrl: string = payload.short_url || `${baseUrl}/c/${orderNumber}`
 
-      // Detect preorder (any item with preorder_delivery_date)
+      // Lien de suivi : toujours /c/slug/TL-XXXXXX
+      // payload.slug est retourné par l'API, payload.short_url est le lien complet
+      const restaurantSlug: string = payload.slug || state.restaurantSlug || ''
+      const shortUrl: string =
+        payload.short_url ||
+        (restaurantSlug
+          ? `${baseUrl}/c/${restaurantSlug}/${orderNumber}`
+          : `${baseUrl}/c/${orderNumber}`)
+
+      // Detect preorder
       const preorderItem = state.items.find(i => i.preorder_delivery_date)
       const isPreorder = !!preorderItem
       const deliveryText = preorderItem?.preorder_delivery_date ?? ''
 
-      // Build items lines with variants
       const itemsLines = state.items.map(i => {
         const variantPart = i.variant_name ? ` (${i.variant_name})` : ''
         return `• ${i.quantity}× ${i.name}${variantPart} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`
@@ -200,7 +203,6 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
         ? `Adresse : ${customerAddress.trim()}\n`
         : ''
 
-      // Fix Invalid Date: parse safely
       const rawDate = order.created_at
       const parsedDate = rawDate ? new Date(rawDate) : new Date()
       const orderTime = isNaN(parsedDate.getTime())
@@ -301,11 +303,9 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate" style={{ color: tokens.textPrimary }}>{item.name}</p>
-                {/* Affichage variante */}
                 {item.variant_name && (
                   <p className="text-xs" style={{ color: tokens.textMuted }}>{item.variant_name}</p>
                 )}
-                {/* Badge précommande avec date de livraison */}
                 {item.preorder_delivery_date && (
                   <p className="text-xs font-semibold mt-0.5" style={{ color: tokens.accent }}>
                     📅 Précommande · Livraison : {item.preorder_delivery_date}
@@ -315,7 +315,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
-                  onClick={() => updateQty(item.id, item.quantity - 1)}
+                  onClick={() => updateQty(item.cart_key, item.quantity - 1)}
                   className="w-6 h-6 rounded-full flex items-center justify-center transition-colors"
                   style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
                 >
@@ -326,7 +326,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
                 </button>
                 <span className="text-sm font-bold w-4 text-center" style={{ color: tokens.textPrimary }}>{item.quantity}</span>
                 <button
-                  onClick={() => updateQty(item.id, item.quantity + 1)}
+                  onClick={() => updateQty(item.cart_key, item.quantity + 1)}
                   className="w-6 h-6 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
                 >
@@ -376,55 +376,53 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
             <option value="Cash">Paiement : Cash</option>
           </select>
 
-          {/* ── Code promo (Premium uniquement) ── */}
-          {isPremium && (
-            <div>
-              {!promo.applied ? (
-                <div className="flex gap-2">
-                  <div className="flex-1 relative">
-                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: tokens.textMuted }} />
-                    <input
-                      value={promo.code}
-                      onChange={e => promo.setCode(e.target.value.toUpperCase())}
-                      onKeyDown={e => e.key === 'Enter' && promo.apply()}
-                      placeholder="Code promo"
-                      className="w-full rounded-xl pl-8 pr-3 py-2.5 text-sm focus:outline-none uppercase"
-                      style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
-                    />
-                  </div>
-                  <button
-                    onClick={promo.apply}
-                    disabled={promo.loading || !promo.code.trim()}
-                    className="px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50 transition-all"
-                    style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
-                  >
-                    {promo.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Appliquer'}
-                  </button>
+          {/* Code promo */}
+          <div>
+            {!promo.applied ? (
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: tokens.textMuted }} />
+                  <input
+                    value={promo.code}
+                    onChange={e => promo.setCode(e.target.value.toUpperCase())}
+                    onKeyDown={e => e.key === 'Enter' && promo.apply()}
+                    placeholder="Code promo"
+                    className="w-full rounded-xl pl-8 pr-3 py-2.5 text-sm focus:outline-none uppercase"
+                    style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+                  />
                 </div>
-              ) : (
-                <div
-                  className="flex items-center justify-between px-3 py-2.5 rounded-xl"
-                  style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}
+                <button
+                  onClick={promo.apply}
+                  disabled={promo.loading || !promo.code.trim()}
+                  className="px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                  style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
                 >
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-3.5 h-3.5 text-green-400" />
-                    <span className="text-sm font-semibold text-green-400">{promo.applied.code}</span>
-                    <span className="text-xs" style={{ color: tokens.textMuted }}>
-                      {promo.applied.discount_type === 'percent'
-                        ? `−${promo.applied.discount_value}%`
-                        : `−${formatCurrency(promo.applied.discount_value)}`}
-                    </span>
-                  </div>
-                  <button onClick={promo.remove}>
-                    <XCircle className="w-4 h-4 text-green-400 opacity-70 hover:opacity-100" />
-                  </button>
+                  {promo.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Appliquer'}
+                </button>
+              </div>
+            ) : (
+              <div
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl"
+                style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}
+              >
+                <div className="flex items-center gap-2">
+                  <Tag className="w-3.5 h-3.5 text-green-400" />
+                  <span className="text-sm font-semibold text-green-400">{promo.applied.code}</span>
+                  <span className="text-xs" style={{ color: tokens.textMuted }}>
+                    {promo.applied.discount_type === 'percent'
+                      ? `−${promo.applied.discount_value}%`
+                      : `−${formatCurrency(promo.applied.discount_value)}`}
+                  </span>
                 </div>
-              )}
-              {promo.error && (
-                <p className="text-xs text-red-400 mt-1 px-1">{promo.error}</p>
-              )}
-            </div>
-          )}
+                <button onClick={promo.remove}>
+                  <XCircle className="w-4 h-4 text-green-400 opacity-70 hover:opacity-100" />
+                </button>
+              </div>
+            )}
+            {promo.error && (
+              <p className="text-xs text-red-400 mt-1 px-1">{promo.error}</p>
+            )}
+          </div>
 
           {/* Totaux */}
           <div className="space-y-1.5">
@@ -444,7 +442,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
             </div>
           </div>
 
-          {/* Récapitulatif précommande si applicable */}
+          {/* Récapitulatif précommande */}
           {state.items.some(i => i.preorder_delivery_date) && (
             <div
               className="rounded-xl px-3 py-2.5 text-sm"
