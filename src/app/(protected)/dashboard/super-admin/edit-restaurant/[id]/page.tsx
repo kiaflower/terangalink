@@ -69,6 +69,7 @@ export default function EditRestaurantPage() {
   const [facebookUrl, setFacebookUrl] = useState('')
   const [instagramUrl, setInstagramUrl] = useState('')
   const [tiktokUrl, setTiktokUrl] = useState('')
+  const [snapchatUrl, setSnapchatUrl] = useState('')
   const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark')
   const [cuisineType, setCuisineType] = useState('')
   const [isActive, setIsActive] = useState(true)
@@ -131,6 +132,7 @@ export default function EditRestaurantPage() {
     setFacebookUrl(r.facebook_url || '')
     setInstagramUrl(r.instagram_url || '')
     setTiktokUrl(r.tiktok_url || '')
+    setSnapchatUrl((r as { snapchat_url?: string | null }).snapchat_url || '')
     setThemeMode(r.theme_mode || 'dark')
     setPreviewPrimary(r.primary_color || DEFAULT_PRIMARY_COLOR)
     setPreviewBg(r.background_color || DEFAULT_DARK_BACKGROUND)
@@ -196,6 +198,7 @@ export default function EditRestaurantPage() {
         facebook_url: facebookUrl || null,
         instagram_url: instagramUrl || null,
         tiktok_url: tiktokUrl || null,
+        snapchat_url: snapchatUrl || null,
         cuisine_type: cuisineType || null,
         is_active: isActive,
         opening_hours: openingHours,
@@ -467,6 +470,7 @@ export default function EditRestaurantPage() {
               <Input label="Instagram" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/..." />
               <Input label="Facebook" value={facebookUrl} onChange={e => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
               <Input label="TikTok" value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@..." />
+              <Input label="Snapchat" value={snapchatUrl} onChange={e => setSnapchatUrl(e.target.value)} placeholder="https://snapchat.com/add/..." />
             </div>
           )}
 

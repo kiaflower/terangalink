@@ -39,6 +39,7 @@ interface RestaurantRow {
   facebook_url: string | null
   instagram_url: string | null
   tiktok_url: string | null
+  snapchat_url: string | null
   opening_hours: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null
   is_active: boolean
   is_demo: boolean
@@ -238,7 +239,7 @@ export default async function RestaurantPage({ params }: Props) {
     facebook_url: extended.facebook_url ?? null,
     instagram_url: extended.instagram_url ?? null,
     tiktok_url: extended.tiktok_url ?? null,
-    snapchat_url: (extended as Record<string, unknown>).snapchat_url as string ?? null,
+    snapchat_url: extended.snapchat_url ?? null,
     opening_hours: (extended.opening_hours as RestaurantRow['opening_hours']) ?? null,
     is_demo: extended.is_demo ?? false,
     show_delivery_fee: extended.show_delivery_fee ?? false,

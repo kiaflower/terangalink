@@ -32,6 +32,7 @@ type RestaurantFull = RestaurantPageData['restaurant'] & {
   facebook_url?: string | null
   instagram_url?: string | null
   tiktok_url?: string | null
+  snapchat_url?: string | null
   whatsapp_number?: string | null
   opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null
   delivery_fee?: number | null
@@ -587,7 +588,7 @@ function RestaurantInner({ data }: Props) {
                   )
                 })()}
 
-                {canShowSocials && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url) && (
+                {canShowSocials && (restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url || restaurant.snapchat_url) && (
                   <div>
                     <h3 className="font-bold text-sm mb-3" style={{ color: tokens.textPrimary }}>Suivez-nous</h3>
                     <div className="flex items-center gap-3">
@@ -610,6 +611,15 @@ function RestaurantInner({ data }: Props) {
                           className="w-10 h-10 rounded-full flex items-center justify-center"
                           style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }}>
                           <Music2 className="w-4 h-4" />
+                        </a>
+                      )}
+                      {restaurant.snapchat_url && (
+                        <a href={restaurant.snapchat_url} target="_blank" rel="noopener noreferrer"
+                          className="w-10 h-10 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary, border: `1px solid ${tokens.border}` }}>
+                          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                            <path d="M12.001 2C6.869 2 4.002 5.077 4.002 9.026c0 .53.048 1.07.09 1.522l-.013.009c-.174.107-.37.16-.573.157a1.52 1.52 0 0 1-.44-.068c-.13-.04-.267-.062-.408-.062-.302 0-.567.103-.76.29-.223.214-.337.514-.32.825.032.573.496.99 1.185 1.104.028.005.107.02.18.036-.11.279-.282.568-.577.762-.34.222-.52.564-.473.913.049.351.283.636.628.764.17.063.35.1.528.109.054.001.12.002.167.002.208 0 .452-.028.71-.083-.06.27-.09.542-.09.814 0 2.318 1.878 4.205 4.188 4.205.174 0 .352-.011.524-.033C9.564 20.61 10.72 21.5 12 21.5s2.437-.89 3.131-2.208c.172.022.35.033.524.033 2.31 0 4.188-1.887 4.188-4.205 0-.272-.03-.544-.09-.814.259.055.502.083.71.083.048 0 .113-.001.168-.002a1.7 1.7 0 0 0 .527-.109c.345-.128.579-.413.628-.764.047-.349-.132-.691-.473-.913-.295-.194-.466-.483-.577-.762.073-.016.152-.031.18-.036.69-.114 1.153-.531 1.185-1.104.017-.311-.097-.611-.32-.825-.193-.187-.458-.29-.76-.29-.14 0-.278.022-.408.062a1.52 1.52 0 0 1-.44.068 1.255 1.255 0 0 1-.573-.157l-.013-.009c.042-.452.09-.991.09-1.522C19.999 5.077 17.132 2 12.001 2Z"/>
+                          </svg>
                         </a>
                       )}
                     </div>
