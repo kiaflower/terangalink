@@ -24,6 +24,10 @@ type RestaurantFull = RestaurantPageData['restaurant'] & {
   plan?: string
   latitude?: number | null
   longitude?: number | null
+  instagram_url?: string | null
+  facebook_url?: string | null
+  tiktok_url?: string | null
+  snapchat_url?: string | null
 }
 
 interface Props {
@@ -321,6 +325,68 @@ function RestaurantInner({ data }: Props) {
                 longitude={restaurant.longitude ?? null}
                 tokens={tokens}
               />
+            )}
+
+            {/* Social media links */}
+            {(restaurant.instagram_url || restaurant.facebook_url || restaurant.tiktok_url || restaurant.snapchat_url) && (
+              <div className="flex items-center gap-3 pt-2 flex-wrap">
+                {restaurant.instagram_url && (
+                  <a
+                    href={restaurant.instagram_url.startsWith('http') ? restaurant.instagram_url : `https://instagram.com/${restaurant.instagram_url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ color: tokens.textSecondary }}>
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                    </svg>
+                  </a>
+                )}
+                {restaurant.facebook_url && (
+                  <a
+                    href={restaurant.facebook_url.startsWith('http') ? restaurant.facebook_url : `https://facebook.com/${restaurant.facebook_url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Facebook"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" style={{ color: tokens.textSecondary }}>
+                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                    </svg>
+                  </a>
+                )}
+                {restaurant.tiktok_url && (
+                  <a
+                    href={restaurant.tiktok_url.startsWith('http') ? restaurant.tiktok_url : `https://tiktok.com/@${restaurant.tiktok_url.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="TikTok"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" style={{ color: tokens.textSecondary }}>
+                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.17 8.17 0 0 0 4.78 1.52V6.77a4.85 4.85 0 0 1-1.01-.08z"/>
+                    </svg>
+                  </a>
+                )}
+                {restaurant.snapchat_url && (
+                  <a
+                    href={restaurant.snapchat_url.startsWith('http') ? restaurant.snapchat_url : `https://snapchat.com/add/${restaurant.snapchat_url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Snapchat"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor" style={{ color: tokens.textSecondary }}>
+                      <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.12.068.381.143.658.143.307-.012.6-.123.85-.301.132-.09.287-.14.443-.14.116 0 .224.031.315.083.187.101.301.288.301.490 0 .271-.201.509-.571.657-.006.003-.412.097-.59.132-.56.09-1.084.165-1.409.395-.166.116-.234.28-.203.45l.016.148c.05.475.131 1.274.379 2.292.019.066.019.12-.019.185-.042.081-.219.101-.261.101-.16 0-.339-.048-.528-.122-.395-.157-.83-.242-1.291-.242-.43 0-.841.078-1.25.224-.412.147-.712.312-.972.456-.3.163-.569.31-.871.31-.287 0-.558-.133-.837-.422l-.006-.006c-.183-.193-.385-.404-.612-.586-.393-.307-.907-.489-1.408-.489-.527 0-1.015.18-1.435.484-.24.176-.453.398-.642.602l-.003.003c-.275.293-.546.424-.833.424-.303 0-.572-.147-.871-.31-.26-.144-.56-.309-.971-.456-.41-.146-.82-.224-1.25-.224-.462 0-.897.085-1.292.242-.189.074-.367.122-.527.122-.043 0-.22-.02-.262-.101-.038-.065-.038-.119-.019-.185.249-1.018.33-1.817.379-2.292l.016-.147c.031-.17-.037-.334-.203-.45-.326-.231-.85-.305-1.41-.394-.177-.036-.583-.13-.589-.133-.37-.148-.571-.386-.571-.657 0-.202.114-.389.3-.49.092-.052.2-.083.316-.083.155 0 .31.05.443.14.25.178.542.29.849.301.278 0 .54-.075.659-.143-.008-.165-.018-.33-.03-.51l-.003-.06c-.104-1.628-.23-3.654.3-4.847 1.58-3.545 4.937-3.821 5.927-3.821l.036-.001z"/>
+                    </svg>
+                  </a>
+                )}
+              </div>
             )}
           </div>
 

@@ -28,7 +28,7 @@ export default async function RestaurantPage({ params }: Props) {
 
   const { data: restaurant } = await supabase
     .from('restaurants')
-    .select('id, name, slug, description, city, phone, whatsapp_number, address, logo_url, banner_url, cover_url, primary_color, background_color, theme_mode, opening_hours, is_active, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes')
+    .select('id, name, slug, description, city, phone, whatsapp_number, address, logo_url, banner_url, cover_url, primary_color, background_color, theme_mode, opening_hours, is_active, is_demo, show_delivery_fee, delivery_fee, wave_number, orange_money_number, prep_time_minutes, instagram_url, facebook_url, tiktok_url, snapchat_url')
     .eq('slug', params.slug)
     .single()
 

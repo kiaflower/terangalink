@@ -59,6 +59,9 @@ export default function EditRestaurantPage() {
   const [address, setAddress] = useState('')
   const [phone, setPhone] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
+  const [instagram, setInstagram] = useState('')
+  const [facebook, setFacebook] = useState('')
+  const [tiktok, setTiktok] = useState('')
   const [snapchat, setSnapchat] = useState('')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
@@ -116,6 +119,9 @@ export default function EditRestaurantPage() {
     setAddress(r.address || '')
     setPhone(r.phone || '')
     setWhatsapp(r.whatsapp_number || '')
+    setInstagram(r.instagram_url || '')
+    setFacebook(r.facebook_url || '')
+    setTiktok(r.tiktok_url || '')
     setSnapchat(r.snapchat_url || '')
     setLogoUrl(r.logo_url)
     setBannerUrl(r.banner_url || r.cover_url)
@@ -176,6 +182,9 @@ export default function EditRestaurantPage() {
         address,
         phone: phone || null,
         whatsapp_number: whatsapp || null,
+        instagram_url: instagram || null,
+        facebook_url: facebook || null,
+        tiktok_url: tiktok || null,
         snapchat_url: snapchat || null,
         logo_url: logoUrl,
         banner_url: bannerUrl,
@@ -373,8 +382,20 @@ export default function EditRestaurantPage() {
           <Input label="Adresse" value={address} onChange={e => setAddress(e.target.value)} />
           <Input label="Téléphone" value={phone} onChange={e => setPhone(e.target.value)} hint="221771234567" />
           <Input label="WhatsApp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} hint="221771234567" />
-          <Input label="Snapchat" value={snapchat} onChange={e => setSnapchat(e.target.value)} hint="Ex: nomutilisateur ou lien snapchat.com/add/…" />
+        </div>
 
+        {/* ── Réseaux sociaux ───────────────────────────────────────────── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-white font-semibold text-sm">Réseaux sociaux</h2>
+          <Input label="Instagram" value={instagram} onChange={e => setInstagram(e.target.value)} hint="nomutilisateur ou instagram.com/…" />
+          <Input label="Facebook" value={facebook} onChange={e => setFacebook(e.target.value)} hint="nompage ou facebook.com/…" />
+          <Input label="TikTok" value={tiktok} onChange={e => setTiktok(e.target.value)} hint="@nomutilisateur ou tiktok.com/@…" />
+          <Input label="Snapchat" value={snapchat} onChange={e => setSnapchat(e.target.value)} hint="nomutilisateur ou snapchat.com/add/…" />
+        </div>
+
+        {/* ── Images ───────────────────────────────────────────────────── */}
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5 space-y-4">
+          <h2 className="text-white font-semibold text-sm">Images</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ImageCropUpload
               label="Logo (1:1)"

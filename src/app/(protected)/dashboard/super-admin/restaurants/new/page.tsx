@@ -36,6 +36,9 @@ export default function NewRestaurantPage() {
   const [cuisineType, setCuisineType] = useState('')
   const [plan, setPlan] = useState('mensuel')
   const [restAddress, setRestAddress] = useState('')
+  const [instagramUrl, setInstagramUrl] = useState('')
+  const [facebookUrl, setFacebookUrl] = useState('')
+  const [tiktokUrl, setTiktokUrl] = useState('')
   const [snapchatUrl, setSnapchatUrl] = useState('')
 
   const [adminName, setAdminName] = useState('')
@@ -98,7 +101,8 @@ export default function NewRestaurantPage() {
     }
 
     if (data.data?.restaurant_id) {
-      const needsUpdate = (restSlug && restSlug !== slugify(restName)) || snapchatUrl
+      const hasSocial = instagramUrl || facebookUrl || tiktokUrl || snapchatUrl
+      const needsUpdate = (restSlug && restSlug !== slugify(restName)) || hasSocial
       if (needsUpdate) {
         await fetch('/api/admin/edit-restaurant', {
           method: 'POST',
@@ -110,6 +114,9 @@ export default function NewRestaurantPage() {
             city: restCity,
             phone: restPhone || null,
             address: restAddress || null,
+            instagram_url: instagramUrl || null,
+            facebook_url: facebookUrl || null,
+            tiktok_url: tiktokUrl || null,
             snapchat_url: snapchatUrl || null,
           }),
         })
@@ -158,8 +165,20 @@ export default function NewRestaurantPage() {
             <Input label="Téléphone" placeholder="+221 77 000 00 00" value={restPhone} onChange={e => setRestPhone(e.target.value)} />
             <Input label="Adresse" placeholder="Almadies" value={restAddress} onChange={e => setRestAddress(e.target.value)} />
             <Select label="Type de cuisine" options={CUISINE_OPTIONS} value={cuisineType} onChange={e => setCuisineType(e.target.value)} />
-            <Input label="Snapchat" placeholder="nomutilisateur" value={snapchatUrl} onChange={e => setSnapchatUrl(e.target.value)} />
             <div className="sm:col-span-2"><Select label="Plan d'abonnement" options={PLAN_OPTIONS} value={plan} onChange={e => setPlan(e.target.value)} /></div>
+          </div>
+        </div>
+
+        <div className="bg-surface-50 border border-surface-200 rounded-2xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <svg className="w-4 h-4 text-brand-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+            <h2 className="text-white font-semibold text-sm">Réseaux sociaux <span className="text-gray-500 font-normal">(optionnel)</span></h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input label="Instagram" placeholder="nomutilisateur" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)} />
+            <Input label="Facebook" placeholder="nompage" value={facebookUrl} onChange={e => setFacebookUrl(e.target.value)} />
+            <Input label="TikTok" placeholder="@nomutilisateur" value={tiktokUrl} onChange={e => setTiktokUrl(e.target.value)} />
+            <Input label="Snapchat" placeholder="nomutilisateur" value={snapchatUrl} onChange={e => setSnapchatUrl(e.target.value)} />
           </div>
         </div>
 
