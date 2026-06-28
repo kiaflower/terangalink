@@ -2,24 +2,38 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { LayoutDashboard, Store, Users, Settings, LogOut, CreditCard, Tag, LayoutGrid, ClipboardList, Calendar } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 
 const navItems = [
-  { label: "Vue d'ensemble", href: '/dashboard/super-admin', icon: LayoutDashboard, exact: true },
-  { label: 'Restaurants', href: '/dashboard/super-admin/restaurants', icon: Store },
-  { label: 'Inscriptions', href: '/dashboard/super-admin/inscriptions', icon: ClipboardList },
-  { label: 'Annuaire', href: '/dashboard/super-admin/annuaire', icon: LayoutGrid },
-  { label: 'Abonnements', href: '/dashboard/super-admin/subscriptions', icon: CreditCard },
-  { label: 'Utilisateurs', href: '/dashboard/super-admin/users', icon: Users },
-  { label: 'Disponibilités', href: '/dashboard/super-admin/disponibilites', icon: Calendar },
-  { label: 'Codes promo', href: '/dashboard/super-admin/promo-codes', icon: Tag },
-  { label: 'Paramètres', href: '/dashboard/super-admin/settings', icon: Settings },
+  { label: "Vue d'ensemble", href: '/dashboard/super-admin', icon: LayoutDashboard, exact: true, badgeKey: null },
+  { label: 'Restaurants', href: '/dashboard/super-admin/restaurants', icon: Store, badgeKey: null },
+  { label: 'Inscriptions', href: '/dashboard/super-admin/inscriptions', icon: ClipboardList, badgeKey: 'pendingApplications' as const },
+  { label: 'Annuaire', href: '/dashboard/super-admin/annuaire', icon: LayoutGrid, badgeKey: null },
+  { label: 'Abonnements', href: '/dashboard/super-admin/subscriptions', icon: CreditCard, badgeKey: null },
+  { label: 'Utilisateurs', href: '/dashboard/super-admin/users', icon: Users, badgeKey: null },
+  { label: 'Disponibilités', href: '/dashboard/super-admin/disponibilites', icon: Calendar, badgeKey: 'pendingAppointments' as const },
+  { label: 'Codes promo', href: '/dashboard/super-admin/promo-codes', icon: Tag, badgeKey: null },
+  { label: 'Paramètres', href: '/dashboard/super-admin/settings', icon: Settings, badgeKey: null },
 ]
+
+interface Counters {
+  pendingApplications: number
+  pendingAppointments: number
+}
 
 export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
+  const [counters, setCounters] = useState<Counters>({ pendingApplications: 0, pendingAppointments: 0 })
+
+  useEffect(() => {
+    fetch('/api/super-admin/counters')
+      .then(r => r.json())
+      .then(data => { if (!data.error) setCounters(data) })
+      .catch(() => {})
+  }, [])
 
   const inner = (
     <>
@@ -39,6 +53,7 @@ export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
       <nav className="flex-1 p-4 space-y-0.5">
         {navItems.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
+          const badgeCount = item.badgeKey ? counters[item.badgeKey] : 0
           return (
             <Link
               key={item.href}
@@ -52,7 +67,13 @@ export function SuperAdminSidebar({ mobile = false }: { mobile?: boolean }) {
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = isActive ? 'rgba(249,115,22,0.08)' : 'transparent'; (e.currentTarget as HTMLElement).style.color = isActive ? '#F97316' : '#6B7280' }}
             >
               <item.icon className="w-4 h-4 flex-shrink-0" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {badgeCount > 0 && (
+                <span className="min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: '#F97316' }}>
+                  {badgeCount > 99 ? '99+' : badgeCount}
+                </span>
+              )}
             </Link>
           )
         })}

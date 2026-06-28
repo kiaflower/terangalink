@@ -65,10 +65,30 @@ export async function DELETE(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   if (!await checkSuperAdmin()) return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
 
-  const { id, table, ...fields } = await req.json()
+  const { id, table, restore_slot, delete_slot, slot_id, ...fields } = await req.json()
   const admin = createAdminClient()
   const t = table === 'appointments' ? 'appointments' : 'availability_slots'
+
+  // Mettre à jour l'appointment
   const { error } = await admin.from(t).update(fields).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Gestion du créneau associé
+  if (restore_slot && slot_id) {
+    const { error: slotErr } = await admin
+      .from('availability_slots')
+      .update({ is_booked: false })
+      .eq('id', slot_id)
+    if (slotErr) return NextResponse.json({ error: slotErr.message }, { status: 500 })
+  }
+
+  if (delete_slot && slot_id) {
+    const { error: slotErr } = await admin
+      .from('availability_slots')
+      .delete()
+      .eq('id', slot_id)
+    if (slotErr) return NextResponse.json({ error: slotErr.message }, { status: 500 })
+  }
+
   return NextResponse.json({ ok: true })
 }

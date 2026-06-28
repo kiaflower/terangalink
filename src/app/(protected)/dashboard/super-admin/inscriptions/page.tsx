@@ -152,14 +152,22 @@ export default function InscriptionsPage() {
   async function saveNotes() {
     if (!selected) return
     setSavingNotes(true)
-    await supabase.from('restaurant_applications')
-      .update({ admin_notes: notes, updated_at: new Date().toISOString() })
-      .eq('id', selected.id)
+    const res = await fetch('/api/super-admin/inscriptions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selected.id, admin_notes: notes }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      alert(data.error || 'Erreur lors de la sauvegarde')
+    } else {
+      setApps(prev => prev.map(a => a.id === selected.id ? { ...a, admin_notes: notes } : a))
+    }
     setSavingNotes(false)
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-6xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Inscriptions</h1>
         <p className="text-gray-500 text-sm mt-1">{apps.length} demande(s) reçue(s)</p>
@@ -195,34 +203,34 @@ export default function InscriptionsPage() {
         <div className="space-y-3">
           {filtered.map(app => (
             <div key={app.id}
-              className="rounded-2xl p-5 flex items-center gap-4 transition-all hover:shadow-md cursor-pointer"
+              className="rounded-2xl p-4 sm:p-5 flex items-start sm:items-center gap-3 sm:gap-4 transition-all hover:shadow-md cursor-pointer"
               style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}
               onClick={() => openDetail(app)}>
 
               {/* Avatar */}
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
                 style={{ backgroundColor: '#F97316' }}>
                 {app.restaurant_name.charAt(0)}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-gray-900 truncate">{app.restaurant_name}</p>
+                  <p className="font-semibold text-gray-900 break-words">{app.restaurant_name}</p>
                   <Badge variant={STATUS_CONFIG[app.status].variant}>{STATUS_CONFIG[app.status].label}</Badge>
                   <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
                     style={{ backgroundColor: '#FFF7ED', color: '#EA580C' }}>
                     {app.selected_plan}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-x-4 mt-1 text-xs text-gray-400">
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-400">
                   <span>{app.owner_name}</span>
                   {app.city && <span><MapPin className="w-3 h-3 inline mr-0.5" />{app.city}</span>}
-                  <span>{app.whatsapp}</span>
+                  <span className="break-all">{app.whatsapp}</span>
                   <span>{formatDate(app.created_at)}</span>
                 </div>
               </div>
 
-              <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
+              <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1 sm:mt-0" />
             </div>
           ))}
         </div>

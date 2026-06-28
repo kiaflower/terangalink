@@ -12,6 +12,7 @@ import type { Restaurant, Subscription } from '@/lib/types'
 import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
 import { SubscriptionReminder } from '@/components/dashboard/SubscriptionReminder'
 import { HelpCard } from '@/components/dashboard/HelpCard'
+import { TipCard } from '@/components/dashboard/TipCard'
 
 export const metadata = { title: 'Tableau de bord — Restaurant' }
 
@@ -170,6 +171,8 @@ export default async function RestaurantDashboard() {
           subtitle={restaurant ? 'Depuis le début' : 'Bientôt disponible'}
         />
       </div>
+
+      <TipCard />
 
       <Card>
         <h2 className="text-gray-900 font-semibold mb-4">Actions rapides</h2>

@@ -93,6 +93,7 @@ export default function DisponibilitesPage() {
   const [notes, setNotes] = useState('')
   const [savingNotes, setSavingNotes] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
 
   const loadSlots = useCallback(async () => {
     setLoadingSlots(true)
@@ -163,6 +164,35 @@ export default function DisponibilitesPage() {
     })
     setAppointments(prev => prev.map(a => a.id === selected.id ? { ...a, status } : a))
     setSelected(s => s ? { ...s, status } : s)
+    setUpdatingStatus(false)
+  }
+
+  async function handleCancelWithSlot(action: 'restore' | 'delete') {
+    if (!selected) return
+    setUpdatingStatus(true)
+    setShowCancelModal(false)
+    const body: Record<string, unknown> = {
+      id: selected.id,
+      table: 'appointments',
+      status: 'cancelled',
+    }
+    if (selected.slot_id) {
+      if (action === 'restore') body.restore_slot = true
+      if (action === 'delete') body.delete_slot = true
+      body.slot_id = selected.slot_id
+    }
+    await fetch(API, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    setAppointments(prev => prev.map(a => a.id === selected.id ? { ...a, status: 'cancelled' } : a))
+    setSelected(s => s ? { ...s, status: 'cancelled' } : s)
+    if (action === 'delete' && selected.slot_id) {
+      await loadSlots()
+    } else if (action === 'restore' && selected.slot_id) {
+      await loadSlots()
+    }
     setUpdatingStatus(false)
   }
 
@@ -376,6 +406,54 @@ export default function DisponibilitesPage() {
         </div>
       </div>
 
+      {/* ══ Modale annulation RDV ════════════════════════════════════════════ */}
+      {showCancelModal && selected && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCancelModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm"
+            style={{ border: '1px solid #E5E7EB' }}>
+            <h3 className="text-base font-bold text-gray-900 mb-1">Annuler ce rendez-vous</h3>
+            <p className="text-sm text-gray-500 mb-5">
+              Que souhaitez-vous faire avec le créneau associé ?
+            </p>
+            <div className="space-y-2.5">
+              {selected.slot_id ? (
+                <>
+                  <button
+                    onClick={() => handleCancelWithSlot('restore')}
+                    className="w-full flex flex-col items-start px-4 py-3 rounded-xl text-left transition-colors hover:opacity-90"
+                    style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+                    <span className="text-sm font-bold" style={{ color: '#16A34A' }}>Remettre le créneau en ligne</span>
+                    <span className="text-xs mt-0.5" style={{ color: '#4B7C59' }}>Le créneau sera à nouveau disponible pour les réservations</span>
+                  </button>
+                  <button
+                    onClick={() => handleCancelWithSlot('delete')}
+                    className="w-full flex flex-col items-start px-4 py-3 rounded-xl text-left transition-colors hover:opacity-90"
+                    style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
+                    <span className="text-sm font-bold" style={{ color: '#DC2626' }}>Supprimer le créneau</span>
+                    <span className="text-xs mt-0.5" style={{ color: '#9B1C1C' }}>Le créneau sera définitivement supprimé</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => handleCancelWithSlot('restore')}
+                  className="w-full flex flex-col items-start px-4 py-3 rounded-xl text-left transition-colors hover:opacity-90"
+                  style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
+                  <span className="text-sm font-bold" style={{ color: '#DC2626' }}>Confirmer l&apos;annulation</span>
+                  <span className="text-xs mt-0.5" style={{ color: '#9B1C1C' }}>Ce rendez-vous n&apos;a pas de créneau associé</span>
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="mt-4 w-full py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors"
+              style={{ border: '1px solid #E5E7EB' }}>
+              Annuler sans modifier
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ══ Panneau latéral — Détail rendez-vous ═════════════════════════════ */}
       {selected && (
         <div className="fixed inset-0 z-50 flex justify-end">
@@ -440,7 +518,7 @@ export default function DisponibilitesPage() {
                     {updatingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                     Marquer terminé
                   </button>
-                  <button onClick={() => handleUpdateStatus('cancelled')} disabled={updatingStatus}
+                  <button onClick={() => setShowCancelModal(true)} disabled={updatingStatus}
                     className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold disabled:opacity-50"
                     style={{ backgroundColor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' }}>
                     {updatingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
