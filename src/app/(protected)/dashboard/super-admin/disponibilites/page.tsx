@@ -186,13 +186,11 @@ export default function DisponibilitesPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
+    // Mise à jour locale immédiate des appointments
     setAppointments(prev => prev.map(a => a.id === selected.id ? { ...a, status: 'cancelled' } : a))
     setSelected(s => s ? { ...s, status: 'cancelled' } : s)
-    if (action === 'delete' && selected.slot_id) {
-      await loadSlots()
-    } else if (action === 'restore' && selected.slot_id) {
-      await loadSlots()
-    }
+    // Reload des créneaux pour refléter is_booked mis à jour
+    await loadSlots()
     setUpdatingStatus(false)
   }
 
@@ -318,11 +316,26 @@ export default function DisponibilitesPage() {
                     <div className="space-y-1.5">
                       {daySlots.length === 0 ? (
                         <p className="text-xs text-gray-300 pl-1">Aucun créneau</p>
-                      ) : daySlots.map(slot => (
+                      ) : daySlots.map(slot => {
+                        // Trouver le RDV actif lié à ce créneau (pas annulé)
+                        const linkedAppt = appointments.find(
+                          a => a.slot_id === slot.id && a.status !== 'cancelled'
+                        )
+                        const isPending = linkedAppt?.status === 'upcoming'
+                        const isConfirmed = linkedAppt?.status === 'done'
+                        const isEffectivelyBooked = !!linkedAppt // a un RDV non annulé
+
+                        return (
                         <div key={slot.id} className="flex items-center justify-between px-3 py-2 rounded-xl"
                           style={{
-                            backgroundColor: slot.is_blocked ? '#FEF2F2' : slot.is_booked ? '#F0FDF4' : '#F9FAFB',
-                            border: `1px solid ${slot.is_blocked ? '#FECACA' : slot.is_booked ? '#BBF7D0' : '#E5E7EB'}`,
+                            backgroundColor: slot.is_blocked ? '#FEF2F2'
+                              : isConfirmed ? '#F0FDF4'
+                              : isPending ? '#FFF7ED'
+                              : '#F9FAFB',
+                            border: `1px solid ${slot.is_blocked ? '#FECACA'
+                              : isConfirmed ? '#BBF7D0'
+                              : isPending ? '#FED7AA'
+                              : '#E5E7EB'}`,
                           }}>
                           <div className="flex items-center gap-2">
                             <Clock className="w-3 h-3 text-gray-400" />
@@ -330,9 +343,13 @@ export default function DisponibilitesPage() {
                               {slot.is_blocked ? 'Journée bloquée' : `${slot.start_time.slice(0, 5)} – ${slot.end_time.slice(0, 5)}`}
                             </span>
                           </div>
-                          {slot.is_booked ? (
+                          {isConfirmed ? (
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#BBF7D0', color: '#16A34A' }}>
-                              Réservé
+                              Confirmé
+                            </span>
+                          ) : isPending ? (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#FED7AA', color: '#EA580C' }}>
+                              En attente
                             </span>
                           ) : (
                             <button onClick={() => handleDeleteSlot(slot.id)}
@@ -341,7 +358,8 @@ export default function DisponibilitesPage() {
                             </button>
                           )}
                         </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 )
