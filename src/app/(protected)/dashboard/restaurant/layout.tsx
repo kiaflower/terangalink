@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { RestaurantSidebar } from '@/components/layout/RestaurantSidebar'
 import { MobileSidebar } from '@/components/layout/MobileSidebar'
 import { OnboardingWrapper } from '@/components/onboarding/OnboardingWrapper'
+import { SmartCards } from '@/components/dashboard/SmartCards'
 
 export default async function RestaurantLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -38,6 +39,7 @@ export default async function RestaurantLayout({ children }: { children: React.R
         {children}
       </main>
       <OnboardingWrapper restaurantSlug={restaurantSlug} />
+      <SmartCards />
     </div>
   )
 }

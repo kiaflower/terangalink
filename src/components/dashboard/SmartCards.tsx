@@ -40,9 +40,9 @@ const DEFAULT_STATE: CardState = {
   milestones_shown: [],
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// ─── Props (fetched internally) ───────────────────────────────────────────────
 
-interface SmartCardsProps {
+interface RestaurantProps {
   restaurantId: string
   plan: string
   menuItemsCount: number
@@ -53,8 +53,8 @@ interface SmartCardsProps {
   lastMenuUpdate: string | null
   lastOrderDate: string | null
   restaurantCreatedAt: string
-  totalOrders?: number
-  todayOrders?: number
+  totalOrders: number
+  todayOrders: number
 }
 
 // ─── Onboarding steps ─────────────────────────────────────────────────────────
@@ -179,7 +179,7 @@ function buildOnboardingCard(state: CardState): SmartCard | null {
   }
 }
 
-function buildReminderCards(props: SmartCardsProps, state: CardState): SmartCard[] {
+function buildReminderCards(props: RestaurantProps, state: CardState): SmartCard[] {
   const cards: SmartCard[] = []
   const hour = new Date().getHours()
   const isEvening = hour >= 19
@@ -229,7 +229,7 @@ function buildReminderCards(props: SmartCardsProps, state: CardState): SmartCard
   return cards
 }
 
-function buildOptimizationCards(props: SmartCardsProps, state: CardState): SmartCard[] {
+function buildOptimizationCards(props: RestaurantProps, state: CardState): SmartCard[] {
   const cards: SmartCard[] = []
   const plan = props.plan
   const milestones = state.milestones_shown ?? []
@@ -323,70 +323,60 @@ function buildOptimizationCards(props: SmartCardsProps, state: CardState): Smart
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function SmartCards(props: SmartCardsProps) {
+export function SmartCards() {
   const [cardState, setCardState] = useState<CardState>(DEFAULT_STATE)
+  const [restoProps, setRestoProps] = useState<RestaurantProps | null>(null)
   const [card, setCard] = useState<SmartCard | null>(null)
   const [visible, setVisible] = useState(false)
   const [animOut, setAnimOut] = useState(false)
   const [skipModal, setSkipModal] = useState(false)
-  const [stateLoaded, setStateLoaded] = useState(false)
+  const [ready, setReady] = useState(false)
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Load state from API — pre-mark milestones for existing restaurants on first load
+  // Load card state + restaurant props in parallel
   useEffect(() => {
-    fetch('/api/restaurant/smart-cards')
-      .then(r => r.json())
-      .then(({ state }) => {
-        const loaded: CardState = { ...DEFAULT_STATE, ...(state ?? {}) }
-        const isFirstLoad = !state || Object.keys(state).length === 0
-        if (isFirstLoad) {
-          // Pre-mark all already-reached milestones so existing restaurants don't see celebration cards
-          const orders = props.totalOrders ?? 0
-          const preMilestones: string[] = []
-          if (orders >= 1) preMilestones.push('first_order')
-          if (orders >= 10) preMilestones.push('orders_10')
-          if (orders >= 50) preMilestones.push('orders_50')
-          if (preMilestones.length > 0) {
-            loaded.milestones_shown = preMilestones
-            fetch('/api/restaurant/smart-cards', {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ milestones_shown: preMilestones }),
-            })
-          }
+    Promise.all([
+      fetch('/api/restaurant/smart-cards').then(r => r.json()),
+      fetch('/api/restaurant/smart-card-props').then(r => r.json()),
+    ]).then(([{ state }, rProps]) => {
+      if (rProps.error) return  // not a restaurant user, don't show cards
+      const loaded: CardState = { ...DEFAULT_STATE, ...(state ?? {}) }
+      const isFirstLoad = !state || Object.keys(state).length === 0
+      if (isFirstLoad) {
+        const orders: number = rProps.totalOrders ?? 0
+        const preMilestones: string[] = []
+        if (orders >= 1) preMilestones.push('first_order')
+        if (orders >= 10) preMilestones.push('orders_10')
+        if (orders >= 50) preMilestones.push('orders_50')
+        if (preMilestones.length > 0) {
+          loaded.milestones_shown = preMilestones
+          fetch('/api/restaurant/smart-cards', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ milestones_shown: preMilestones }),
+          })
         }
-        setCardState(loaded)
-        setStateLoaded(true)
-      })
-      .catch(() => setStateLoaded(true))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      }
+      setCardState(loaded)
+      setRestoProps(rProps as RestaurantProps)
+      setReady(true)
+    }).catch(() => {/* silently fail */})
   }, [])
 
-  // Decide which card to show after state loads
+  // Decide which card to show once data is ready
   useEffect(() => {
-    if (!stateLoaded) return
+    if (!ready || !restoProps) return
     const timer = setTimeout(() => {
       const onboarding = buildOnboardingCard(cardState)
-      if (onboarding) {
-        setCard(onboarding)
-        setVisible(true)
-        return
-      }
-      const reminders = buildReminderCards(props, cardState)
-      if (reminders.length > 0) {
-        setCard(reminders[0])
-        setVisible(true)
-        return
-      }
-      const opts = buildOptimizationCards(props, cardState)
-      if (opts.length > 0) {
-        setCard(opts[0])
-        setVisible(true)
-      }
+      if (onboarding) { setCard(onboarding); setVisible(true); return }
+      const reminders = buildReminderCards(restoProps, cardState)
+      if (reminders.length > 0) { setCard(reminders[0]); setVisible(true); return }
+      const opts = buildOptimizationCards(restoProps, cardState)
+      if (opts.length > 0) { setCard(opts[0]); setVisible(true) }
     }, 3000)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stateLoaded])
+  }, [ready])
 
   function saveState(patch: Partial<CardState>) {
     if (saveTimeout.current) clearTimeout(saveTimeout.current)
