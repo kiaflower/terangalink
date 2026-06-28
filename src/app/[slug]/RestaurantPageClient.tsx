@@ -1,4 +1,5 @@
 'use client'
+import { FaSnapchat } from 'react-icons/fa'
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
@@ -617,9 +618,7 @@ function RestaurantInner({ data }: Props) {
                         <a href={restaurant.snapchat_url} target="_blank" rel="noopener noreferrer"
                           className="w-10 h-10 rounded-full flex items-center justify-center"
                           style={{ backgroundColor: tokens.bgCardHover, border: `1px solid ${tokens.border}` }}>
-                          <svg viewBox="0 0 192 192" className="w-5 h-5" fill="currentColor" style={{ color: tokens.textSecondary }}>
-                            <path d="M96 12c-23.3 0-52 13.7-52 52.3 0 3.7.3 7.3.7 10.8-2.3.9-4.9 1.3-7.5.8-1.5-.3-3-.5-4.5-.5-6.5 0-11 3.7-11 8.9 0 4.6 3.4 8.4 9.5 10.7-2.8 3.5-6.5 6.3-9.5 8.5-1.7 1.3-2.1 3.6-.9 5.3 1.2 2.5 3.8 4.2 6.5 4.5.9.1 2 .3 3 .4-.7 2.5-1.1 5.1-1.1 7.7 0 17.4 14.3 31.6 31.9 31.6 3 0 5.9-.4 8.6-1.2C75.9 162.8 85.4 170 96 170s20.1-7.2 26.3-18.5c2.7.8 5.6 1.2 8.6 1.2 17.6 0 31.9-14.2 31.9-31.6 0-2.6-.4-5.2-1.1-7.7 1-.1 2.1-.3 3-.4 2.7-.3 5.3-2 6.5-4.5 1.2-1.7.8-4-.9-5.3-3-2.2-6.7-5-9.5-8.5 6.1-2.3 9.5-6.1 9.5-10.7 0-5.2-4.5-8.9-11-8.9-1.5 0-3 .2-4.5.5-2.6.5-5.2.1-7.5-.8.4-3.5.7-7.1.7-10.8C148 25.7 119.3 12 96 12z"/>
-                          </svg>
+                          <FaSnapchat className="w-5 h-5" style={{ color: tokens.textSecondary }} />
                         </a>
                       )}
                     </div>
