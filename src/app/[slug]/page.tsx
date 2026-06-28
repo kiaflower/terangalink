@@ -271,6 +271,15 @@ export default async function RestaurantPage({ params }: Props) {
     tiktok_url: restaurant.tiktok_url,
     topItems: enrichedItems.filter(i => i.is_available).slice(0, 5).map(i => i.name.toLowerCase()),
     topCategories: (categoriesData as Array<{ name: string }> ?? []).map(c => c.name.toLowerCase()),
+    // Menu enrichi pour hasMenu Schema.org
+    menuCategories: (categoriesData as Array<{ id: string; name: string }> ?? []).map(c => ({ id: c.id, name: c.name })),
+    menuItems: enrichedItems.map(i => ({
+      name: i.name,
+      description: i.description,
+      price: i.price,
+      category_id: i.category_id,
+      is_available: i.is_available,
+    })),
   })
 
   return (

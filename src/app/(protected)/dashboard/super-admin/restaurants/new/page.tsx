@@ -4,25 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { ArrowLeft, Store, User, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { slugify } from '@/lib/utils'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { PLAN_OPTIONS } from '@/lib/plans'
-
-const CUISINE_OPTIONS = [
-  { value: '', label: 'Choisir un type...' },
-  { value: 'sénégalais', label: 'Cuisine sénégalaise' },
-  { value: 'africain', label: 'Cuisine africaine' },
-  { value: 'fast-food', label: 'Fast food' },
-  { value: 'pizza', label: 'Pizza' },
-  { value: 'burgers', label: 'Burgers' },
-  { value: 'asiatique', label: 'Asiatique' },
-  { value: 'libanais', label: 'Libanais' },
-  { value: 'boulangerie', label: 'Boulangerie / Café' },
-  { value: 'autre', label: 'Autre' },
-]
-
 
 export default function NewRestaurantPage() {
   const router = useRouter()

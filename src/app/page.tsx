@@ -5,6 +5,24 @@ import { Footer } from '@/components/layout/Footer'
 import { MarqueeRestaurants } from '@/components/landing/MarqueeRestaurants'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPlatformSettings } from '@/lib/settings'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'TerangaLink — Commandez chez les meilleurs restaurants du Sénégal',
+  description: 'Découvrez et commandez chez les meilleurs restaurants de Dakar et du Sénégal directement via WhatsApp. Sans appli, sans friction. Yassa, Thiéboudienne, livraison rapide.',
+  keywords: 'restaurant Dakar, commande en ligne Sénégal, livraison repas Dakar, WhatsApp commande restaurant, TerangaLink, restaurant sénégalais',
+  openGraph: {
+    title: 'TerangaLink — Commandez local au Sénégal',
+    description: 'La plateforme qui connecte restaurants et clients au Sénégal. Commandez via WhatsApp en un clic.',
+    url: 'https://www.teranga-link.com',
+    siteName: 'TerangaLink',
+    locale: 'fr_SN',
+    type: 'website',
+    images: [{ url: 'https://www.teranga-link.com/logo-terangalink.jpg', width: 400, height: 400, alt: 'TerangaLink' }],
+  },
+  twitter: { card: 'summary_large_image', title: 'TerangaLink — Commandez local au Sénégal', description: 'Commandez chez les meilleurs restaurants de Dakar via WhatsApp.' },
+  alternates: { canonical: 'https://www.teranga-link.com' },
+}
 
 const WHATSAPP_URL = `https://wa.me/221774739266?text=${encodeURIComponent("Bonjour, je souhaite inscrire mon restaurant sur TerangaLink.")}`
 
@@ -148,13 +166,13 @@ export default async function HomePage() {
                 Voir les restaurants
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
+              <Link href="/inscription"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:bg-white/10 group"
                 style={{ color: '#FFFFFF', border: '2px solid rgba(255,255,255,0.6)' }}>
-                <MessageCircle className="w-4 h-4" />
+                <Store className="w-4 h-4" />
                 Créer mon restaurant
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+              </Link>
             </div>
           </div>
         </section>

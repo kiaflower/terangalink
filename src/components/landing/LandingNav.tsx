@@ -66,11 +66,11 @@ export function LandingNav() {
               style={{ color: '#6B7280' }}>
               Se connecter
             </Link>
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+            <Link href="/inscription"
               className="inline-flex items-center gap-2 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all hover:opacity-90"
               style={{ backgroundColor: '#F97316' }}>
               <MessageCircle className="w-4 h-4" />Créer mon restaurant
-            </a>
+            </Link>
           </div>
 
           <button className="md:hidden p-2 transition-colors" style={{ color: '#6B7280' }} onClick={() => setMobileOpen(!mobileOpen)}>
@@ -98,11 +98,11 @@ export function LandingNav() {
               style={{ color: '#6B7280', border: '1px solid #E5E7EB' }}>
               Se connecter
             </Link>
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+            <Link href="/inscription" onClick={() => setMobileOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
               style={{ backgroundColor: '#F97316' }}>
               <MessageCircle className="w-4 h-4" />Créer mon restaurant
-            </a>
+            </Link>
           </div>
         </div>
       )}

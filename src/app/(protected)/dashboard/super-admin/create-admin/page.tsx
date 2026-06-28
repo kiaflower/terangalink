@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { Button } from '@/components/ui/Button'
 import {
   User,
@@ -15,19 +16,6 @@ import {
   UtensilsCrossed,
   CheckCircle2,
 } from 'lucide-react'
-
-const CUISINE_OPTIONS = [
-  { value: '', label: 'Choisir un type...' },
-  { value: 'africain', label: 'Cuisine africaine' },
-  { value: 'senegalais', label: 'Cuisine sénégalaise' },
-  { value: 'fast-food', label: 'Fast food' },
-  { value: 'pizza', label: 'Pizza' },
-  { value: 'burgers', label: 'Burgers' },
-  { value: 'sushi', label: 'Sushi / Asiatique' },
-  { value: 'libanais', label: 'Libanais' },
-  { value: 'boulangerie', label: 'Boulangerie / Café' },
-  { value: 'autre', label: 'Autre' },
-]
 
 const PLAN_OPTIONS = [
   { value: 'starter', label: 'Starter — 9 000 FCFA/mois' },

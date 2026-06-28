@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Search, MapPin, Star, UtensilsCrossed, Zap, MessageCircle, ArrowRight } from 'lucide-react'
+import { CUISINE_FILTER_OPTIONS } from '@/lib/cuisines'
 
 interface Restaurant {
   id: string
@@ -19,8 +20,20 @@ interface Restaurant {
   is_boosted?: boolean
 }
 
-const CITIES = ['Toutes les villes', 'Dakar', 'Thiès', 'Saint-Louis', 'Ziguinchor', 'Autre']
-const CUISINES = ['Tous les types', 'Sénégalaise', 'Fast food', 'Pâtisserie', 'Sandwicherie', 'Africaine', 'Internationale']
+interface MenuItem {
+  restaurant_id: string
+  name: string
+  description: string | null
+}
+
+const CITIES = [
+  'Toutes les régions',
+  'Dakar', 'Thiès', 'Diourbel', 'Fatick', 'Kaolack', 'Kaffrine',
+  'Saint-Louis', 'Louga', 'Matam',
+  'Tambacounda', 'Kédougou',
+  'Ziguinchor', 'Sédhiou', 'Kolda',
+]
+const CUISINES = CUISINE_FILTER_OPTIONS
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1600&q=80'
 
@@ -47,8 +60,7 @@ function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; 
       {isBoosted && (
         <div className="flex items-center gap-1.5 px-3 py-1.5"
           style={{ backgroundColor: '#FFF7ED', borderBottom: '1px solid #FED7AA' }}>
-          <Zap className="w-3 h-3 fill-orange-500 text-orange-500" />
-          <span className="text-xs font-bold" style={{ color: '#EA580C' }}>Mis en avant</span>
+          <span className="text-xs font-bold" style={{ color: '#EA580C' }}>Recommandé</span>
         </div>
       )}
 
@@ -139,9 +151,9 @@ function trackEvent(event_type: string, restaurant_id?: string) {
   }).catch(() => {})
 }
 
-export default function RestaurantsClient({ restaurants }: { restaurants: Restaurant[] }) {
+export default function RestaurantsClient({ restaurants, menuItems }: { restaurants: Restaurant[]; menuItems: MenuItem[] }) {
   const [query, setQuery] = useState('')
-  const [city, setCity] = useState('Toutes les villes')
+  const [city, setCity] = useState('Toutes les régions')
   const [cuisine, setCuisine] = useState('Tous les types')
 
   // Tracker la vue de l'annuaire au chargement
@@ -149,17 +161,28 @@ export default function RestaurantsClient({ restaurants }: { restaurants: Restau
     trackEvent('directory_view')
   }, [])
 
+  // Index des plats par restaurant (calculé une seule fois)
+  const menuIndex = useMemo(() => {
+    const index: Record<string, string> = {}
+    for (const item of menuItems) {
+      const existing = index[item.restaurant_id] ?? ''
+      index[item.restaurant_id] = existing + ' ' + item.name + ' ' + (item.description ?? '')
+    }
+    return index
+  }, [menuItems])
+
   const filtered = useMemo(() => {
     return restaurants
       .filter(r => {
-        const q = query.toLowerCase()
+        const q = query.toLowerCase().trim()
         const matchQuery = !q ||
           r.name.toLowerCase().includes(q) ||
-          (r.description || '').toLowerCase().includes(q) ||
-          (r.city || '').toLowerCase().includes(q) ||
-          (r.cuisine_type || '').toLowerCase().includes(q)
-        const matchCity = city === 'Toutes les villes' || (r.city || '').toLowerCase().includes(city.toLowerCase())
-        const matchCuisine = cuisine === 'Tous les types' || (r.cuisine_type || '').toLowerCase().includes(cuisine.toLowerCase())
+          (r.description ?? '').toLowerCase().includes(q) ||
+          (r.city ?? '').toLowerCase().includes(q) ||
+          (r.cuisine_type ?? '').toLowerCase().includes(q) ||
+          (menuIndex[r.id] ?? '').toLowerCase().includes(q)
+        const matchCity = city === 'Toutes les régions' || (r.city ?? '').toLowerCase().includes(city.toLowerCase())
+        const matchCuisine = cuisine === 'Tous les types' || (r.cuisine_type ?? '').toLowerCase().includes(cuisine.toLowerCase())
         return matchQuery && matchCity && matchCuisine
       })
       .sort((a, b) => {
@@ -177,7 +200,7 @@ export default function RestaurantsClient({ restaurants }: { restaurants: Restau
     <div className="min-h-screen" style={{ backgroundColor: '#F9FAFB' }}>
 
       {/* ── Hero avec image de fond ── */}
-      <div className="relative flex flex-col items-center justify-end" style={{ minHeight: '60vh' }}>
+      <div className="relative flex flex-col items-center justify-end" style={{ minHeight: '60vh', paddingTop: '56px' }}>
 
         {/* Image de fond */}
         <div className="absolute inset-0 overflow-hidden">
@@ -189,21 +212,21 @@ export default function RestaurantsClient({ restaurants }: { restaurants: Restau
             priority
             unoptimized
           />
-          {/* Overlay gradient — moins opaque pour laisser l'image visible */}
+          {/* Overlay — image assombrie */}
           <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.05) 100%)' }} />
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.45) 100%)' }} />
         </div>
 
-        {/* Header dans le hero */}
-        <div className="absolute top-0 left-0 right-0 z-10 px-4 py-4">
+        {/* Header blanc fixe */}
+        <div className="fixed top-0 left-0 right-0 z-50 px-4 py-3" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
-              <span className="font-bold text-white text-lg">Teranga<span style={{ color: '#F97316' }}>Link</span></span>
+              <span className="font-bold text-lg" style={{ color: '#111111' }}>Teranga<span style={{ color: '#F97316' }}>Link</span></span>
             </Link>
             <Link href="/pour-les-restaurants"
-              className="text-xs font-semibold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)' }}>
+              className="text-xs font-semibold px-4 py-2 rounded-xl transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#F97316', color: '#FFFFFF' }}>
               Mon restaurant →
             </Link>
           </div>
@@ -216,7 +239,13 @@ export default function RestaurantsClient({ restaurants }: { restaurants: Restau
             Restaurants au Sénégal
           </div>
           <h1 className="font-black text-4xl sm:text-5xl text-white mb-3 leading-tight">
-            Où manger <span style={{ color: '#FB923C' }}>ce soir ?</span>
+            {(() => {
+              const h = new Date().getHours()
+              if (h < 11) return <>Quoi manger <span style={{ color: '#FB923C' }}>ce matin ?</span></>
+              if (h < 15) return <>Quoi manger <span style={{ color: '#FB923C' }}>ce midi ?</span></>
+              if (h < 18) return <>Quoi manger <span style={{ color: '#FB923C' }}>cet après-midi ?</span></>
+              return <>Quoi manger <span style={{ color: '#FB923C' }}>ce soir ?</span></>
+            })()}
           </h1>
           <p className="text-white/80 mb-6 text-base sm:text-lg">
             Commandez directement via WhatsApp — sans appli
@@ -248,15 +277,15 @@ export default function RestaurantsClient({ restaurants }: { restaurants: Restau
                   onChange={e => setCity(e.target.value)}
                   className="appearance-none pl-3 pr-7 py-2 rounded-xl text-xs font-semibold cursor-pointer focus:outline-none shadow-sm"
                   style={{
-                    backgroundColor: city !== 'Toutes les villes' ? '#FFF7ED' : 'rgba(255,255,255,0.92)',
-                    color: city !== 'Toutes les villes' ? '#EA580C' : '#6B7280',
-                    border: `1px solid ${city !== 'Toutes les villes' ? '#FED7AA' : 'rgba(255,255,255,0.4)'}`,
+                    backgroundColor: city !== 'Toutes les régions' ? '#FFF7ED' : 'rgba(255,255,255,0.92)',
+                    color: city !== 'Toutes les régions' ? '#EA580C' : '#6B7280',
+                    border: `1px solid ${city !== 'Toutes les régions' ? '#FED7AA' : 'rgba(255,255,255,0.4)'}`,
                   }}
                 >
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <MapPin className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none"
-                  style={{ color: city !== 'Toutes les villes' ? '#EA580C' : '#9CA3AF' }} />
+                  style={{ color: city !== 'Toutes les régions' ? '#EA580C' : '#9CA3AF' }} />
               </div>
 
               <div className="relative">

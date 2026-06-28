@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { PLAN_LABELS, PLAN_OPTIONS, type PlanType, getPlanFeatures, normalizePlan } from '@/lib/plans'
+import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { getInitials } from '@/lib/utils'
 import { DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR, generateThemeTokens } from '@/lib/theme'
@@ -69,6 +70,7 @@ export default function EditRestaurantPage() {
   const [instagramUrl, setInstagramUrl] = useState('')
   const [tiktokUrl, setTiktokUrl] = useState('')
   const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark')
+  const [cuisineType, setCuisineType] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [openingHours, setOpeningHours] = useState<OpeningHours>({})
   const [deliveryFee, setDeliveryFee] = useState('0')
@@ -133,6 +135,7 @@ export default function EditRestaurantPage() {
     setPreviewPrimary(r.primary_color || DEFAULT_PRIMARY_COLOR)
     setPreviewBg(r.background_color || DEFAULT_DARK_BACKGROUND)
     setPreviewMode(r.theme_mode || 'dark')
+    setCuisineType(r.cuisine_type || '')
     setIsActive(r.is_active ?? true)
     setOpeningHours((r.opening_hours as OpeningHours) || {})
     setDeliveryFee(String(r.delivery_fee ?? 0))
@@ -193,6 +196,7 @@ export default function EditRestaurantPage() {
         facebook_url: facebookUrl || null,
         instagram_url: instagramUrl || null,
         tiktok_url: tiktokUrl || null,
+        cuisine_type: cuisineType || null,
         is_active: isActive,
         opening_hours: openingHours,
         delivery_fee: Number(deliveryFee) || 0,
@@ -376,6 +380,12 @@ export default function EditRestaurantPage() {
 
           <Input label="Nom" value={name} onChange={e => setName(e.target.value)} />
           <Input label="Slug" value={slug} onChange={e => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))} hint="Ex: chez-teranga" />
+          <Select
+            label="Type de cuisine"
+            value={cuisineType}
+            onChange={e => setCuisineType(e.target.value)}
+            options={CUISINE_OPTIONS}
+          />
           <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} />
           <Input label="Ville" value={city} onChange={e => setCity(e.target.value)} />
           <Input label="Adresse" value={address} onChange={e => setAddress(e.target.value)} />

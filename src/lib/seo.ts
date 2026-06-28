@@ -1,6 +1,19 @@
 export const SITE_NAME = 'TerangaLink'
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://teranga-link.com'
 
+export interface SeoMenuCategory {
+  id: string
+  name: string
+}
+
+export interface SeoMenuItem {
+  name: string
+  description: string | null
+  price: number
+  category_id: string | null
+  is_available: boolean
+}
+
 export interface SeoRestaurantData {
   name: string
   slug: string
@@ -20,6 +33,9 @@ export interface SeoRestaurantData {
   tiktok_url: string | null
   topCategories?: string[]
   topItems?: string[]
+  // Enrichissement menu Schema.org
+  menuCategories?: SeoMenuCategory[]
+  menuItems?: SeoMenuItem[]
 }
 
 export function buildAutoDescription(data: SeoRestaurantData): string {
@@ -45,23 +61,22 @@ export function buildAutoDescription(data: SeoRestaurantData): string {
 }
 
 export function buildTitle(data: Pick<SeoRestaurantData, 'name' | 'city' | 'cuisine_type'>): string {
-  const parts = [data.name]
-  if (data.cuisine_type) parts.push(data.cuisine_type)
-  if (data.city) parts.push(data.city)
-  return parts.join(' · ')
+  const city = data.city ? ` ${data.city}` : ''
+  return `${data.name}${city} — Commandez via WhatsApp | ${SITE_NAME}`
 }
 
 export function buildKeywords(data: SeoRestaurantData): string {
   const kw: string[] = [
     data.name,
     `restaurant ${data.city ?? ''}`.trim(),
+    `commander ${data.name}`,
     `commande en ligne ${data.city ?? ''}`.trim(),
     `livraison ${data.city ?? ''}`.trim(),
   ]
   if (data.cuisine_type) kw.push(data.cuisine_type, `cuisine ${data.cuisine_type}`)
   if (data.topCategories) kw.push(...data.topCategories.slice(0, 4))
-  if (data.topItems) kw.push(...data.topItems.slice(0, 4))
-  kw.push('TerangaLink', 'WhatsApp commande', 'menu en ligne')
+  if (data.topItems) kw.push(...data.topItems.slice(0, 5))
+  kw.push('TerangaLink', 'WhatsApp commande', 'menu en ligne', 'Sénégal')
   return [...new Set(kw)].filter(Boolean).join(', ')
 }
 
@@ -84,6 +99,7 @@ export function buildSchemaOrg(data: SeoRestaurantData): object {
     '@type': ['Restaurant', 'LocalBusiness'],
     name: data.name,
     url: buildCanonical(data.slug),
+    priceRange: 'FCFA',
   }
 
   if (data.description) schema.description = data.description
@@ -109,15 +125,50 @@ export function buildSchemaOrg(data: SeoRestaurantData): object {
     schema.geo = { '@type': 'GeoCoordinates', latitude: data.latitude, longitude: data.longitude }
   }
 
+  // Horaires — format openingHours (string[]) ET openingHoursSpecification
   if (data.opening_hours) {
-    const hours: string[] = []
+    const hoursStrings: string[] = []
+    const hoursSpec: object[] = []
+
     for (const [dayFr, slot] of Object.entries(data.opening_hours)) {
       if (slot.ferme) continue
       const dayEn = DAYS_FR_TO_SCHEMA[dayFr.toLowerCase()]
       if (!dayEn) continue
-      if (slot.ouverture && slot.fermeture) hours.push(`${dayEn} ${slot.ouverture}-${slot.fermeture}`)
+      if (slot.ouverture && slot.fermeture) {
+        hoursStrings.push(`${dayEn} ${slot.ouverture}-${slot.fermeture}`)
+        hoursSpec.push({
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: `https://schema.org/${dayEn}`,
+          opens: slot.ouverture,
+          closes: slot.fermeture,
+        })
+      }
     }
-    if (hours.length > 0) schema.openingHours = hours
+    if (hoursStrings.length > 0) schema.openingHours = hoursStrings
+    if (hoursSpec.length > 0) schema.openingHoursSpecification = hoursSpec
+  }
+
+  // Menu enrichi avec sections et items
+  if (data.menuCategories && data.menuItems && data.menuCategories.length > 0) {
+    schema.hasMenu = {
+      '@type': 'Menu',
+      hasMenuSection: data.menuCategories.map(cat => ({
+        '@type': 'MenuSection',
+        name: cat.name,
+        hasMenuItem: (data.menuItems ?? [])
+          .filter(i => i.category_id === cat.id && i.is_available)
+          .map(item => ({
+            '@type': 'MenuItem',
+            name: item.name,
+            ...(item.description ? { description: item.description } : {}),
+            offers: {
+              '@type': 'Offer',
+              price: item.price,
+              priceCurrency: 'XOF',
+            },
+          })),
+      })).filter(s => s.hasMenuItem.length > 0),
+    }
   }
 
   const sameAs: string[] = []

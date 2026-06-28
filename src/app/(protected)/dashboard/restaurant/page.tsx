@@ -12,6 +12,7 @@ import type { Restaurant, Subscription } from '@/lib/types'
 import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
 import { SubscriptionReminder } from '@/components/dashboard/SubscriptionReminder'
 import { SmartCards } from '@/components/dashboard/SmartCards'
+import { HelpCard } from '@/components/dashboard/HelpCard'
 
 export const metadata = { title: 'Tableau de bord — Restaurant' }
 
@@ -215,6 +216,17 @@ export default async function RestaurantDashboard() {
           lastMenuUpdate={lastMenuUpdate}
           lastOrderDate={lastOrderDate}
           restaurantCreatedAt={restaurant.created_at}
+        />
+      )}
+
+      {/* ── Carte Besoin d'aide ? ── */}
+      {restaurant && (
+        <HelpCard
+          restaurantId={restaurant.id}
+          restaurantName={restaurant.name}
+          ownerName={profile?.full_name || user.email || ''}
+          email={user.email ?? null}
+          whatsapp={(restaurant as Restaurant & { whatsapp_number?: string }).whatsapp_number ?? null}
         />
       )}
     </div>

@@ -49,7 +49,7 @@ async function updateRestaurant(request: NextRequest) {
       updated_at: new Date().toISOString(),
     }
 
-    const coreFields = ['name', 'slug', 'description', 'city', 'address', 'is_active', 'opening_hours', 'delivery_fee', 'show_delivery_fee']
+    const coreFields = ['name', 'slug', 'description', 'city', 'address', 'cuisine_type', 'is_active', 'opening_hours', 'delivery_fee', 'show_delivery_fee']
     for (const field of coreFields) {
       if (field in rest) corePayload[field] = rest[field]
     }

@@ -2,15 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Store, Users, Settings, LogOut, CreditCard, Tag, LayoutGrid } from 'lucide-react'
+import { LayoutDashboard, Store, Users, Settings, LogOut, CreditCard, Tag, LayoutGrid, ClipboardList, Calendar } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 
 const navItems = [
   { label: "Vue d'ensemble", href: '/dashboard/super-admin', icon: LayoutDashboard, exact: true },
   { label: 'Restaurants', href: '/dashboard/super-admin/restaurants', icon: Store },
+  { label: 'Inscriptions', href: '/dashboard/super-admin/inscriptions', icon: ClipboardList },
   { label: 'Annuaire', href: '/dashboard/super-admin/annuaire', icon: LayoutGrid },
   { label: 'Abonnements', href: '/dashboard/super-admin/subscriptions', icon: CreditCard },
   { label: 'Utilisateurs', href: '/dashboard/super-admin/users', icon: Users },
+  { label: 'Disponibilités', href: '/dashboard/super-admin/disponibilites', icon: Calendar },
   { label: 'Codes promo', href: '/dashboard/super-admin/promo-codes', icon: Tag },
   { label: 'Paramètres', href: '/dashboard/super-admin/settings', icon: Settings },
 ]

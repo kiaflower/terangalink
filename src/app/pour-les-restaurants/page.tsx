@@ -1,7 +1,25 @@
 import Link from 'next/link'
 import { LandingNav } from '@/components/landing/LandingNav'
 import { Footer } from '@/components/layout/Footer'
+import { CtaDecouverte } from '@/components/landing/CtaDecouverte'
 import { getPlatformSettings } from '@/lib/settings'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Créez votre restaurant en ligne au Sénégal | TerangaLink',
+  description: 'TerangaLink donne à votre restaurant un site de commande professionnel. Visible sur Google, dans notre annuaire, commandes via WhatsApp. Inscription en moins de 24h. Dakar, Sénégal.',
+  keywords: 'créer site restaurant Sénégal, restaurant en ligne Dakar, commande WhatsApp restaurant, visibilité restaurant Dakar, TerangaLink restaurant',
+  openGraph: {
+    title: 'Créez votre restaurant en ligne | TerangaLink',
+    description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre restaurant au Sénégal.',
+    url: 'https://www.teranga-link.com/pour-les-restaurants',
+    siteName: 'TerangaLink',
+    locale: 'fr_SN',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image', title: 'Créez votre restaurant en ligne | TerangaLink', description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre restaurant au Sénégal.' },
+  alternates: { canonical: 'https://www.teranga-link.com/pour-les-restaurants' },
+}
 import {
   Zap, Smartphone, Shield, Globe, Search,
   Check, Star, ArrowRight, UtensilsCrossed, ShoppingBag, BarChart3, MessageCircle, Store,
@@ -105,13 +123,13 @@ export default async function PourLesRestaurantsPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
+              <Link href="/inscription"
                 className="inline-flex items-center justify-center gap-2 text-white font-semibold px-7 py-3.5 rounded-xl text-base transition-all hover:opacity-90 group shadow-lg"
                 style={{ backgroundColor: '#F97316', boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}>
-                <MessageCircle className="w-5 h-5" />
+                <Store className="w-5 h-5" />
                 Créer mon restaurant
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </a>
+              </Link>
               <Link href="/chez-teranga"
                 className="inline-flex items-center justify-center gap-2 font-semibold px-7 py-3.5 rounded-xl text-base transition-all hover:opacity-80"
                 style={{ color: '#F97316', border: '1.5px solid #F97316' }}>
@@ -225,11 +243,11 @@ export default async function PourLesRestaurantsPage() {
                     </li>
                   ))}
                 </ul>
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
+                <Link href="/inscription"
                   className="w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl text-sm transition-all hover:opacity-90"
                   style={plan.popular ? { backgroundColor: '#F97316', color: '#FFFFFF' } : { border: '1.5px solid #F97316', color: '#F97316' }}>
-                  <MessageCircle className="w-4 h-4" />Commencer
-                </a>
+                  <Store className="w-4 h-4" />Commencer
+                </Link>
               </div>
             ))}
           </div>
@@ -280,25 +298,7 @@ export default async function PourLesRestaurantsPage() {
         </div>
       </section>
 
-      {/* ── CTA Final ── */}
-      <section className="section" style={{ borderTop: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
-        <div className="container-app">
-          <div className="rounded-3xl p-10 sm:p-16 text-center text-white"
-            style={{ backgroundColor: '#F97316', boxShadow: '0 8px 40px rgba(249,115,22,0.2)' }}>
-            <h2 className="heading-lg mb-4">Prêt à digitaliser votre restaurant ?</h2>
-            <p className="text-lg mb-8 max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.85)' }}>
-              Rejoignez les restaurants qui ont déjà fait le choix TerangaLink.
-            </p>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 font-semibold px-7 py-3.5 rounded-xl text-base transition-all hover:opacity-90 group"
-              style={{ backgroundColor: '#FFFFFF', color: '#F97316' }}>
-              <MessageCircle className="w-5 h-5" />
-              Inscrire mon restaurant maintenant
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </a>
-          </div>
-        </div>
-      </section>
+      <CtaDecouverte />
 
       <Footer whatsapp={settings.whatsapp} email={settings.email} city={settings.city} />
     </div>

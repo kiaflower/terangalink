@@ -7,13 +7,19 @@ import { getPlatformSettings } from '@/lib/settings'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Restaurants — TerangaLink',
-  description: 'Découvrez les meilleurs restaurants de Dakar et commandez en ligne via WhatsApp.',
+  title: 'Restaurants à Dakar — Commandez via WhatsApp | TerangaLink',
+  description: 'Découvrez les meilleurs restaurants de Dakar et du Sénégal. Commandez en ligne via WhatsApp — Yassa, Thiéboudienne, Fast food, Pâtisserie. Livraison rapide, sans appli.',
+  keywords: 'restaurants Dakar, commander en ligne Dakar, livraison repas Sénégal, restaurant WhatsApp Dakar, annuaire restaurant Dakar',
   openGraph: {
-    title: 'Restaurants sur TerangaLink',
-    description: 'Découvrez et commandez chez les meilleurs restaurants de Dakar.',
+    title: 'Restaurants à Dakar — TerangaLink',
+    description: 'Trouvez et commandez chez les meilleurs restaurants de Dakar via WhatsApp.',
     url: 'https://www.teranga-link.com/restaurants',
+    siteName: 'TerangaLink',
+    locale: 'fr_SN',
+    type: 'website',
   },
+  twitter: { card: 'summary_large_image', title: 'Restaurants à Dakar | TerangaLink', description: 'Commandez chez les meilleurs restaurants de Dakar via WhatsApp.' },
+  alternates: { canonical: 'https://www.teranga-link.com/restaurants' },
 }
 
 export default async function RestaurantsPage() {
@@ -28,15 +34,20 @@ export default async function RestaurantsPage() {
     .order('name', { ascending: true })
 
   if (!restaurants || restaurants.length === 0) {
-    return <><RestaurantsClient restaurants={[]} /><Footer whatsapp={settings.whatsapp} email={settings.email} city={settings.city} /></>
+    return <><RestaurantsClient restaurants={[]} menuItems={[]} /><Footer whatsapp={settings.whatsapp} email={settings.email} city={settings.city} /></>
   }
 
   const restaurantIds = restaurants.map(r => r.id)
-  const { data: reviews } = await admin
-    .from('reviews')
-    .select('restaurant_id, rating')
-    .in('restaurant_id', restaurantIds)
-    .eq('is_visible', true)
+  const [{ data: reviews }, { data: menuItems }] = await Promise.all([
+    admin.from('reviews')
+      .select('restaurant_id, rating')
+      .in('restaurant_id', restaurantIds)
+      .eq('is_visible', true),
+    admin.from('menu_items')
+      .select('restaurant_id, name, description')
+      .in('restaurant_id', restaurantIds)
+      .eq('is_available', true),
+  ])
 
   const ratingMap: Record<string, { avg: number; count: number }> = {}
   if (reviews) {
@@ -57,9 +68,30 @@ export default async function RestaurantsPage() {
     is_boosted: (r as Record<string, unknown>).is_boosted === true,
   }))
 
+  const schemaItemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Restaurants au Sénégal sur TerangaLink',
+    description: 'Liste des restaurants disponibles sur TerangaLink — Dakar et Sénégal',
+    numberOfItems: enriched.length,
+    itemListElement: enriched.map((r, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Restaurant',
+        name: r.name,
+        url: `https://www.teranga-link.com/${r.slug}`,
+        address: { '@type': 'PostalAddress', addressLocality: r.city || 'Dakar', addressCountry: 'SN' },
+        servesCuisine: r.cuisine_type || 'Sénégalaise',
+        ...(r.rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: r.rating, reviewCount: r.review_count } } : {}),
+      },
+    })),
+  }
+
   return (
     <>
-      <RestaurantsClient restaurants={enriched} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaItemList) }} />
+      <RestaurantsClient restaurants={enriched} menuItems={menuItems ?? []} />
       <Footer whatsapp={settings.whatsapp} email={settings.email} city={settings.city} />
     </>
   )
