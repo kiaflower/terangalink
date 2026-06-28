@@ -22,7 +22,7 @@ export function Footer({ whatsapp = '221774739266', email = 'support@terangalink
               <span className="font-bold" style={{ color: '#111111' }}>TerangaLink</span>
             </div>
             <p className="text-sm leading-relaxed" style={{ color: '#9CA3AF' }}>
-              La plateforme de commande pour restaurants au Sénégal et en Afrique de l&apos;Ouest.
+              La plateforme de commande pour les pros de la food au Sénégal et en Afrique de l&apos;Ouest.
             </p>
           </div>
 
@@ -32,7 +32,7 @@ export function Footer({ whatsapp = '221774739266', email = 'support@terangalink
             <div className="space-y-2">
               {[
                 { label: 'Restaurants', href: '/restaurants' },
-                { label: 'Pour les restaurants', href: '/pour-les-restaurants' },
+                { label: 'Rejoindre TerangaLink', href: '/pour-les-restaurants' },
                 { label: 'Tarifs', href: '/pour-les-restaurants#tarifs' },
                 { label: 'FAQ', href: '/pour-les-restaurants#faq' },
                 { label: 'Mentions légales', href: '/legal' },

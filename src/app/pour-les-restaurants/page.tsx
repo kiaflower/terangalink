@@ -6,18 +6,18 @@ import { getPlatformSettings } from '@/lib/settings'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Créez votre restaurant en ligne au Sénégal | TerangaLink',
-  description: 'TerangaLink donne à votre restaurant un site de commande professionnel. Visible sur Google, dans notre annuaire, commandes via WhatsApp. Inscription en moins de 24h. Dakar, Sénégal.',
-  keywords: 'créer site restaurant Sénégal, restaurant en ligne Dakar, commande WhatsApp restaurant, visibilité restaurant Dakar, TerangaLink restaurant',
+  title: 'Rejoignez TerangaLink — Restaurants, traiteurs, pâtisseries au Sénégal',
+  description: 'TerangaLink donne à votre activité un site de commande professionnel. Restaurants, traiteurs, pâtisseries — visible sur Google, dans notre annuaire, commandes via WhatsApp. Inscription en moins de 24h.',
+  keywords: 'créer site restaurant Sénégal, traiteur en ligne Dakar, pâtisserie commande WhatsApp, visibilité food Dakar, TerangaLink pro, rejoindre TerangaLink',
   openGraph: {
-    title: 'Créez votre restaurant en ligne | TerangaLink',
-    description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre restaurant au Sénégal.',
+    title: 'Rejoignez TerangaLink | Pros de la food au Sénégal',
+    description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre activité food au Sénégal.',
     url: 'https://www.teranga-link.com/pour-les-restaurants',
     siteName: 'TerangaLink',
     locale: 'fr_SN',
     type: 'website',
   },
-  twitter: { card: 'summary_large_image', title: 'Créez votre restaurant en ligne | TerangaLink', description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre restaurant au Sénégal.' },
+  twitter: { card: 'summary_large_image', title: 'Rejoignez TerangaLink | Pros de la food au Sénégal', description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre activité food au Sénégal.' },
   alternates: { canonical: 'https://www.teranga-link.com/pour-les-restaurants' },
 }
 import {
@@ -61,11 +61,11 @@ const testimonials = [
 ]
 
 const faqs = [
-  { q: "C'est quoi l'annuaire TerangaLink ?", a: "L'annuaire est une page publique sur teranga-link.com où tous les clients peuvent découvrir les restaurants inscrits sur la plateforme. Dès que vous créez votre restaurant, il y apparaît automatiquement — avec votre nom, votre ville, votre cuisine et vos avis." },
-  { q: 'Comment fonctionne TerangaLink ?', a: "Votre restaurant obtient un site de commande unique. Vos clients y accèdent, parcourent votre menu et commandent. La commande arrive directement sur votre WhatsApp." },
+  { q: "C'est quoi l'annuaire TerangaLink ?", a: "L'annuaire est une page publique sur teranga-link.com où tous les clients peuvent découvrir les adresses inscrites sur la plateforme. Dès que vous créez votre profil, votre activité y apparaît automatiquement — avec votre nom, votre ville, votre type de cuisine et vos avis." },
+  { q: 'Comment fonctionne TerangaLink ?', a: "Votre activité obtient un site de commande unique. Vos clients y accèdent, parcourent votre menu et commandent. La commande arrive directement sur votre WhatsApp." },
   { q: "Ai-je besoin de compétences techniques ?", a: "Aucune. Notre tableau de bord est conçu pour être utilisé depuis un smartphone. Tout est visuel et intuitif." },
   { q: "Combien de temps pour être en ligne ?", a: "Moins de 24h. Vous remplissez votre profil, ajoutez votre menu, et vous êtes prêts à recevoir des commandes et à apparaître dans l'annuaire." },
-  { q: 'Mon restaurant sera-t-il visible sur Google ?', a: "Oui, automatiquement. Dès que votre restaurant est créé sur TerangaLink, il est référencé sur Google. Vos clients peuvent vous trouver en tapant votre nom, et quand ils partagent votre lien sur WhatsApp, une belle carte visuelle apparaît." },
+  { q: 'Mon adresse sera-t-elle visible sur Google ?', a: "Oui, automatiquement. Dès que votre activité est créée sur TerangaLink, elle est référencée sur Google. Vos clients peuvent vous trouver en tapant votre nom, et quand ils partagent votre lien sur WhatsApp, une belle carte visuelle apparaît." },
   { q: "Comment les clients paient-ils ?", a: "Les clients commandent via WhatsApp. Vous gérez le paiement directement avec eux — Wave, Orange Money, cash, comme vous préférez." },
   { q: "Puis-je annuler à tout moment ?", a: "Oui, les offres Starter, Pro et Premium sont mensuelles et peuvent être résiliées à la fin du mois en cours." },
 ]
@@ -98,11 +98,11 @@ export default async function PourLesRestaurantsPage() {
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 text-xs font-semibold uppercase tracking-wider"
               style={{ backgroundColor: 'rgba(249,115,22,0.1)', color: '#EA580C', border: '1px solid rgba(249,115,22,0.2)' }}>
               <Store className="w-3.5 h-3.5" />
-              Pour les restaurateurs au Sénégal
+              Pour les pros de la food au Sénégal
             </div>
             <h1 className="heading-xl mb-6" style={{ color: '#111111' }}>
               Boostez la visibilité{' '}
-              <span style={{ color: '#F97316' }}>de votre restaurant</span>
+              <span style={{ color: '#F97316' }}>de votre cuisine</span>
             </h1>
             <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-4 leading-relaxed" style={{ color: '#374151' }}>
               TerangaLink vous donne un site de commande professionnel, une visibilité dans notre annuaire, et les outils pour développer votre clientèle au Sénégal.
@@ -157,8 +157,8 @@ export default async function PourLesRestaurantsPage() {
       <section id="fonctionnalités" className="section" style={{ borderTop: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
         <div className="container-app">
           <div className="text-center mb-14">
-            <h2 className="heading-lg mb-4" style={{ color: '#111111' }}>Tout ce dont votre restaurant a besoin</h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: '#6B7280' }}>Une plateforme complète pensée pour les entrepreneurs de la restauration.</p>
+            <h2 className="heading-lg mb-4" style={{ color: '#111111' }}>Tout ce dont votre activité a besoin</h2>
+            <p className="text-lg max-w-xl mx-auto" style={{ color: '#6B7280' }}>Une plateforme complète pensée pour les pros de la food au Sénégal.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map(feature => (

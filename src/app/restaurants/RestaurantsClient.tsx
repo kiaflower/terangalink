@@ -248,7 +248,7 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
             })()}
           </h1>
           <p className="text-white/80 mb-6 text-base sm:text-lg">
-            Commandez directement via WhatsApp — sans appli
+            Restaurants, traiteurs, pâtisseries — commandez directement via WhatsApp
           </p>
 
           {/* Barre de recherche */}

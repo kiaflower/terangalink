@@ -8,19 +8,19 @@ import { getPlatformSettings } from '@/lib/settings'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'TerangaLink — Commandez chez les meilleurs restaurants du Sénégal',
-  description: 'Découvrez et commandez chez les meilleurs restaurants de Dakar et du Sénégal directement via WhatsApp. Sans appli, sans friction. Yassa, Thiéboudienne, livraison rapide.',
-  keywords: 'restaurant Dakar, commande en ligne Sénégal, livraison repas Dakar, WhatsApp commande restaurant, TerangaLink, restaurant sénégalais',
+  title: 'TerangaLink — Commandez chez les meilleures adresses food du Sénégal',
+  description: 'Découvrez et commandez chez les meilleures adresses food de Dakar et du Sénégal directement via WhatsApp. Restaurants, traiteurs, pâtisseries. Sans appli, sans friction.',
+  keywords: 'adresse food Dakar, commande en ligne Sénégal, livraison repas Dakar, WhatsApp commande food, TerangaLink, restaurant sénégalais, traiteur Dakar, pâtisserie Sénégal',
   openGraph: {
     title: 'TerangaLink — Commandez local au Sénégal',
-    description: 'La plateforme qui connecte restaurants et clients au Sénégal. Commandez via WhatsApp en un clic.',
+    description: 'La plateforme qui connecte les pros de la food et leurs clients au Sénégal. Commandez via WhatsApp en un clic.',
     url: 'https://www.teranga-link.com',
     siteName: 'TerangaLink',
     locale: 'fr_SN',
     type: 'website',
     images: [{ url: 'https://www.teranga-link.com/logo-terangalink.jpg', width: 400, height: 400, alt: 'TerangaLink' }],
   },
-  twitter: { card: 'summary_large_image', title: 'TerangaLink — Commandez local au Sénégal', description: 'Commandez chez les meilleurs restaurants de Dakar via WhatsApp.' },
+  twitter: { card: 'summary_large_image', title: 'TerangaLink — Commandez local au Sénégal', description: 'Commandez chez les meilleures adresses food de Dakar via WhatsApp.' },
   alternates: { canonical: 'https://www.teranga-link.com' },
 }
 
@@ -69,7 +69,7 @@ export default async function HomePage() {
               Commandez local. Gérez simple.
             </h1>
             <p className="text-lg max-w-md mx-auto" style={{ color: '#6B7280' }}>
-              La plateforme qui connecte restaurants et clients au Sénégal
+              La plateforme qui connecte les pros de la food et leurs clients au Sénégal
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export default async function HomePage() {
                 Je veux commander
               </h2>
               <p className="text-sm mb-6 leading-relaxed" style={{ color: '#6B7280' }}>
-                Découvrez les meilleurs restaurants de Dakar et commandez directement via WhatsApp
+                Découvrez les meilleures adresses food de Dakar et commandez directement via WhatsApp
               </p>
               <span className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl text-white"
                 style={{ backgroundColor: '#F97316' }}>
@@ -166,11 +166,11 @@ export default async function HomePage() {
                 Voir les restaurants
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
-              <Link href="/inscription"
+              <Link href="/pour-les-restaurants#tarifs"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:bg-white/10 group"
                 style={{ color: '#FFFFFF', border: '2px solid rgba(255,255,255,0.6)' }}>
                 <Store className="w-4 h-4" />
-                Créer mon restaurant
+                Découvrir les offres
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
