@@ -203,7 +203,7 @@ export default async function RestaurantDashboard() {
         />
       )}
 
-      {/* ── Smart Cards (audit, inactivité, saisonnier) ── */}
+      {/* ── Smart Cards (onboarding, rappels, optimisation) ── */}
       {restaurant && subscription && (
         <SmartCards
           restaurantId={restaurant.id}
@@ -216,6 +216,8 @@ export default async function RestaurantDashboard() {
           lastMenuUpdate={lastMenuUpdate}
           lastOrderDate={lastOrderDate}
           restaurantCreatedAt={restaurant.created_at}
+          totalOrders={totalOrders}
+          todayOrders={todayOrders}
         />
       )}
 
