@@ -20,8 +20,8 @@ const navItems = [
   { label: 'Analytiques', href: '/dashboard/restaurant/analytics', icon: BarChart3 },
   { label: 'QR Code', href: '/dashboard/restaurant/qrcode', icon: QrCode },
   { label: 'Profil', href: '/dashboard/restaurant/profile', icon: User },
+  { label: 'Booster mon restaurant', href: '/dashboard/restaurant/boost', icon: Zap },
   { label: 'Paramètres', href: '/dashboard/restaurant/settings', icon: Settings },
-  { label: 'Booster mon restaurant', href: '/dashboard/restaurant/boost', icon: Zap, highlight: true },
 ]
 
 export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {

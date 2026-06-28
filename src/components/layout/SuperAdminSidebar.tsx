@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Store, Users, Settings, LogOut, CreditCard, Tag, LayoutGrid, ClipboardList, Calendar } from 'lucide-react'
+import { LayoutDashboard, Store, Users, Settings, LogOut, CreditCard, Tag, LayoutGrid, ClipboardList, Calendar, Zap } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 
 const navItems = [
@@ -14,6 +14,7 @@ const navItems = [
   { label: 'Abonnements', href: '/dashboard/super-admin/subscriptions', icon: CreditCard, badgeKey: null },
   { label: 'Utilisateurs', href: '/dashboard/super-admin/users', icon: Users, badgeKey: null },
   { label: 'Disponibilités', href: '/dashboard/super-admin/disponibilites', icon: Calendar, badgeKey: 'pendingAppointments' as const },
+  { label: 'Demandes de boost', href: '/dashboard/super-admin/boost-requests', icon: Zap, badgeKey: null },
   { label: 'Codes promo', href: '/dashboard/super-admin/promo-codes', icon: Tag, badgeKey: null },
   { label: 'Paramètres', href: '/dashboard/super-admin/settings', icon: Settings, badgeKey: null },
 ]
