@@ -39,20 +39,21 @@ const features = [
   { icon: BarChart3, title: 'Statistiques & revenus', description: 'Suivez vos ventes, vos meilleurs plats et votre croissance en FCFA depuis votre tableau de bord.' },
   { icon: Search, title: 'Référencement Google inclus', description: "Votre restaurant apparaît automatiquement sur Google dès sa création — titre, description, fiche locale — sans aucune action de votre part." },
   { icon: Shield, title: 'Sécurisé & fiable', description: "Données sécurisées, uptime 99.9%. Votre business ne s'arrête jamais." },
+  { icon: Zap, title: 'Option Boost', description: "Gagnez en visibilité avec nos options de boost — mise en avant dans l'annuaire et campagnes Meta Ads sur Instagram, Facebook et WhatsApp. Premier boost offert à l'inscription." },
 ]
 
 const plans = [
   {
     name: 'Starter', price: '9 000', period: '/mois', description: "L'essentiel pour démarrer en ligne", badge: null, popular: false,
-    features: ['Listé dans l\'annuaire TerangaLink', 'Site de commande', 'Menu illimité', 'Commandes WhatsApp', 'Dashboard administrateur', 'Statistiques & revenus', 'QR Code', 'Support WhatsApp'],
+    features: ['Listé dans l\'annuaire TerangaLink', 'Site de commande', 'Menu illimité', 'Commandes WhatsApp', 'Dashboard administrateur', 'Statistiques & revenus', 'QR Code', 'Support WhatsApp', '⚡ 1er boost offert sur nos plateformes'],
   },
   {
     name: 'Pro', price: '15 000', period: '/mois', description: 'Personnalisation + visibilité maximale', badge: null, popular: true,
-    features: ['Tout Starter', 'Mise en avant dans l\'annuaire', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Couleurs personnalisées', 'Réseaux sociaux affichés', 'Génération de reçus', 'Support prioritaire'],
+    features: ['Tout Starter', 'Mise en avant dans l\'annuaire', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Couleurs personnalisées', 'Réseaux sociaux affichés', 'Génération de reçus', 'Support prioritaire', '⚡ 1er boost offert sur nos plateformes'],
   },
   {
     name: 'Premium', price: '25 000', period: '/mois', description: 'E-commerce avancé pour les restaurants ambitieux', badge: 'NOUVEAU', popular: false,
-    features: ['Tout Pro', 'Variantes de produits', 'Gestion de stock', 'Précommandes', 'Codes promo clients', 'Produits mis en avant', 'Bannières promotionnelles'],
+    features: ['Tout Pro', 'Variantes de produits', 'Gestion de stock', 'Précommandes', 'Codes promo clients', 'Produits mis en avant', 'Bannières promotionnelles', '⚡ 1er boost offert sur nos plateformes'],
   },
 ]
 
@@ -215,7 +216,7 @@ export default async function PourLesRestaurantsPage() {
         <div className="container-app">
           <div className="text-center mb-14">
             <h2 className="heading-lg mb-4" style={{ color: '#111111' }}>Tarifs simples et transparents</h2>
-            <p className="text-lg" style={{ color: '#6B7280' }}>En FCFA. Sans frais cachés.</p>
+            <p className="text-lg" style={{ color: '#6B7280' }}>En FCFA. Sans frais cachés sur vos abonnements.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {plans.map(plan => (
@@ -244,11 +245,20 @@ export default async function PourLesRestaurantsPage() {
                   </div>
                 </div>
                 <ul className="space-y-3 flex-1 mb-6">
-                  {plan.features.map(feat => (
-                    <li key={feat} className="flex items-start gap-2.5 text-sm" style={{ color: '#374151' }}>
-                      <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#F97316' }} />{feat}
-                    </li>
-                  ))}
+                  {plan.features.map(feat => {
+                    const isBoost = feat.startsWith('⚡')
+                    const label = isBoost ? feat.replace('⚡ ', '') : feat
+                    return (
+                      <li key={feat} className="flex items-start gap-2.5 text-sm"
+                        style={isBoost ? { color: '#EA580C', fontWeight: 600 } : { color: '#374151' }}>
+                        {isBoost
+                          ? <Zap className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#F97316' }} />
+                          : <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#F97316' }} />
+                        }
+                        {label}
+                      </li>
+                    )
+                  })}
                 </ul>
                 <Link href="/inscription"
                   className="w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-xl text-sm transition-all hover:opacity-90"
