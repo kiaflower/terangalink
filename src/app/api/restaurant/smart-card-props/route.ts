@@ -27,7 +27,7 @@ export async function GET() {
     { data: lastOrder },
     { data: featuredItem },
   ] = await Promise.all([
-    admin.from('restaurants').select('wave_number, orange_money_number, whatsapp_number, created_at').eq('id', restaurantId).single(),
+    admin.from('restaurants').select('slug, wave_number, orange_money_number, whatsapp_number, created_at').eq('id', restaurantId).single(),
     admin.from('subscriptions').select('plan').eq('restaurant_id', restaurantId).single(),
     admin.from('menu_items').select('*', { count: 'exact', head: true }).eq('restaurant_id', restaurantId).eq('is_available', true),
     admin.from('orders').select('*', { count: 'exact', head: true }).eq('restaurant_id', restaurantId).not('status', 'in', '("cancelled","delivery_cancelled")'),
@@ -42,6 +42,7 @@ export async function GET() {
 
   return NextResponse.json({
     restaurantId,
+    slug: r?.slug ?? null,
     plan: (sub as { plan?: string } | null)?.plan ?? 'starter',
     menuItemsCount: menuCount ?? 0,
     hasWhatsapp: !!r?.whatsapp_number,

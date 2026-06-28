@@ -45,6 +45,7 @@ const DEFAULT_STATE: CardState = {
 
 interface RestaurantProps {
   restaurantId: string
+  slug: string | null
   plan: string
   menuItemsCount: number
   hasWhatsapp: boolean
@@ -60,85 +61,102 @@ interface RestaurantProps {
 
 // ─── Onboarding steps ─────────────────────────────────────────────────────────
 
-const ONBOARDING_STEPS: Array<{
+interface OnboardingStep {
   title: string
   body: string
-  actionLabel: string   // label du bouton principal "J'ai fait ça"
-  linkLabel?: string    // label du lien secondaire optionnel
-  linkHref?: string     // page vers laquelle le lien pointe
+  actionLabel: string
+  linkLabel?: string
+  linkHref?: string
   skipable?: boolean
-}> = [
-  {
-    title: 'Bienvenue sur TerangaLink ! 👋',
-    body: 'Votre restaurant est maintenant en ligne. Suivez ces 10 étapes rapides pour recevoir vos premières commandes.',
-    actionLabel: 'C\'est parti !',
-  },
-  {
-    title: 'Ajoutez votre numéro WhatsApp',
-    body: 'Sans WhatsApp configuré, vos clients ne peuvent pas passer de commandes. Allez dans Paramètres → Contacts.',
-    actionLabel: 'C\'est fait ✓',
-    linkLabel: 'Aller dans Paramètres',
-    linkHref: '/dashboard/restaurant/settings',
-  },
-  {
-    title: 'Créez votre premier plat',
-    body: 'Ajoutez au moins un plat à votre menu pour que vos clients puissent commander. Nom, prix, photo : c\'est tout.',
-    actionLabel: 'C\'est fait ✓',
-    linkLabel: 'Aller au menu',
-    linkHref: '/dashboard/restaurant/menu',
-  },
-  {
-    title: 'Complétez votre profil',
-    body: 'Ajoutez une description, vos horaires et l\'adresse de votre restaurant pour rassurer vos clients.',
-    actionLabel: 'C\'est fait ✓',
-    linkLabel: 'Voir le profil',
-    linkHref: '/dashboard/restaurant/profile',
-  },
-  {
-    title: 'Configurez vos paiements',
-    body: 'Renseignez Wave et Orange Money dans Paramètres. Ils s\'affichent dans les confirmations de commande.',
-    actionLabel: 'C\'est fait ✓',
-    linkLabel: 'Paramètres paiements',
-    linkHref: '/dashboard/restaurant/settings',
-  },
-  {
-    title: 'Enrichissez votre menu',
-    body: 'Les restaurants avec 8+ plats reçoivent 3× plus de commandes. Visez au minimum 5 plats pour démarrer.',
-    actionLabel: 'C\'est fait ✓',
-    linkLabel: 'Ajouter des plats',
-    linkHref: '/dashboard/restaurant/menu',
-    skipable: true,
-  },
-  {
-    title: 'Ajoutez des photos à vos plats',
-    body: 'Les plats avec photos génèrent 60% de commandes en plus. Une photo bien éclairée suffit.',
-    actionLabel: 'C\'est fait ✓',
-    linkLabel: 'Gérer le menu',
-    linkHref: '/dashboard/restaurant/menu',
-    skipable: true,
-  },
-  {
-    title: 'Partagez votre lien restaurant',
-    body: 'Copiez votre lien TerangaLink et envoyez-le sur vos groupes WhatsApp, votre story Instagram, etc.',
-    actionLabel: 'Lien partagé ✓',
-    linkLabel: 'Voir mon QR code',
-    linkHref: '/dashboard/restaurant/qrcode',
-    skipable: true,
-  },
-  {
-    title: 'Créez votre première promotion',
-    body: 'Une promo de lancement (-10% ou livraison offerte) peut déclencher vos premières commandes rapidement.',
-    actionLabel: 'C\'est fait ✓',
-    linkLabel: 'Créer une promo',
-    linkHref: '/dashboard/restaurant/promotions',
-    skipable: true,
-  },
-  {
-    title: 'Votre restaurant est prêt ! 🎉',
-    body: 'Bravo, configuration terminée. Continuez à enrichir votre menu et à partager votre lien chaque semaine.',
-    actionLabel: 'Super, merci !',
-  },
-]
+}
+
+function getOnboardingSteps(plan: string, slug: string | null): OnboardingStep[] {
+  const isPro = plan === 'pro' || plan === 'premium'
+  const siteUrl = slug ? `/${slug}` : null
+
+  const steps: OnboardingStep[] = [
+    {
+      title: 'Bienvenue sur TerangaLink ! 👋',
+      body: 'Votre restaurant est maintenant en ligne. Suivez ces étapes pour découvrir toutes les fonctionnalités.',
+      actionLabel: 'C\'est parti !',
+    },
+    {
+      title: 'Changez votre mot de passe',
+      body: 'Pour sécuriser votre compte, commencez par définir un mot de passe personnel dans les Paramètres.',
+      actionLabel: 'C\'est fait ✓',
+      linkLabel: 'Aller dans Paramètres',
+      linkHref: '/dashboard/restaurant/settings',
+    },
+    {
+      title: 'Ajoutez Wave et Orange Money',
+      body: 'Renseignez vos numéros Wave et Orange Money dans Paramètres. Ils s\'affichent automatiquement dans vos confirmations.',
+      actionLabel: 'C\'est fait ✓',
+      linkLabel: 'Configurer les paiements',
+      linkHref: '/dashboard/restaurant/settings',
+    },
+    {
+      title: 'Réglez vos horaires d\'ouverture',
+      body: 'Indiquez vos jours et heures d\'ouverture dans Paramètres pour que vos clients sachent quand commander.',
+      actionLabel: 'C\'est fait ✓',
+      linkLabel: 'Régler les horaires',
+      linkHref: '/dashboard/restaurant/settings',
+    },
+    {
+      title: 'Ajoutez vos produits au menu',
+      body: 'Créez vos plats avec nom, prix et photo. Plus votre menu est complet, plus vous recevrez de commandes.',
+      actionLabel: 'C\'est fait ✓',
+      linkLabel: 'Gérer le menu',
+      linkHref: '/dashboard/restaurant/menu',
+    },
+    {
+      title: 'Partagez votre QR code',
+      body: 'Téléchargez votre QR code et affichez-le dans votre restaurant, sur vos réseaux sociaux et vos emballages.',
+      actionLabel: 'QR code partagé ✓',
+      linkLabel: 'Voir mon QR code',
+      linkHref: '/dashboard/restaurant/qrcode',
+    },
+    {
+      title: 'Découvrez vos analytiques',
+      body: 'Suivez vos vues, commandes et performances par période. Ces données vous aident à prendre les bonnes décisions.',
+      actionLabel: 'J\'ai vu ✓',
+      linkLabel: 'Voir les analytiques',
+      linkHref: '/dashboard/restaurant/analytics',
+    },
+    {
+      title: 'Suivez vos revenus',
+      body: 'Le tableau de bord affiche vos revenus du mois, commandes du jour et statistiques en temps réel.',
+      actionLabel: 'J\'ai vu ✓',
+      linkLabel: 'Voir le tableau de bord',
+      linkHref: '/dashboard/restaurant',
+    },
+    ...(isPro ? [
+      {
+        title: 'Créez votre premier code promo',
+        body: 'Offrez une réduction à vos clients fidèles ou pour un lancement. Un bon code promo booste les premières commandes.',
+        actionLabel: 'C\'est fait ✓',
+        linkLabel: 'Créer un code promo',
+        linkHref: '/dashboard/restaurant/promotions',
+        skipable: true,
+      },
+      {
+        title: 'Ajoutez une bannière promotionnelle',
+        body: 'Les bannières s\'affichent en haut de votre page restaurant et attirent l\'attention sur vos offres spéciales.',
+        actionLabel: 'C\'est fait ✓',
+        linkLabel: 'Créer une bannière',
+        linkHref: '/dashboard/restaurant/banners',
+        skipable: true,
+      },
+    ] : []),
+    {
+      title: 'Visitez votre site restaurant 🎉',
+      body: 'Votre page publique est en ligne. Regardez-la comme le voit votre client et partagez-la partout !',
+      actionLabel: 'Excellent !',
+      ...(siteUrl ? { linkLabel: 'Voir mon site', linkHref: siteUrl } : {}),
+    },
+  ]
+
+  return steps
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -158,19 +176,20 @@ function canShow(state: CardState, cardId: string, minHours: number): boolean {
 
 // ─── Card builders ────────────────────────────────────────────────────────────
 
-function buildOnboardingCard(state: CardState): SmartCard | null {
+function buildOnboardingCard(state: CardState, plan: string, slug: string | null): SmartCard | null {
   if (state.onboarding_dismissed) return null
+  const steps = getOnboardingSteps(plan, slug)
   const done = state.onboarding_steps_done ?? []
-  const nextStep = ONBOARDING_STEPS.findIndex((_, i) => !done.includes(i))
-  if (nextStep === -1) return null  // all done
-  const step = ONBOARDING_STEPS[nextStep]
-  const isLast = nextStep === ONBOARDING_STEPS.length - 1
+  const nextStep = steps.findIndex((_, i) => !done.includes(i))
+  if (nextStep === -1) return null
+  const step = steps[nextStep]
+  const isLast = nextStep === steps.length - 1
   return {
     id: `onboarding_${nextStep}`,
     type: 'onboarding',
     icon: <Sparkles className="w-4 h-4" />,
     accentColor: '#F97316',
-    label: `Étape ${nextStep + 1} / ${ONBOARDING_STEPS.length}`,
+    label: `Étape ${nextStep + 1} / ${steps.length}`,
     title: step.title,
     body: step.body,
     actionLabel: step.actionLabel,
@@ -371,7 +390,7 @@ export function SmartCards() {
     // If a card is already visible, keep it — don't replace mid-navigation
     if (visible) return
     const timer = setTimeout(() => {
-      const onboarding = buildOnboardingCard(cardState)
+      const onboarding = buildOnboardingCard(cardState, restoProps.plan, restoProps.slug)
       if (onboarding) { setCard(onboarding); setVisible(true); return }
       const reminders = buildReminderCards(restoProps, cardState)
       if (reminders.length > 0) { setCard(reminders[0]); setVisible(true); return }
@@ -449,7 +468,7 @@ export function SmartCards() {
     setAnimOut(true)
     setTimeout(() => {
       setAnimOut(false)
-      const next = buildOnboardingCard(newState)
+      const next = buildOnboardingCard(newState, restoProps?.plan ?? 'starter', restoProps?.slug ?? null)
       if (next) {
         setCard(next)
       } else {
@@ -574,9 +593,10 @@ export function SmartCards() {
             {/* Progress dots for onboarding */}
             {card.type === 'onboarding' && (() => {
               const stepIndex = parseInt(card.id.replace('onboarding_', ''))
+              const steps = getOnboardingSteps(restoProps?.plan ?? 'starter', restoProps?.slug ?? null)
               return (
                 <div className="flex gap-1 pt-0.5">
-                  {ONBOARDING_STEPS.map((_, i) => (
+                  {steps.map((_: OnboardingStep, i: number) => (
                     <div
                       key={i}
                       className="rounded-full transition-all"
