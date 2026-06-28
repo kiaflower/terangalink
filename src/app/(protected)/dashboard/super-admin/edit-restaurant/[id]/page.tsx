@@ -59,6 +59,7 @@ export default function EditRestaurantPage() {
   const [address, setAddress] = useState('')
   const [phone, setPhone] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
+  const [snapchat, setSnapchat] = useState('')
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
   const [primaryColor, setPrimaryColor] = useState('#F97316')
@@ -115,6 +116,7 @@ export default function EditRestaurantPage() {
     setAddress(r.address || '')
     setPhone(r.phone || '')
     setWhatsapp(r.whatsapp_number || '')
+    setSnapchat(r.snapchat_url || '')
     setLogoUrl(r.logo_url)
     setBannerUrl(r.banner_url || r.cover_url)
     setPrimaryColor(r.primary_color || '#F97316')
@@ -174,6 +176,7 @@ export default function EditRestaurantPage() {
         address,
         phone: phone || null,
         whatsapp_number: whatsapp || null,
+        snapchat_url: snapchat || null,
         logo_url: logoUrl,
         banner_url: bannerUrl,
         primary_color: primaryColor,
@@ -370,6 +373,7 @@ export default function EditRestaurantPage() {
           <Input label="Adresse" value={address} onChange={e => setAddress(e.target.value)} />
           <Input label="Téléphone" value={phone} onChange={e => setPhone(e.target.value)} hint="221771234567" />
           <Input label="WhatsApp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} hint="221771234567" />
+          <Input label="Snapchat" value={snapchat} onChange={e => setSnapchat(e.target.value)} hint="Ex: nomutilisateur ou lien snapchat.com/add/…" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ImageCropUpload

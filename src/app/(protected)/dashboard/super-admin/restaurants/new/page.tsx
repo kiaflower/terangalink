@@ -36,6 +36,7 @@ export default function NewRestaurantPage() {
   const [cuisineType, setCuisineType] = useState('')
   const [plan, setPlan] = useState('mensuel')
   const [restAddress, setRestAddress] = useState('')
+  const [snapchatUrl, setSnapchatUrl] = useState('')
 
   const [adminName, setAdminName] = useState('')
   const [adminEmail, setAdminEmail] = useState('')
@@ -96,19 +97,23 @@ export default function NewRestaurantPage() {
       return
     }
 
-    if (data.data?.restaurant_id && restSlug && restSlug !== slugify(restName)) {
-      await fetch('/api/admin/edit-restaurant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: data.data.restaurant_id,
-          name: restName,
-          slug: restSlug,
-          city: restCity,
-          phone: restPhone || null,
-          address: restAddress || null,
-        }),
-      })
+    if (data.data?.restaurant_id) {
+      const needsUpdate = (restSlug && restSlug !== slugify(restName)) || snapchatUrl
+      if (needsUpdate) {
+        await fetch('/api/admin/edit-restaurant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: data.data.restaurant_id,
+            name: restName,
+            slug: restSlug || undefined,
+            city: restCity,
+            phone: restPhone || null,
+            address: restAddress || null,
+            snapchat_url: snapchatUrl || null,
+          }),
+        })
+      }
     }
 
     setSuccess(true)
@@ -153,6 +158,7 @@ export default function NewRestaurantPage() {
             <Input label="Téléphone" placeholder="+221 77 000 00 00" value={restPhone} onChange={e => setRestPhone(e.target.value)} />
             <Input label="Adresse" placeholder="Almadies" value={restAddress} onChange={e => setRestAddress(e.target.value)} />
             <Select label="Type de cuisine" options={CUISINE_OPTIONS} value={cuisineType} onChange={e => setCuisineType(e.target.value)} />
+            <Input label="Snapchat" placeholder="nomutilisateur" value={snapchatUrl} onChange={e => setSnapchatUrl(e.target.value)} />
             <div className="sm:col-span-2"><Select label="Plan d'abonnement" options={PLAN_OPTIONS} value={plan} onChange={e => setPlan(e.target.value)} /></div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { RestaurantSidebar } from '@/components/layout/RestaurantSidebar'
 import { MobileSidebar } from '@/components/layout/MobileSidebar'
+import { SmartCardsWidget } from '@/components/dashboard/SmartCardsWidget'
 
 export default async function RestaurantLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -30,6 +31,9 @@ export default async function RestaurantLayout({ children }: { children: React.R
       <main className="flex-1 min-w-0 overflow-y-auto pt-16 lg:pt-0">
         {children}
       </main>
+
+      {/* Smart Cards overlay — fixed bottom-right */}
+      <SmartCardsWidget />
     </div>
   )
 }
