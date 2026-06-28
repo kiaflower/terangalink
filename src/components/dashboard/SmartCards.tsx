@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { X, ChevronRight, Sparkles, AlertTriangle, Clock, TrendingUp, Gift } from 'lucide-react'
 import Link from 'next/link'
 
@@ -324,6 +325,7 @@ function buildOptimizationCards(props: RestaurantProps, state: CardState): Smart
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function SmartCards() {
+  const pathname = usePathname()
   const [cardState, setCardState] = useState<CardState>(DEFAULT_STATE)
   const [restoProps, setRestoProps] = useState<RestaurantProps | null>(null)
   const [card, setCard] = useState<SmartCard | null>(null)
@@ -363,9 +365,11 @@ export function SmartCards() {
     }).catch(() => {/* silently fail */})
   }, [])
 
-  // Decide which card to show once data is ready
+  // Re-trigger card display on every page navigation (or on first load)
   useEffect(() => {
     if (!ready || !restoProps) return
+    // If a card is already visible, keep it — don't replace mid-navigation
+    if (visible) return
     const timer = setTimeout(() => {
       const onboarding = buildOnboardingCard(cardState)
       if (onboarding) { setCard(onboarding); setVisible(true); return }
@@ -373,10 +377,10 @@ export function SmartCards() {
       if (reminders.length > 0) { setCard(reminders[0]); setVisible(true); return }
       const opts = buildOptimizationCards(restoProps, cardState)
       if (opts.length > 0) { setCard(opts[0]); setVisible(true) }
-    }, 3000)
+    }, 600)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready])
+  }, [ready, pathname])
 
   function saveState(patch: Partial<CardState>) {
     if (saveTimeout.current) clearTimeout(saveTimeout.current)
