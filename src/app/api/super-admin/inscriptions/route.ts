@@ -7,7 +7,7 @@ async function checkSuperAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  return profile?.role === 'super_admin'
+  return (profile as { role?: string } | null)?.role === 'super_admin'
 }
 
 // PATCH — mettre à jour les notes internes d'une inscription
@@ -20,7 +20,7 @@ export async function PATCH(req: NextRequest) {
   const admin = createAdminClient()
   const { error } = await admin
     .from('restaurant_applications')
-    .update({ admin_notes, updated_at: new Date().toISOString() })
+    .update({ admin_notes, updated_at: new Date().toISOString() } as never)
     .eq('id', id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

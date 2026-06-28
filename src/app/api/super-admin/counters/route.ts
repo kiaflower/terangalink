@@ -7,7 +7,7 @@ async function checkSuperAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  return profile?.role === 'super_admin'
+  return (profile as { role?: string } | null)?.role === 'super_admin'
 }
 
 export async function GET() {

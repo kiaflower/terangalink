@@ -7,7 +7,7 @@ async function checkSuperAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  return profile?.role === 'super_admin'
+  return (profile as { role?: string } | null)?.role === 'super_admin'
 }
 
 // GET — créneaux d'une semaine + tous les appointments
@@ -70,14 +70,14 @@ export async function PATCH(req: NextRequest) {
   const t = table === 'appointments' ? 'appointments' : 'availability_slots'
 
   // Mettre à jour l'appointment
-  const { error } = await admin.from(t).update(fields).eq('id', id)
+  const { error } = await admin.from(t).update(fields as never).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Gestion du créneau associé
   if (restore_slot && slot_id) {
     const { error: slotErr } = await admin
       .from('availability_slots')
-      .update({ is_booked: false })
+      .update({ is_booked: false } as never)
       .eq('id', slot_id)
     if (slotErr) return NextResponse.json({ error: slotErr.message }, { status: 500 })
   }
