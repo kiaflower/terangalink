@@ -616,9 +616,9 @@ function RestaurantInner({ data }: Props) {
                       {restaurant.snapchat_url && (
                         <a href={restaurant.snapchat_url} target="_blank" rel="noopener noreferrer"
                           className="w-10 h-10 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: '#FFFC00' }}>
-                          <svg viewBox="0 0 128 128" className="w-5 h-5" fill="#000000">
-                            <path d="M64 6C39.2 6 24 23.5 24 43.2c0 2.4.2 4.7.5 7-.8.5-1.8.7-2.8.5-.6-.1-1.2-.2-1.9-.2-2.8 0-5.3 1.7-5.3 4.2 0 2.2 1.7 4 4.5 4.9-1.4 1.8-3.4 3.1-4.5 4.1-.8.7-1 1.8-.5 2.7.6 1.3 1.9 2.1 3.3 2.3.5.1 1 .2 1.5.2h.5c-.4 1.3-.6 2.6-.6 3.9 0 8.6 7.2 15.6 16.2 15.6 1.5 0 3-.2 4.4-.6C41.7 95.5 52 101 64 101s22.3-5.5 24.7-11.2c1.4.4 2.9.6 4.4.6 9 0 16.2-7 16.2-15.6 0-1.3-.2-2.6-.6-3.9h.5c.5 0 1-.1 1.5-.2 1.4-.2 2.7-1 3.3-2.3.5-.9.3-2-.5-2.7-1.1-1-3.1-2.3-4.5-4.1 2.8-.9 4.5-2.7 4.5-4.9 0-2.5-2.5-4.2-5.3-4.2-.7 0-1.3.1-1.9.2-1 .2-2 0-2.8-.5.3-2.3.5-4.6.5-7C104 23.5 88.8 6 64 6z"/>
+                          style={{ backgroundColor: tokens.bgCardHover, border: `1px solid ${tokens.border}` }}>
+                          <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: tokens.textSecondary }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C7.6 2 5 5.4 5 8.8c0 .5 0 .9.1 1.4-.3.1-.6.2-1 .1-.2 0-.4-.1-.6-.1-.7 0-1.2.4-1.2 1s.4.9 1 1c-.3.4-.7.7-1 .9-.2.2-.2.4-.1.6.1.3.4.5.7.5h.1c-.1.3-.1.6-.1.9 0 2 1.6 3.6 3.7 3.6.3 0 .7 0 1-.1.6 1 1.7 1.8 3.4 1.8s2.8-.8 3.4-1.8c.3.1.7.1 1 .1 2.1 0 3.7-1.6 3.7-3.6 0-.3 0-.6-.1-.9h.1c.3 0 .6-.2.7-.5.1-.2.1-.4-.1-.6-.3-.2-.7-.5-1-.9.6-.1 1-.5 1-1s-.5-1-1.2-1c-.2 0-.4 0-.6.1-.4.1-.7 0-1-.1.1-.5.1-.9.1-1.4C19 5.4 16.4 2 12 2z"/>
                           </svg>
                         </a>
                       )}
