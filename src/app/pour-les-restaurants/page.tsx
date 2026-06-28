@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { LandingNav } from '@/components/landing/LandingNav'
 import { Footer } from '@/components/layout/Footer'
 import { CtaDecouverte } from '@/components/landing/CtaDecouverte'
+import { MarqueeRestaurants } from '@/components/landing/MarqueeRestaurants'
 import { getPlatformSettings } from '@/lib/settings'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -71,7 +73,12 @@ const faqs = [
 ]
 
 export default async function PourLesRestaurantsPage() {
-  const settings = await getPlatformSettings()
+  const admin = createAdminClient()
+  const [{ data: restaurants }, settings] = await Promise.all([
+    admin.from('restaurants').select('name').eq('is_active', true).eq('is_demo', false).order('name'),
+    getPlatformSettings(),
+  ])
+  const restaurantNames = (restaurants ?? []).map((r: { name: string }) => r.name)
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ backgroundColor: '#FFFFFF', color: '#111111' }}>
@@ -153,6 +160,32 @@ export default async function PourLesRestaurantsPage() {
         </div>
       </section>
 
+      {/* ── Bandeau défilement restaurants ── */}
+      {restaurantNames.length > 0 && <MarqueeRestaurants names={restaurantNames} />}
+
+      {/* ── Bloc annuaire clients ── */}
+      <section style={{ backgroundColor: '#FFF7ED', borderTop: '2px solid #FED7AA', borderBottom: '2px solid #FED7AA' }}>
+        <div className="container-app py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="text-xl font-black mb-2" style={{ color: '#111111' }}>
+              Découvrez où vos futurs clients vous trouvent
+            </h3>
+            <p className="text-sm" style={{ color: '#6B7280' }}>
+              Votre adresse apparaît dans notre annuaire public dès votre inscription — vos clients peuvent vous trouver et commander immédiatement.
+            </p>
+          </div>
+          <Link
+            href="/restaurants"
+            className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white flex-shrink-0 transition-opacity hover:opacity-90"
+            style={{ backgroundColor: '#F97316' }}
+          >
+            <UtensilsCrossed className="w-4 h-4" />
+            Voir les restaurants
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </section>
+
       {/* ── Features ── */}
       <section id="fonctionnalités" className="section" style={{ borderTop: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
         <div className="container-app">
@@ -174,32 +207,6 @@ export default async function PourLesRestaurantsPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ── Section clients — aparté ── */}
-      <section style={{ backgroundColor: '#FFF7ED', borderTop: '2px solid #FED7AA', borderBottom: '2px solid #FED7AA' }}>
-        <div className="container-app py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#EA580C' }}>
-              Pour vos futurs clients
-            </p>
-            <h3 className="text-xl font-black mb-1" style={{ color: '#111111' }}>
-              Vous cherchez où manger au Sénégal ?
-            </h3>
-            <p className="text-sm" style={{ color: '#6B7280' }}>
-              Découvrez notre annuaire de restaurants — vos clients y passent déjà.
-            </p>
-          </div>
-          <Link
-            href="/restaurants"
-            className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl text-white flex-shrink-0 transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#F97316' }}
-          >
-            <UtensilsCrossed className="w-4 h-4" />
-            Voir les restaurants
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
       </section>
 
