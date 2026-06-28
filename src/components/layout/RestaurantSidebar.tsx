@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, UtensilsCrossed, BarChart3,
-  QrCode, Settings, LogOut, User, ExternalLink, ShoppingBag, Tag, Megaphone,
+  QrCode, Settings, LogOut, User, ExternalLink, ShoppingBag, Tag, Megaphone, Zap,
 } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useEffect, useState } from 'react'
@@ -21,6 +21,7 @@ const navItems = [
   { label: 'QR Code', href: '/dashboard/restaurant/qrcode', icon: QrCode },
   { label: 'Profil', href: '/dashboard/restaurant/profile', icon: User },
   { label: 'Paramètres', href: '/dashboard/restaurant/settings', icon: Settings },
+  { label: 'Booster mon restaurant', href: '/dashboard/restaurant/boost', icon: Zap, highlight: true },
 ]
 
 export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {
@@ -51,17 +52,30 @@ export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {
       <nav className="flex-1 p-4 space-y-0.5">
         {navItems.map((item) => {
           const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
+          const isHighlight = (item as { highlight?: boolean }).highlight
           return (
             <Link
               key={item.href}
               href={item.href}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
-              style={{
-                backgroundColor: isActive ? 'rgba(249,115,22,0.08)' : 'transparent',
-                color: isActive ? '#F97316' : '#6B7280',
+              style={isActive
+                ? { backgroundColor: 'rgba(249,115,22,0.08)', color: '#F97316' }
+                : isHighlight
+                  ? { backgroundColor: 'rgba(249,115,22,0.06)', color: '#F97316', border: '1px solid rgba(249,115,22,0.2)' }
+                  : { backgroundColor: 'transparent', color: '#6B7280' }
+              }
+              onMouseEnter={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = isHighlight ? 'rgba(249,115,22,0.12)' : '#F9FAFB'
+                  ;(e.currentTarget as HTMLElement).style.color = '#F97316'
+                }
               }}
-              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'; (e.currentTarget as HTMLElement).style.color = isActive ? '#F97316' : '#111111' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = isActive ? 'rgba(249,115,22,0.08)' : 'transparent'; (e.currentTarget as HTMLElement).style.color = isActive ? '#F97316' : '#6B7280' }}
+              onMouseLeave={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = isHighlight ? 'rgba(249,115,22,0.06)' : 'transparent'
+                  ;(e.currentTarget as HTMLElement).style.color = isHighlight ? '#F97316' : '#6B7280'
+                }
+              }}
             >
               <item.icon className="w-4 h-4 flex-shrink-0" />
               {item.label}
