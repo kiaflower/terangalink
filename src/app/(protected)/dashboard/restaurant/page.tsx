@@ -95,11 +95,8 @@ export default async function RestaurantDashboard() {
     lastOrderDate = (lastOrder?.[0] as { created_at?: string } | undefined)?.created_at ?? null
   }
 
-  const formatRevenue = (amount: number) => {
-    if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M FCFA`
-    if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}k FCFA`
-    return `${amount} FCFA`
-  }
+  const formatRevenue = (amount: number) =>
+    `${amount.toLocaleString('fr-FR')} FCFA`
 
   // Numéro WhatsApp TerangaLink pour les boutons d'abonnement
   const TL_WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || '221700000000'

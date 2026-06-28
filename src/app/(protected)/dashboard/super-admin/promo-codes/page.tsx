@@ -160,62 +160,72 @@ export default function SuperAdminPromoCodesPage() {
       ) : (
         <div className="space-y-3">
           {codes.map(code => (
-            <div key={code.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-              <div className="flex items-start gap-4 flex-wrap">
-                <div className="w-10 h-10 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  {code.discount_type === 'percent' ? <Percent className="w-5 h-5 text-brand-orange" /> : <DollarSign className="w-5 h-5 text-brand-orange" />}
+            <div key={code.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+              {/* Ligne 1 : icône + code + badge + actions */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  {code.discount_type === 'percent' ? <Percent className="w-4 h-4 text-brand-orange" /> : <DollarSign className="w-4 h-4 text-brand-orange" />}
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-bold text-gray-900 font-mono tracking-wider">{code.code}</span>
-                    <Badge variant={code.is_active ? 'success' : 'warning'}>
-                      {code.is_active ? 'Actif' : 'Inactif'}
-                    </Badge>
-                    {!code.restaurant_id && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Global</span>
-                    )}
-                    {code.restaurant_id && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 border border-gray-300">
-                        {restaurantMap[code.restaurant_id] ?? code.restaurant_id}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                    <span>
-                      {code.discount_type === 'percent' ? `${code.value}% de réduction` : `${formatCurrency(code.value)} de réduction`}
+                <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-gray-900 font-mono tracking-wider text-base">{code.code}</span>
+                  <Badge variant={code.is_active ? 'success' : 'warning'}>
+                    {code.is_active ? 'Actif' : 'Inactif'}
+                  </Badge>
+                  {!code.restaurant_id && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Global</span>
+                  )}
+                  {code.restaurant_id && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 border border-gray-300 truncate max-w-[120px]">
+                      {restaurantMap[code.restaurant_id] ?? code.restaurant_id}
                     </span>
-                    {code.min_order_amount && <span>Min : {formatCurrency(code.min_order_amount)}</span>}
-                    {code.expires_at && <span>Expire : {formatDate(code.expires_at)}</span>}
-                    <span>{code.current_uses}{code.max_uses ? `/${code.max_uses}` : ''} utilisations</span>
-                    <span>Créé le {formatDate(code.created_at)}</span>
-                  </div>
+                  )}
                 </div>
-
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => openStats(code)}
-                    className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-200 text-gray-500 hover:text-gray-900 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
-                  >
-                    <BarChart3 className="w-3 h-3" />Stats
-                  </button>
+                {/* Actions : toggle + stats + supprimer */}
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Toggle switch */}
                   <button
                     onClick={() => toggleActive(code)}
                     disabled={togglingId === code.id}
-                    className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-200 text-gray-500 hover:text-gray-900 px-3 py-2 rounded-xl text-xs font-semibold transition-colors disabled:opacity-50"
+                    title={code.is_active ? 'Désactiver' : 'Activer'}
+                    className="relative w-10 h-6 rounded-full transition-colors disabled:opacity-50 focus:outline-none flex-shrink-0"
+                    style={{ backgroundColor: code.is_active ? '#22c55e' : '#d1d5db' }}
                   >
-                    {togglingId === code.id ? <Loader2 className="w-3 h-3 animate-spin" /> : code.is_active ? <ToggleRight className="w-3 h-3 text-green-400" /> : <ToggleLeft className="w-3 h-3" />}
-                    {code.is_active ? 'Désactiver' : 'Activer'}
+                    {togglingId === code.id
+                      ? <Loader2 className="w-3 h-3 animate-spin absolute inset-0 m-auto text-white" />
+                      : <span
+                          className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                          style={{ transform: code.is_active ? 'translateX(16px)' : 'translateX(0)' }}
+                        />
+                    }
                   </button>
+                  {/* Stats */}
+                  <button
+                    onClick={() => openStats(code)}
+                    title="Voir les statistiques"
+                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-900 transition-colors"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                  </button>
+                  {/* Supprimer */}
                   <button
                     onClick={() => deleteCode(code.id)}
                     disabled={deletingId === code.id}
-                    className="inline-flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border border-red-500/20 disabled:opacity-50"
+                    title="Supprimer"
+                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors border border-red-500/20 disabled:opacity-50"
                   >
-                    {deletingId === code.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                    {deletingId === code.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                   </button>
                 </div>
+              </div>
+
+              {/* Ligne 2 : détails en grille 2 colonnes */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 pl-12">
+                <span>
+                  {code.discount_type === 'percent' ? `−${code.value}%` : `−${formatCurrency(code.value)}`}
+                </span>
+                <span>{code.current_uses}{code.max_uses ? `/${code.max_uses}` : ''} utilisations</span>
+                {code.min_order_amount ? <span>Min : {formatCurrency(code.min_order_amount)}</span> : <span />}
+                {code.expires_at ? <span>Expire : {formatDate(code.expires_at)}</span> : <span>Pas d&apos;expiration</span>}
               </div>
             </div>
           ))}

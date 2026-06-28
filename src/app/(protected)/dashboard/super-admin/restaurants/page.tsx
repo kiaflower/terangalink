@@ -15,6 +15,7 @@ interface Restaurant {
   id: string; name: string; slug: string; city: string | null
   phone: string | null; whatsapp_number: string | null
   is_active: boolean; is_boosted: boolean; created_at: string
+  logo_url: string | null
 }
 interface AdminProfile { id: string; email: string; full_name: string | null; restaurant_id: string | null }
 interface Subscription {
@@ -159,29 +160,31 @@ export default function RestaurantsPage() {
   )
 
   return (
-    <div className="p-6 sm:p-8 max-w-7xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Restaurants</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {restaurants.length} restaurant(s) — gérez les admins depuis la page Modifier
+    <div className="p-4 sm:p-8 max-w-7xl">
+      <div className="flex items-start justify-between mb-5 gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Restaurants</h1>
+          <p className="text-gray-500 text-xs sm:text-sm mt-0.5 truncate">
+            {restaurants.length} restaurant(s)
           </p>
         </div>
         <Link
           href="/dashboard/super-admin/restaurants/new"
-          className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          className="inline-flex items-center gap-1.5 bg-brand-orange hover:bg-brand-orange-dark text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex-shrink-0"
         >
-          <PlusCircle className="w-4 h-4" />Nouveau restaurant
+          <PlusCircle className="w-4 h-4" />
+          <span className="hidden sm:inline">Nouveau restaurant</span>
+          <span className="sm:hidden">Nouveau</span>
         </Link>
       </div>
 
       {/* Filtres */}
-      <div className="flex flex-wrap gap-2 mb-5">
+      <div className="flex flex-wrap gap-1.5 mb-4 overflow-x-auto pb-1">
         {(['all', 'trial', 'active', 'overdue', 'suspended', 'cancelled'] as const).map(f => (
           <button
             key={f}
             onClick={() => setStatusFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all border whitespace-nowrap ${
               statusFilter === f
                 ? 'bg-brand-orange text-white border-brand-orange'
                 : 'bg-gray-100 text-gray-500 border-gray-200 hover:text-gray-900'
@@ -190,28 +193,27 @@ export default function RestaurantsPage() {
             {f === 'all' ? 'Tous' : STATUS_CONFIG[f as SubStatus].label}
           </button>
         ))}
-        <div className="w-px bg-gray-200 mx-1" />
+        <div className="w-px bg-gray-200 mx-0.5" />
         {(['all', 'starter', 'pro'] as const).map(p => (
           <button
             key={p}
             onClick={() => setPlanFilter(p)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all border whitespace-nowrap ${
               planFilter === p
                 ? 'bg-blue-500 text-white border-blue-500'
                 : 'bg-gray-100 text-gray-500 border-gray-200 hover:text-gray-900'
             }`}
           >
-            {p === 'all' ? 'Tous les plans' : p === 'pro' ? 'Pro' : 'Starter'}
+            {p === 'all' ? 'Tous plans' : p === 'pro' ? 'Pro' : 'Starter'}
           </button>
         ))}
-        <div className="w-px bg-gray-200 mx-1" />
         <select
           value={sortBy}
           onChange={e => setSortBy(e.target.value as 'created_at' | 'due_date')}
-          className="bg-gray-100 border border-gray-200 text-gray-500 text-xs rounded-full px-3 py-1.5 outline-none"
+          className="bg-gray-100 border border-gray-200 text-gray-500 text-xs rounded-full px-2.5 py-1 outline-none"
         >
-          <option value="created_at">Trier : Date d&apos;inscription</option>
-          <option value="due_date">Trier : Date d&apos;échéance</option>
+          <option value="created_at">↓ Inscription</option>
+          <option value="due_date">↓ Échéance</option>
         </select>
       </div>
 
@@ -233,20 +235,27 @@ export default function RestaurantsPage() {
             const daysInfo = sub ? getDaysLabel(sub) : null
 
             return (
-              <div key={r.id} className="bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl p-5 transition-all">
-                <div className="flex items-start gap-4 flex-wrap">
-                  <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center text-brand-orange font-black text-xl flex-shrink-0">
-                    {r.name.charAt(0)}
-                  </div>
+              <div key={r.id} className="bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl p-4 transition-all">
+                <div className="flex items-start gap-3">
+                  {/* Logo ou initiale */}
+                  {r.logo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.logo_url} alt={r.name} className="w-11 h-11 rounded-xl object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-11 h-11 bg-brand-orange/10 rounded-xl flex items-center justify-center text-brand-orange font-black text-lg flex-shrink-0">
+                      {r.name.charAt(0)}
+                    </div>
+                  )}
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <p className="text-gray-900 font-semibold">{r.name}</p>
+                    {/* Nom + badges */}
+                    <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                      <p className="text-gray-900 font-semibold text-sm truncate">{r.name}</p>
                       <Badge variant={r.is_active ? 'success' : 'warning'}>
                         {r.is_active ? 'En ligne' : 'Hors ligne'}
                       </Badge>
                       {planLabel && (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${normalizePlan(sub?.plan ?? '') === 'pro' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-gray-200 text-gray-500 border-gray-300'}`}>
+                        <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold border ${normalizePlan(sub?.plan ?? '') === 'pro' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-gray-200 text-gray-500 border-gray-300'}`}>
                           {planLabel}
                         </span>
                       )}
@@ -260,66 +269,75 @@ export default function RestaurantsPage() {
                       )}
                     </div>
 
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">
+                    {/* Infos secondaires */}
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-500 mb-2">
                       <span>/{r.slug}</span>
                       {r.city && <span>📍 {r.city}</span>}
-                      {r.phone && <span>📞 {r.phone}</span>}
                       <span>Inscrit le {formatDate(r.created_at)}</span>
                       {sub?.trial_end_date && sub.status === 'trial' && (
-                        <span>Fin essai : {formatDate(sub.trial_end_date)}</span>
+                        <span>Essai → {formatDate(sub.trial_end_date)}</span>
                       )}
                       {sub?.next_payment_due_date && (
-                        <span>Échéance : {formatDate(sub.next_payment_due_date)}</span>
+                        <span>Éch. {formatDate(sub.next_payment_due_date)}</span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs text-gray-500">Admins :</span>
+                    {/* Admins */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {admins.length === 0 ? (
                         <span className="text-xs text-yellow-400">Aucun admin</span>
                       ) : (
                         admins.map(a => (
-                          <div key={a.id} className="flex items-center gap-1.5 bg-orange-50 rounded-full px-2.5 py-1">
-                            <div className="w-4 h-4 bg-brand-orange/20 rounded-full flex items-center justify-center text-brand-orange text-xs font-bold">
+                          <div key={a.id} className="flex items-center gap-1 bg-orange-50 rounded-full px-2 py-0.5">
+                            <div className="w-3.5 h-3.5 bg-brand-orange/20 rounded-full flex items-center justify-center text-brand-orange text-xs font-bold">
                               {(a.full_name || a.email).charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-gray-500 text-xs truncate max-w-[140px]">
+                            <span className="text-gray-500 text-xs truncate max-w-[100px] sm:max-w-[160px]">
                               {a.full_name || a.email}
                             </span>
                           </div>
                         ))
                       )}
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
-                    <a href={`/${r.slug}`} target="_blank" rel="noopener noreferrer"
-                      className="text-gray-500 hover:text-brand-orange text-xs transition-colors px-2 py-1">
-                      Voir →
-                    </a>
-                    <Link href={`/dashboard/super-admin/edit-restaurant/${r.id}`}
-                      className="inline-flex items-center gap-1.5 bg-gray-200 hover:bg-gray-200 text-gray-500 hover:text-gray-900 px-3 py-2 rounded-xl text-xs font-semibold transition-colors">
-                      <Pencil className="w-3 h-3" />Modifier
-                    </Link>
-                    <button
-                      onClick={() => toggleBoost(r)}
-                      disabled={boostingId === r.id}
-                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border ${r.is_boosted ? 'bg-orange-500/20 text-orange-300 border-orange-500/30 hover:bg-orange-500/30' : 'bg-gray-200 text-gray-500 border-gray-300 hover:text-orange-300'}`}
-                    >
-                      {boostingId === r.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className={`w-3 h-3 ${r.is_boosted ? 'fill-orange-400' : ''}`} />}
-                      {r.is_boosted ? 'Boosté' : 'Booster'}
-                    </button>
-                    <button
-                      onClick={() => resetAnalytics(r)}
-                      disabled={resettingId === r.id}
-                      className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border border-amber-500/20 disabled:opacity-60"
-                    >
-                      {resettingId === r.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}Stats
-                    </button>
-                    <button onClick={() => openDelete(r)}
-                      className="inline-flex items-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border border-red-500/20">
-                      <Trash2 className="w-3 h-3" />Supprimer
-                    </button>
+                    {/* Boutons actions */}
+                    <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                      <a href={`/${r.slug}`} target="_blank" rel="noopener noreferrer"
+                        title="Voir le site"
+                        className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-brand-orange transition-colors text-xs font-bold">
+                        →
+                      </a>
+                      <Link href={`/dashboard/super-admin/edit-restaurant/${r.id}`}
+                        title="Modifier"
+                        className="inline-flex items-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-900 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors">
+                        <Pencil className="w-3 h-3" />
+                        <span className="hidden sm:inline">Modifier</span>
+                      </Link>
+                      <button
+                        onClick={() => toggleBoost(r)}
+                        disabled={boostingId === r.id}
+                        title={r.is_boosted ? 'Retirer le boost' : 'Booster'}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors border ${r.is_boosted ? 'bg-orange-500/20 text-orange-300 border-orange-500/30 hover:bg-orange-500/30' : 'bg-gray-200 text-gray-500 border-gray-300 hover:text-orange-300'}`}
+                      >
+                        {boostingId === r.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Zap className={`w-3 h-3 ${r.is_boosted ? 'fill-orange-400' : ''}`} />}
+                        <span className="hidden sm:inline">{r.is_boosted ? 'Boosté' : 'Booster'}</span>
+                      </button>
+                      <button
+                        onClick={() => resetAnalytics(r)}
+                        disabled={resettingId === r.id}
+                        title="Réinitialiser les stats"
+                        className="inline-flex items-center gap-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors border border-amber-500/20 disabled:opacity-60"
+                      >
+                        {resettingId === r.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}
+                        <span className="hidden sm:inline">Stats</span>
+                      </button>
+                      <button onClick={() => openDelete(r)}
+                        title="Supprimer"
+                        className="inline-flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors border border-red-500/20">
+                        <Trash2 className="w-3 h-3" />
+                        <span className="hidden sm:inline">Supprimer</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
