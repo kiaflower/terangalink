@@ -1,5 +1,5 @@
 'use client'
-import { FaSnapchat } from 'react-icons/fa'
+import { FaSnapchatGhost } from 'react-icons/fa'
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
@@ -618,7 +618,7 @@ function RestaurantInner({ data }: Props) {
                         <a href={restaurant.snapchat_url} target="_blank" rel="noopener noreferrer"
                           className="w-10 h-10 rounded-full flex items-center justify-center"
                           style={{ backgroundColor: tokens.bgCardHover, border: `1px solid ${tokens.border}` }}>
-                          <FaSnapchat className="w-5 h-5" style={{ color: tokens.textSecondary }} />
+                          <FaSnapchatGhost className="w-5 h-5" style={{ color: tokens.textSecondary }} />
                         </a>
                       )}
                     </div>
