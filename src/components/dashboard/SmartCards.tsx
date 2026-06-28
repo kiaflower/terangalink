@@ -120,8 +120,8 @@ const ONBOARDING_STEPS: Array<{
     title: 'Partagez votre lien restaurant',
     body: 'Copiez votre lien TerangaLink et envoyez-le sur vos groupes WhatsApp, votre story Instagram, etc.',
     actionLabel: 'Lien partagé ✓',
-    linkLabel: 'Voir mon lien',
-    linkHref: '/dashboard/restaurant/profile',
+    linkLabel: 'Voir mon QR code',
+    linkHref: '/dashboard/restaurant/qrcode',
     skipable: true,
   },
   {
