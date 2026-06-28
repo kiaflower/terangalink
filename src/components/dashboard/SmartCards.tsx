@@ -438,14 +438,20 @@ export function SmartCards(props: SmartCardsProps) {
     }, 280)
   }
 
-  function handleOnboardingAction() {
+  function markOnboardingStepDone(andNavigate = false) {
     if (!card || card.type !== 'onboarding') return
     const stepIndex = parseInt(card.id.replace('onboarding_', ''))
     const done = Array.from(new Set([...(cardState.onboarding_steps_done ?? []), stepIndex]))
     const newState = { ...cardState, onboarding_steps_done: done }
     setCardState(newState)
     saveState({ onboarding_steps_done: done })
-    // Show next onboarding card immediately
+    if (andNavigate) {
+      // Just hide the card — navigation happens via the Link href
+      setVisible(false)
+      setCard(null)
+      return
+    }
+    // Stay on page: animate out and show next step
     setAnimOut(true)
     setTimeout(() => {
       setAnimOut(false)
@@ -458,6 +464,8 @@ export function SmartCards(props: SmartCardsProps) {
       }
     }, 280)
   }
+
+  const handleOnboardingAction = () => markOnboardingStepDone(false)
 
   if (!visible || !card) return null
 
@@ -542,6 +550,7 @@ export function SmartCards(props: SmartCardsProps) {
                   {card.linkHref && card.linkLabel && (
                     <Link
                       href={card.linkHref}
+                      onClick={() => markOnboardingStepDone(true)}
                       className="text-xs font-medium px-3 py-2.5 rounded-xl transition-colors hover:bg-gray-50 flex-shrink-0 whitespace-nowrap"
                       style={{ color: '#6B7280', border: '1px solid #E5E7EB' }}>
                       {card.linkLabel} →
