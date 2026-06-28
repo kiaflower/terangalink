@@ -16,9 +16,14 @@ interface SmartCard {
   label: string         // small tag above title
   title: string
   body: string
-  cta?: { label: string; href: string; primary?: boolean }
-  ctaSecondary?: { label: string; href: string }
-  skipable?: boolean    // show "Passer" button
+  // onboarding: primary action marks step done (no navigation)
+  actionLabel?: string
+  // optional secondary link for those who want to navigate
+  linkLabel?: string
+  linkHref?: string
+  // reminder/optimization: direct CTA link
+  cta?: { label: string; href: string }
+  skipable?: boolean
 }
 
 interface CardState {
@@ -54,60 +59,83 @@ interface SmartCardsProps {
 
 // ─── Onboarding steps ─────────────────────────────────────────────────────────
 
-const ONBOARDING_STEPS: Array<{ title: string; body: string; cta: { label: string; href: string }; skipable?: boolean }> = [
+const ONBOARDING_STEPS: Array<{
+  title: string
+  body: string
+  actionLabel: string   // label du bouton principal "J'ai fait ça"
+  linkLabel?: string    // label du lien secondaire optionnel
+  linkHref?: string     // page vers laquelle le lien pointe
+  skipable?: boolean
+}> = [
   {
     title: 'Bienvenue sur TerangaLink ! 👋',
-    body: 'Votre restaurant est maintenant en ligne. Suivez ces étapes pour recevoir vos premières commandes rapidement.',
-    cta: { label: 'Commencer la configuration', href: '/dashboard/restaurant/settings' },
+    body: 'Votre restaurant est maintenant en ligne. Suivez ces 10 étapes rapides pour recevoir vos premières commandes.',
+    actionLabel: 'C\'est parti !',
   },
   {
     title: 'Ajoutez votre numéro WhatsApp',
-    body: 'Sans WhatsApp configuré, vos clients ne peuvent pas passer de commandes. C\'est l\'étape la plus importante.',
-    cta: { label: 'Configurer WhatsApp', href: '/dashboard/restaurant/settings' },
+    body: 'Sans WhatsApp configuré, vos clients ne peuvent pas passer de commandes. Allez dans Paramètres → Contacts.',
+    actionLabel: 'C\'est fait ✓',
+    linkLabel: 'Aller dans Paramètres',
+    linkHref: '/dashboard/restaurant/settings',
   },
   {
     title: 'Créez votre premier plat',
-    body: 'Ajoutez au moins un plat à votre menu pour que vos clients puissent commander. Plus vous avez de plats, plus vous aurez de commandes.',
-    cta: { label: 'Ajouter un plat', href: '/dashboard/restaurant/menu' },
+    body: 'Ajoutez au moins un plat à votre menu pour que vos clients puissent commander. Nom, prix, photo : c\'est tout.',
+    actionLabel: 'C\'est fait ✓',
+    linkLabel: 'Aller au menu',
+    linkHref: '/dashboard/restaurant/menu',
   },
   {
     title: 'Complétez votre profil',
     body: 'Ajoutez une description, vos horaires et l\'adresse de votre restaurant pour rassurer vos clients.',
-    cta: { label: 'Modifier le profil', href: '/dashboard/restaurant/profile' },
+    actionLabel: 'C\'est fait ✓',
+    linkLabel: 'Voir le profil',
+    linkHref: '/dashboard/restaurant/profile',
   },
   {
     title: 'Configurez vos paiements',
-    body: 'Renseignez vos numéros Wave et Orange Money. Ils s\'affichent automatiquement dans les confirmations de commande.',
-    cta: { label: 'Ajouter les paiements', href: '/dashboard/restaurant/settings' },
+    body: 'Renseignez Wave et Orange Money dans Paramètres. Ils s\'affichent dans les confirmations de commande.',
+    actionLabel: 'C\'est fait ✓',
+    linkLabel: 'Paramètres paiements',
+    linkHref: '/dashboard/restaurant/settings',
   },
   {
     title: 'Enrichissez votre menu',
-    body: 'Les restaurants avec 8+ plats reçoivent en moyenne 3× plus de commandes. Visez au minimum 5 plats pour démarrer.',
-    cta: { label: 'Ajouter des plats', href: '/dashboard/restaurant/menu' },
+    body: 'Les restaurants avec 8+ plats reçoivent 3× plus de commandes. Visez au minimum 5 plats pour démarrer.',
+    actionLabel: 'C\'est fait ✓',
+    linkLabel: 'Ajouter des plats',
+    linkHref: '/dashboard/restaurant/menu',
     skipable: true,
   },
   {
     title: 'Ajoutez des photos à vos plats',
-    body: 'Les plats avec photos génèrent 60% de commandes en plus. Prenez des photos en bonne lumière naturelle.',
-    cta: { label: 'Gérer le menu', href: '/dashboard/restaurant/menu' },
+    body: 'Les plats avec photos génèrent 60% de commandes en plus. Une photo bien éclairée suffit.',
+    actionLabel: 'C\'est fait ✓',
+    linkLabel: 'Gérer le menu',
+    linkHref: '/dashboard/restaurant/menu',
     skipable: true,
   },
   {
     title: 'Partagez votre lien restaurant',
-    body: 'Partagez votre page TerangaLink sur WhatsApp, Instagram et Facebook pour attirer vos premiers clients.',
-    cta: { label: 'Voir mon profil public', href: '/dashboard/restaurant/profile' },
+    body: 'Copiez votre lien TerangaLink et envoyez-le sur vos groupes WhatsApp, votre story Instagram, etc.',
+    actionLabel: 'Lien partagé ✓',
+    linkLabel: 'Voir mon lien',
+    linkHref: '/dashboard/restaurant/profile',
     skipable: true,
   },
   {
     title: 'Créez votre première promotion',
     body: 'Une promo de lancement (-10% ou livraison offerte) peut déclencher vos premières commandes rapidement.',
-    cta: { label: 'Créer une promo', href: '/dashboard/restaurant/promotions' },
+    actionLabel: 'C\'est fait ✓',
+    linkLabel: 'Créer une promo',
+    linkHref: '/dashboard/restaurant/promotions',
     skipable: true,
   },
   {
     title: 'Votre restaurant est prêt ! 🎉',
-    body: 'Configuration terminée. Continuez à enrichir votre menu et partagez votre lien pour recevoir plus de commandes.',
-    cta: { label: 'Voir mon tableau de bord', href: '/dashboard/restaurant' },
+    body: 'Bravo, configuration terminée. Continuez à enrichir votre menu et à partager votre lien chaque semaine.',
+    actionLabel: 'Super, merci !',
   },
 ]
 
@@ -141,11 +169,13 @@ function buildOnboardingCard(state: CardState): SmartCard | null {
     type: 'onboarding',
     icon: <Sparkles className="w-4 h-4" />,
     accentColor: '#F97316',
-    label: `Étape ${nextStep + 1} sur ${ONBOARDING_STEPS.length}`,
+    label: `Étape ${nextStep + 1} / ${ONBOARDING_STEPS.length}`,
     title: step.title,
     body: step.body,
-    cta: { label: step.cta.label, href: step.cta.href, primary: true },
-    skipable: !isLast && step.skipable !== false,
+    actionLabel: step.actionLabel,
+    linkLabel: step.linkLabel,
+    linkHref: step.linkHref,
+    skipable: !isLast && step.skipable === true,
   }
 }
 
@@ -164,7 +194,7 @@ function buildReminderCards(props: SmartCardsProps, state: CardState): SmartCard
       label: 'Rappel soir',
       title: 'Vérifiez vos commandes du jour',
       body: 'N\'oubliez pas de clôturer vos commandes du jour (livré ou annulé) pour garder vos statistiques à jour.',
-      cta: { label: 'Voir les commandes', href: '/dashboard/restaurant/orders', primary: true },
+      cta: { label: 'Voir les commandes', href: '/dashboard/restaurant/orders' },
     })
   }
 
@@ -178,7 +208,7 @@ function buildReminderCards(props: SmartCardsProps, state: CardState): SmartCard
       label: 'Rappel',
       title: 'Aucune commande aujourd\'hui',
       body: 'Partagez votre lien sur WhatsApp ou Instagram pour attirer des clients. Un message avec une belle photo peut faire la différence.',
-      cta: { label: 'Voir mon profil public', href: '/dashboard/restaurant/profile', primary: true },
+      cta: { label: 'Voir mon profil public', href: '/dashboard/restaurant/profile' },
     })
   }
 
@@ -192,7 +222,7 @@ function buildReminderCards(props: SmartCardsProps, state: CardState): SmartCard
       label: 'Rappel',
       title: 'Menu non mis à jour',
       body: `Votre menu n'a pas changé depuis ${Math.floor(daysSince(props.lastMenuUpdate))} jours. Ajouter un nouveau plat relance l'intérêt de vos clients.`,
-      cta: { label: 'Mettre à jour le menu', href: '/dashboard/restaurant/menu', primary: true },
+      cta: { label: 'Mettre à jour le menu', href: '/dashboard/restaurant/menu' },
     })
   }
 
@@ -214,7 +244,7 @@ function buildOptimizationCards(props: SmartCardsProps, state: CardState): Smart
       label: 'Félicitations 🎉',
       title: 'Vous avez reçu votre première commande !',
       body: 'C\'est une étape importante. Continuez à partager votre lien et enrichissez votre menu pour en recevoir encore plus.',
-      cta: { label: 'Voir les statistiques', href: '/dashboard/restaurant', primary: true },
+      cta: { label: 'Voir les statistiques', href: '/dashboard/restaurant' },
     })
   }
 
@@ -228,7 +258,7 @@ function buildOptimizationCards(props: SmartCardsProps, state: CardState): Smart
       label: 'Félicitations 🎉',
       title: '10 commandes reçues !',
       body: 'Votre restaurant prend de l\'ampleur. Pensez à activer les promotions pour fidéliser vos clients et augmenter la fréquence de commande.',
-      cta: { label: 'Créer une promo', href: '/dashboard/restaurant/promotions', primary: true },
+      cta: { label: 'Créer une promo', href: '/dashboard/restaurant/promotions' },
     })
   }
 
@@ -242,7 +272,7 @@ function buildOptimizationCards(props: SmartCardsProps, state: CardState): Smart
       label: 'Félicitations 🎉',
       title: '50 commandes — vous êtes en forme !',
       body: 'Excellent travail ! Avez-vous pensé à passer au plan Premium pour bénéficier des mises en avant sponsorisées ?',
-      cta: { label: 'Voir les plans', href: '/dashboard/restaurant/settings', primary: true },
+      cta: { label: 'Voir les plans', href: '/dashboard/restaurant/settings' },
     })
   }
 
@@ -256,7 +286,7 @@ function buildOptimizationCards(props: SmartCardsProps, state: CardState): Smart
       label: 'Action requise',
       title: 'WhatsApp non configuré',
       body: 'Vos clients ne peuvent pas commander sans numéro WhatsApp. Configurez-le en 30 secondes dans Paramètres.',
-      cta: { label: 'Configurer', href: '/dashboard/restaurant/settings', primary: true },
+      cta: { label: 'Configurer', href: '/dashboard/restaurant/settings' },
     })
   }
 
@@ -270,7 +300,7 @@ function buildOptimizationCards(props: SmartCardsProps, state: CardState): Smart
       label: 'Conseil',
       title: 'Aucun moyen de paiement',
       body: 'Renseignez Wave et Orange Money pour faciliter le paiement de vos clients. Ils s\'affichent automatiquement dans vos messages.',
-      cta: { label: 'Configurer les paiements', href: '/dashboard/restaurant/settings', primary: true },
+      cta: { label: 'Configurer les paiements', href: '/dashboard/restaurant/settings' },
     })
   }
 
@@ -284,7 +314,7 @@ function buildOptimizationCards(props: SmartCardsProps, state: CardState): Smart
       label: 'Action requise',
       title: 'Votre menu est vide',
       body: 'Ajoutez au moins 3 plats pour que vos clients puissent commander. Sans menu, votre page est invisible.',
-      cta: { label: 'Ajouter des plats', href: '/dashboard/restaurant/menu', primary: true },
+      cta: { label: 'Ajouter des plats', href: '/dashboard/restaurant/menu' },
     })
   }
 
@@ -302,15 +332,34 @@ export function SmartCards(props: SmartCardsProps) {
   const [stateLoaded, setStateLoaded] = useState(false)
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Load state from API
+  // Load state from API — pre-mark milestones for existing restaurants on first load
   useEffect(() => {
     fetch('/api/restaurant/smart-cards')
       .then(r => r.json())
       .then(({ state }) => {
-        setCardState({ ...DEFAULT_STATE, ...(state ?? {}) })
+        const loaded: CardState = { ...DEFAULT_STATE, ...(state ?? {}) }
+        const isFirstLoad = !state || Object.keys(state).length === 0
+        if (isFirstLoad) {
+          // Pre-mark all already-reached milestones so existing restaurants don't see celebration cards
+          const orders = props.totalOrders ?? 0
+          const preMilestones: string[] = []
+          if (orders >= 1) preMilestones.push('first_order')
+          if (orders >= 10) preMilestones.push('orders_10')
+          if (orders >= 50) preMilestones.push('orders_50')
+          if (preMilestones.length > 0) {
+            loaded.milestones_shown = preMilestones
+            fetch('/api/restaurant/smart-cards', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ milestones_shown: preMilestones }),
+            })
+          }
+        }
+        setCardState(loaded)
         setStateLoaded(true)
       })
       .catch(() => setStateLoaded(true))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Decide which card to show after state loads
@@ -389,16 +438,25 @@ export function SmartCards(props: SmartCardsProps) {
     }, 280)
   }
 
-  function handleCtaClick() {
-    if (!card) return
-    if (card.type === 'onboarding') {
-      const stepIndex = parseInt(card.id.replace('onboarding_', ''))
-      const done = Array.from(new Set([...(cardState.onboarding_steps_done ?? []), stepIndex]))
-      const newState = { ...cardState, onboarding_steps_done: done }
-      setCardState(newState)
-      saveState({ onboarding_steps_done: done })
-    }
-    dismiss()
+  function handleOnboardingAction() {
+    if (!card || card.type !== 'onboarding') return
+    const stepIndex = parseInt(card.id.replace('onboarding_', ''))
+    const done = Array.from(new Set([...(cardState.onboarding_steps_done ?? []), stepIndex]))
+    const newState = { ...cardState, onboarding_steps_done: done }
+    setCardState(newState)
+    saveState({ onboarding_steps_done: done })
+    // Show next onboarding card immediately
+    setAnimOut(true)
+    setTimeout(() => {
+      setAnimOut(false)
+      const next = buildOnboardingCard(newState)
+      if (next) {
+        setCard(next)
+      } else {
+        setVisible(false)
+        setCard(null)
+      }
+    }, 280)
   }
 
   if (!visible || !card) return null
@@ -472,24 +530,42 @@ export function SmartCards(props: SmartCardsProps) {
 
             {/* CTA buttons */}
             <div className="flex items-center gap-2 pt-0.5">
-              {card.cta && (
+              {card.type === 'onboarding' ? (
+                <>
+                  <button
+                    onClick={handleOnboardingAction}
+                    className="flex-1 inline-flex items-center justify-center gap-1 text-xs font-bold px-3 py-2.5 rounded-xl text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: accent }}>
+                    {card.actionLabel ?? 'Suivant'}
+                    <ChevronRight className="w-3 h-3" />
+                  </button>
+                  {card.linkHref && card.linkLabel && (
+                    <Link
+                      href={card.linkHref}
+                      className="text-xs font-medium px-3 py-2.5 rounded-xl transition-colors hover:bg-gray-50 flex-shrink-0 whitespace-nowrap"
+                      style={{ color: '#6B7280', border: '1px solid #E5E7EB' }}>
+                      {card.linkLabel} →
+                    </Link>
+                  )}
+                  {card.skipable && (
+                    <button
+                      onClick={() => setSkipModal(true)}
+                      className="text-xs font-medium px-3 py-2.5 rounded-xl transition-colors hover:bg-gray-50 flex-shrink-0"
+                      style={{ color: '#9CA3AF', border: '1px solid #E5E7EB' }}>
+                      Passer
+                    </button>
+                  )}
+                </>
+              ) : card.cta ? (
                 <Link
                   href={card.cta.href}
-                  onClick={handleCtaClick}
+                  onClick={() => dismiss()}
                   className="flex-1 inline-flex items-center justify-center gap-1 text-xs font-bold px-3 py-2.5 rounded-xl text-white transition-opacity hover:opacity-90"
                   style={{ backgroundColor: accent }}>
                   {card.cta.label}
                   <ChevronRight className="w-3 h-3" />
                 </Link>
-              )}
-              {card.skipable && (
-                <button
-                  onClick={() => setSkipModal(true)}
-                  className="text-xs font-medium px-3 py-2.5 rounded-xl transition-colors hover:bg-gray-50 flex-shrink-0"
-                  style={{ color: '#9CA3AF', border: '1px solid #E5E7EB' }}>
-                  Passer
-                </button>
-              )}
+              ) : null}
             </div>
 
             {/* Progress dots for onboarding */}
