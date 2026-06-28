@@ -344,17 +344,14 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
           <p className="text-sm mb-6 max-w-md mx-auto" style={{ color: 'rgba(255,255,255,0.85)' }}>
             Vos futurs clients vous cherchent ici. Créez votre restaurant en moins de 24h.
           </p>
-          <a
-            href="https://wa.me/221774739266?text=Bonjour%2C%20je%20souhaite%20inscrire%20mon%20restaurant%20sur%20TerangaLink."
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/pour-les-restaurants#tarifs"
             className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:opacity-90 group"
             style={{ backgroundColor: '#FFFFFF', color: '#F97316' }}
           >
-            <MessageCircle className="w-4 h-4" />
-            Inscrire mon restaurant
+            Découvrir les offres
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-          </a>
+          </Link>
         </div>
       </div>
 

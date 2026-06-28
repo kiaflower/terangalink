@@ -46,10 +46,15 @@ export default async function HomePage() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFFFF' }}>
 
       {/* Header minimal */}
-      <header className="px-6 py-5" style={{ borderBottom: '1px solid #F3F4F6' }}>
+      <header className="px-6 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid #F3F4F6' }}>
         <Link href="/" className="inline-flex items-center gap-2">
           <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
           <span className="font-bold text-xl" style={{ color: '#111111' }}>TerangaLink</span>
+        </Link>
+        <Link href="/login"
+          className="text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:text-orange-500"
+          style={{ color: '#6B7280', border: '1px solid #E5E7EB' }}>
+          Se connecter
         </Link>
       </header>
 
