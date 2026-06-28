@@ -18,6 +18,9 @@ interface Restaurant {
   rating: number | null
   review_count: number
   is_boosted?: boolean
+  is_new?: boolean
+  rank_score?: number
+  created_at?: string
 }
 
 interface MenuItem {
@@ -38,7 +41,7 @@ const CUISINES = CUISINE_FILTER_OPTIONS
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1600&q=80'
 
 function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; onTrackClick: (id: string) => void }) {
-  const isNew = restaurant.review_count === 0
+  const isNew = restaurant.is_new ?? false
   const isBoosted = restaurant.is_boosted
 
   return (
@@ -64,28 +67,48 @@ function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; 
         </div>
       )}
 
-      {/* Photo */}
-      <div className="relative w-full overflow-hidden" style={{ height: 160, backgroundColor: '#F3F4F6' }}>
-        {restaurant.cover_url || restaurant.logo_url ? (
-          <Image
-            src={restaurant.cover_url || restaurant.logo_url!}
-            alt={restaurant.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            unoptimized
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <UtensilsCrossed className="w-8 h-8" style={{ color: '#D1D5DB' }} />
-          </div>
-        )}
+      {/* Photo + logo overlay */}
+      <div className="relative w-full overflow-visible" style={{ height: 160, backgroundColor: '#F3F4F6' }}>
+        <div className="absolute inset-0 overflow-hidden rounded-t-2xl">
+          {restaurant.cover_url || restaurant.logo_url ? (
+            <Image
+              src={restaurant.cover_url || restaurant.logo_url!}
+              alt={restaurant.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              unoptimized
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <UtensilsCrossed className="w-8 h-8" style={{ color: '#D1D5DB' }} />
+            </div>
+          )}
+          {/* Gradient bas de photo */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)' }} />
+        </div>
 
-        {/* Gradient bas de photo */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)' }} />
+        {/* Logo overlay — chevauche la bordure image/contenu */}
+        <div className="absolute z-10" style={{ bottom: -16, left: 12 }}>
+          {restaurant.logo_url ? (
+            <img
+              src={restaurant.logo_url}
+              alt={`Logo ${restaurant.name}`}
+              className="w-12 h-12 rounded-xl object-cover"
+              style={{ border: '2px solid #FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+            />
+          ) : (
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg text-white"
+              style={{ backgroundColor: '#F97316', border: '2px solid #FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+            >
+              {restaurant.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
 
         {/* Badge note ou Nouveau */}
-        <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 z-10">
           {!isNew && restaurant.rating ? (
             <div className="flex items-center gap-1 px-2 py-1 rounded-full"
               style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}>
@@ -101,8 +124,8 @@ function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; 
         </div>
       </div>
 
-      {/* Infos */}
-      <div className="p-3 sm:p-4">
+      {/* Infos — padding-top pour compenser le logo overlay qui déborde de 16px */}
+      <div className="p-3 sm:p-4 pt-6">
         <h3 className="font-bold text-sm leading-tight mb-1 transition-colors group-hover:text-orange-500"
           style={{ color: '#111111' }}>
           {restaurant.name}
@@ -185,15 +208,9 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
         const matchCuisine = cuisine === 'Tous les types' || (r.cuisine_type ?? '').toLowerCase().includes(cuisine.toLowerCase())
         return matchQuery && matchCity && matchCuisine
       })
-      .sort((a, b) => {
-        if (a.is_boosted && !b.is_boosted) return -1
-        if (!a.is_boosted && b.is_boosted) return 1
-        const aScore = a.review_count >= 3 ? (a.rating ?? 0) : 0
-        const bScore = b.review_count >= 3 ? (b.rating ?? 0) : 0
-        if (aScore !== bScore) return bScore - aScore
-        if (a.review_count !== b.review_count) return b.review_count - a.review_count
-        return a.name.localeCompare(b.name)
-      })
+      // Le tri est déjà appliqué côté serveur (boostés → nouveaux → score)
+      // On préserve cet ordre après filtrage
+
   }, [restaurants, query, city, cuisine])
 
   return (
