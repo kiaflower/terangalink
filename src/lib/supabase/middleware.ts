@@ -74,9 +74,20 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Role guard: super_admin trying to access restaurant routes
+  // Exception : mode impersonation (cookie sa_impersonate valide)
   if (user && role === 'super_admin' && pathname.startsWith('/dashboard/restaurant')) {
-    url.pathname = '/dashboard/super-admin'
-    return NextResponse.redirect(url)
+    const impCookie = request.cookies.get('sa_impersonate')?.value
+    let isImpersonating = false
+    if (impCookie) {
+      try {
+        const imp = JSON.parse(impCookie)
+        isImpersonating = imp.expiresAt > Date.now()
+      } catch { /* invalid cookie */ }
+    }
+    if (!isImpersonating) {
+      url.pathname = '/dashboard/super-admin'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse
