@@ -72,7 +72,7 @@ export default function RestaurantsPage() {
       body: JSON.stringify({ restaurantId: r.id }),
     })
     if (res.ok) {
-      router.push('/dashboard/restaurant')
+      window.location.href = '/dashboard/restaurant'
     }
     setImpersonatingId(null)
   }

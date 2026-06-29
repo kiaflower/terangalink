@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { ShieldAlert, X } from 'lucide-react'
 
 interface ImpersonationData {
@@ -12,7 +11,6 @@ interface ImpersonationData {
 }
 
 export function ImpersonationBanner() {
-  const router = useRouter()
   const [data, setData] = useState<ImpersonationData | null>(null)
   const [leaving, setLeaving] = useState(false)
 
@@ -39,9 +37,7 @@ export function ImpersonationBanner() {
   async function handleLeave() {
     setLeaving(true)
     await fetch('/api/super-admin/impersonate', { method: 'DELETE' })
-    setData(null)
-    router.push('/dashboard/super-admin/restaurants')
-    router.refresh()
+    window.location.href = '/dashboard/super-admin/restaurants'
   }
 
   if (!data) return null
