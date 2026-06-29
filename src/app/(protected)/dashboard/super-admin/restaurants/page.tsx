@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import Link from 'next/link'
-import { PlusCircle, Store, Pencil, Trash2, AlertTriangle, Loader2, RotateCcw, Clock, CheckCircle, XCircle, PauseCircle, Zap } from 'lucide-react'
+import { PlusCircle, Store, Pencil, Trash2, AlertTriangle, Loader2, RotateCcw, Clock, CheckCircle, XCircle, PauseCircle, Zap, ExternalLink } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
 import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
 
@@ -44,6 +45,7 @@ function getDaysLabel(sub: Subscription): { label: string; color: string } | nul
 
 export default function RestaurantsPage() {
   const supabase = createClient()
+  const router = useRouter()
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [adminsByRestaurant, setAdminsByRestaurant] = useState<Record<string, AdminProfile[]>>({})
   const [subByRestaurant, setSubByRestaurant] = useState<Record<string, Subscription>>({})
@@ -60,6 +62,20 @@ export default function RestaurantsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [resettingId, setResettingId] = useState<string | null>(null)
   const [boostingId, setBoostingId] = useState<string | null>(null)
+  const [impersonatingId, setImpersonatingId] = useState<string | null>(null)
+
+  async function handleImpersonate(r: Restaurant) {
+    setImpersonatingId(r.id)
+    const res = await fetch('/api/super-admin/impersonate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ restaurantId: r.id }),
+    })
+    if (res.ok) {
+      router.push('/dashboard/restaurant')
+    }
+    setImpersonatingId(null)
+  }
 
   const loadData = useCallback(async () => {
     const [{ data: rests }, { data: admins }, { data: subs }] = await Promise.all([
@@ -307,6 +323,17 @@ export default function RestaurantsPage() {
                         className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-brand-orange transition-colors text-xs font-bold">
                         →
                       </a>
+                      <button
+                        onClick={() => handleImpersonate(r)}
+                        disabled={impersonatingId === r.id}
+                        title="Accéder au dashboard"
+                        className="inline-flex items-center gap-1 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors border border-orange-500/20 disabled:opacity-60"
+                      >
+                        {impersonatingId === r.id
+                          ? <Loader2 className="w-3 h-3 animate-spin" />
+                          : <ExternalLink className="w-3 h-3" />}
+                        <span className="hidden sm:inline">Dashboard</span>
+                      </button>
                       <Link href={`/dashboard/super-admin/edit-restaurant/${r.id}`}
                         title="Modifier"
                         className="inline-flex items-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-900 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors">

@@ -27,7 +27,14 @@ export default async function RestaurantDashboard() {
     .eq('id', user.id)
     .single()
 
-  const restaurant: Restaurant | null = profile?.restaurant ?? null
+  // Mode impersonation super-admin
+  const { getImpersonatedRestaurantId, getImpersonatedRestaurant } = await import('@/lib/impersonation')
+  const impersonatedId = await getImpersonatedRestaurantId()
+  let restaurant: Restaurant | null = profile?.restaurant ?? null
+  if (impersonatedId) {
+    const imp = await getImpersonatedRestaurant(impersonatedId)
+    if (imp) restaurant = imp as Restaurant
+  }
 
   let subscription: Subscription | null = null
   if (restaurant) {

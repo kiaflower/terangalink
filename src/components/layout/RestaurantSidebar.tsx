@@ -24,7 +24,7 @@ const navItems = [
   { label: 'Paramètres', href: '/dashboard/restaurant/settings', icon: Settings },
 ]
 
-export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {
+export function RestaurantSidebar({ mobile = false, impersonatedRestaurantId }: { mobile?: boolean; impersonatedRestaurantId?: string }) {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
   const supabase = createClient()
@@ -32,11 +32,13 @@ export function RestaurantSidebar({ mobile = false }: { mobile?: boolean }) {
   const [slug, setSlug] = useState<string | null>(null)
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : settings.platform_url
 
+  const targetId = impersonatedRestaurantId ?? user?.restaurant_id
+
   useEffect(() => {
-    if (!user?.restaurant_id) return
-    supabase.from('restaurants').select('slug').eq('id', user.restaurant_id).single()
+    if (!targetId) return
+    supabase.from('restaurants').select('slug').eq('id', targetId).single()
       .then(({ data }) => { if (data) setSlug(data.slug) })
-  }, [user?.restaurant_id, supabase])
+  }, [targetId, supabase])
 
   const inner = (
     <>
