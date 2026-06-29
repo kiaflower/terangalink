@@ -632,7 +632,7 @@ function RestaurantInner({ data }: Props) {
           {/* ── PANIER DESKTOP ── */}
           <div className="hidden lg:block w-[340px] flex-shrink-0">
             <div
-              className="sticky rounded-2xl overflow-hidden max-h-[calc(100vh-6rem)]"
+              className="sticky rounded-2xl overflow-hidden flex flex-col max-h-[calc(100vh-6rem)]"
               style={{ top: demoBannerH + 64 + 16, backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
             >
               <CartDrawer inline tokens={tokens} isPremium={isPremium} />

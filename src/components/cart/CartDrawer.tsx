@@ -258,7 +258,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
   }
 
   const content = (
-    <div className="flex flex-col h-full" style={{ color: tokens.textPrimary }}>
+    <div className="flex flex-col" style={{ color: tokens.textPrimary, minHeight: 0, height: '100%', maxHeight: 'inherit' }}>
       {/* Header */}
       <div className="flex items-center justify-between p-5" style={{ borderBottom: `1px solid ${tokens.border}` }}>
         <div className="flex items-center gap-2">
@@ -284,7 +284,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
       </div>
 
       {/* Items */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
         {state.items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 text-2xl"
@@ -340,7 +340,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
 
       {/* Footer */}
       {state.items.length > 0 && (
-        <div className="p-4 space-y-3" style={{ borderTop: `1px solid ${tokens.border}` }}>
+        <div className="flex-shrink-0 p-4 space-y-3" style={{ borderTop: `1px solid ${tokens.border}` }}>
           <input
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
