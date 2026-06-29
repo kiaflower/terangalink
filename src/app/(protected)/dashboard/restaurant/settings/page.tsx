@@ -52,13 +52,18 @@ export default function SettingsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data: profile } = await supabase.from('profiles').select('restaurant_id').eq('id', user.id).single()
-    if (!profile?.restaurant_id) { setLoading(false); return }
-    setRestaurantId(profile.restaurant_id)
+    let rid = profile?.restaurant_id ?? null
+    if (!rid) {
+      const m = document.cookie.match(/(?:^|;\s*)sa_impersonate=([^;]*)/)
+      if (m) { try { const imp = JSON.parse(decodeURIComponent(m[1])); if (imp.expiresAt > Date.now()) rid = imp.restaurantId } catch { /* */ } }
+    }
+    if (!rid) { setLoading(false); return }
+    setRestaurantId(rid)
 
     const { data: r } = await supabase
       .from('restaurants')
       .select('whatsapp_number, opening_hours, delivery_fee, show_delivery_fee, wave_number, orange_money_number, prep_time_minutes')
-      .eq('id', profile.restaurant_id)
+      .eq('id', rid)
       .single()
 
     if (r) {

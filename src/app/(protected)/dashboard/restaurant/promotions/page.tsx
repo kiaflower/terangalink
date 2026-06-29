@@ -68,14 +68,19 @@ export default function PromotionsPage() {
       .eq('id', profile.user.id)
       .single()
 
-    if (!p?.restaurant_id) { setLoading(false); return }
-    setRestaurantId(p.restaurant_id)
+    let rid = p?.restaurant_id ?? null
+    if (!rid) {
+      const m = document.cookie.match(/(?:^|;\s*)sa_impersonate=([^;]*)/)
+      if (m) { try { const imp = JSON.parse(decodeURIComponent(m[1])); if (imp.expiresAt > Date.now()) rid = imp.restaurantId } catch { /* */ } }
+    }
+    if (!rid) { setLoading(false); return }
+    setRestaurantId(rid)
 
     // Plan
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('plan')
-      .eq('restaurant_id', p.restaurant_id)
+      .eq('restaurant_id', rid)
       .single()
     setPlan(sub?.plan ?? 'starter')
 
@@ -83,7 +88,7 @@ export default function PromotionsPage() {
     const { data: codesData } = await supabase
       .from('promo_codes')
       .select('*')
-      .eq('restaurant_id', p.restaurant_id)
+      .eq('restaurant_id', rid)
       .order('created_at', { ascending: false })
 
     setCodes((codesData as PromoCode[]) ?? [])
