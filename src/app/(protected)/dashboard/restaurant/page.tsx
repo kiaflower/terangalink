@@ -1,3 +1,4 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
@@ -13,6 +14,8 @@ import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
 import { SubscriptionReminder } from '@/components/dashboard/SubscriptionReminder'
 import { HelpCard } from '@/components/dashboard/HelpCard'
 import { TipCard } from '@/components/dashboard/TipCard'
+import MonthlyHistoryTable from '@/components/dashboard/MonthlyHistoryTable'
+import type { MonthRow, OrderDetail, RestaurantStat } from '@/components/dashboard/MonthlyHistoryTable'
 
 export const metadata = { title: 'Tableau de bord — Restaurant' }
 
@@ -26,6 +29,7 @@ function monthLabel(year: number, month: number) {
 
 export default async function RestaurantDashboard() {
   const supabase = await createClient()
+  const admin = createAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
@@ -62,12 +66,9 @@ export default async function RestaurantDashboard() {
   let prevMonthRevenue = 0
   let monthOrders = 0
   let prevMonthOrders = 0
-  let hasWave = false
-  let hasOrangeMoney = false
-  let hasFeaturedProduct = false
-  let lastMenuUpdate: string | null = null
-  let lastOrderDate: string | null = null
-  let monthlyHistory: { mois: string; commandes: number; revenus: number }[] = []
+  let monthlyRows: MonthRow[] = []
+  let orderDetails: OrderDetail[] = []
+  let restaurantStats: RestaurantStat[] = []
 
   if (restaurant) {
     const rid = restaurant.id
@@ -75,8 +76,8 @@ export default async function RestaurantDashboard() {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
     const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
-    const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1).toISOString()
+    const prevMonthEnd = monthStart
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString()
 
     const [
       { count: todayCount },
@@ -87,34 +88,26 @@ export default async function RestaurantDashboard() {
       { data: prevMonthDelivered },
       { count: monthCount },
       { count: prevMonthCount },
-      { data: restoDetails },
-      { data: featuredItem },
-      { data: lastMenuItem },
-      { data: lastOrder },
       { data: historicOrders },
+      { data: historicViews },
+      { data: allOrdersExport },
     ] = await Promise.all([
-      supabase.from('orders').select('*', { count: 'exact', head: true })
+      admin.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")').gte('created_at', todayStart),
-      supabase.from('orders').select('*', { count: 'exact', head: true })
+      admin.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")'),
-      supabase.from('menu_items').select('*', { count: 'exact', head: true })
+      admin.from('menu_items').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).eq('is_available', true),
-      supabase.from('orders').select('total')
-        .eq('restaurant_id', rid).eq('status', 'delivered'),
-      supabase.from('orders').select('total')
-        .eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', monthStart),
-      supabase.from('orders').select('total')
-        .eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', prevMonthStart).lt('created_at', prevMonthEnd),
-      supabase.from('orders').select('*', { count: 'exact', head: true })
+      admin.from('orders').select('total').eq('restaurant_id', rid).eq('status', 'delivered'),
+      admin.from('orders').select('total').eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', monthStart),
+      admin.from('orders').select('total').eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', prevMonthStart).lt('created_at', prevMonthEnd),
+      admin.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")').gte('created_at', monthStart),
-      supabase.from('orders').select('*', { count: 'exact', head: true })
+      admin.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")').gte('created_at', prevMonthStart).lt('created_at', prevMonthEnd),
-      supabase.from('restaurants').select('wave_number, orange_money_number').eq('id', rid).single(),
-      supabase.from('menu_items').select('id').eq('restaurant_id', rid).eq('is_featured', true).limit(1),
-      supabase.from('menu_items').select('updated_at').eq('restaurant_id', rid).order('updated_at', { ascending: false }).limit(1),
-      supabase.from('orders').select('created_at').eq('restaurant_id', rid).order('created_at', { ascending: false }).limit(1),
-      supabase.from('orders').select('created_at, total, status')
-        .eq('restaurant_id', rid).gte('created_at', sixMonthsAgo).order('created_at', { ascending: true }),
+      admin.from('orders').select('created_at, total, status').eq('restaurant_id', rid).gte('created_at', twelveMonthsAgo).order('created_at', { ascending: true }),
+      admin.from('analytics_events').select('created_at').eq('restaurant_id', rid).eq('event_type', 'page_view').gte('created_at', twelveMonthsAgo),
+      admin.from('orders').select('id, created_at, total, status, customer_name, customer_phone').eq('restaurant_id', rid).order('created_at', { ascending: false }).limit(5000),
     ])
 
     todayOrders = todayCount ?? 0
@@ -125,28 +118,47 @@ export default async function RestaurantDashboard() {
     prevMonthRevenue = (prevMonthDelivered ?? []).reduce((s, o) => s + (o.total ?? 0), 0)
     monthOrders = monthCount ?? 0
     prevMonthOrders = prevMonthCount ?? 0
-    hasWave = !!(restoDetails as { wave_number?: string | null } | null)?.wave_number
-    hasOrangeMoney = !!(restoDetails as { orange_money_number?: string | null } | null)?.orange_money_number
-    hasFeaturedProduct = (featuredItem?.length ?? 0) > 0
-    lastMenuUpdate = (lastMenuItem?.[0] as { updated_at?: string } | undefined)?.updated_at ?? null
-    lastOrderDate = (lastOrder?.[0] as { created_at?: string } | undefined)?.created_at ?? null
 
-    // Grouper par mois
-    const byMonth: Record<string, { commandes: number; revenus: number }> = {}
+    // Historique mensuel
+    const byMonth: Record<string, { commandes: number; livrees: number; revenus: number }> = {}
     for (const o of historicOrders ?? []) {
       const d = new Date(o.created_at)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      if (!byMonth[key]) byMonth[key] = { commandes: 0, revenus: 0 }
+      if (!byMonth[key]) byMonth[key] = { commandes: 0, livrees: 0, revenus: 0 }
       if (!['cancelled', 'delivery_cancelled'].includes(o.status)) byMonth[key].commandes++
-      if (o.status === 'delivered') byMonth[key].revenus += o.total ?? 0
+      if (o.status === 'delivered') { byMonth[key].livrees++; byMonth[key].revenus += o.total ?? 0 }
     }
-    monthlyHistory = Object.entries(byMonth)
+
+    const viewsByMonth: Record<string, number> = {}
+    for (const v of historicViews ?? []) {
+      const d = new Date(v.created_at)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      viewsByMonth[key] = (viewsByMonth[key] ?? 0) + 1
+    }
+
+    monthlyRows = Object.entries(byMonth)
       .sort(([a], [b]) => b.localeCompare(a))
-      .slice(0, 6)
+      .slice(0, 12)
       .map(([key, v]) => {
         const [y, m] = key.split('-').map(Number)
-        return { mois: monthLabel(y, m), ...v }
+        return { mois: monthLabel(y, m), ...v, vues: viewsByMonth[key] ?? 0 }
       })
+
+    // Données export Excel
+    orderDetails = (allOrdersExport ?? []).map(o => ({
+      date: new Date(o.created_at).toLocaleDateString('fr-FR'),
+      restaurant: restaurant!.name,
+      client: o.customer_name ?? o.customer_phone ?? '—',
+      montant: o.total ?? 0,
+      statut: o.status,
+      numero: `TL-${String(o.id).slice(-6).toUpperCase()}`,
+    }))
+
+    restaurantStats = [{
+      nom: restaurant.name,
+      commandes: totalOrders,
+      revenus: totalRevenue,
+    }]
   }
 
   const TL_WHATSAPP = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP || '221700000000'
@@ -228,32 +240,14 @@ export default async function RestaurantDashboard() {
         />
       </div>
 
-      {/* ── Historique 6 mois ── */}
-      {restaurant && monthlyHistory.length > 0 && (
-        <div className="mb-8 rounded-2xl overflow-hidden" style={{ border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF' }}>
-          <div className="px-6 py-4" style={{ borderBottom: '1px solid #F3F4F6' }}>
-            <h2 className="font-semibold text-gray-900 text-sm">Mes 6 derniers mois</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ borderBottom: '1px solid #F3F4F6' }}>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Mois</th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Commandes</th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenus</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {monthlyHistory.map((row, i) => (
-                  <tr key={row.mois} className={i === 0 ? 'bg-orange-50/50' : ''}>
-                    <td className="px-6 py-3 text-gray-900 font-medium capitalize">{row.mois}</td>
-                    <td className="px-6 py-3 text-right text-gray-700">{row.commandes}</td>
-                    <td className="px-6 py-3 text-right text-gray-700 font-semibold">{fmt(row.revenus)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* ── Historique + export Excel ── */}
+      {restaurant && (
+        <div className="mb-8">
+          <MonthlyHistoryTable
+            rows={monthlyRows}
+            orderDetails={orderDetails}
+            restaurantStats={restaurantStats}
+          />
         </div>
       )}
 
