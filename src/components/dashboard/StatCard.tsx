@@ -7,6 +7,7 @@ interface StatCardProps {
   icon: React.ReactNode
   trend?: { value: number; positive: boolean }
   color?: 'orange' | 'green' | 'blue' | 'purple'
+  details?: { label: string; value: string }[]
 }
 
 export function StatCard({
@@ -16,6 +17,7 @@ export function StatCard({
   icon,
   trend,
   color = 'orange',
+  details,
 }: StatCardProps) {
   const colors = {
     orange: {
@@ -56,6 +58,17 @@ export function StatCard({
           <p className="text-gray-500 text-xs mt-1">{subtitle}</p>
         )}
       </div>
+
+      {details && details.length > 0 && (
+        <div className="flex flex-col gap-0.5 mt-1 border-t border-gray-200 pt-2">
+          {details.map(d => (
+            <div key={d.label} className="flex items-center justify-between">
+              <span className="text-gray-400 text-xs">{d.label}</span>
+              <span className="text-gray-500 text-xs font-medium">{d.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {trend && (
         <div className="flex items-center gap-1">
