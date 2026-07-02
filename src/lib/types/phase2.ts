@@ -68,6 +68,7 @@ export interface Order {
   total: number
   payment_method: PaymentMethod | null
   status: OrderStatus
+  is_paid: boolean
   notes: string | null
   promo_code_id: string | null
   discount_amount: number

@@ -46,8 +46,12 @@ export default function AnalyticsPage() {
       .eq('id', user.id)
       .single()
 
-    if (!profile?.restaurant_id) { setLoading(false); return }
-    const rid = profile.restaurant_id
+    let rid = profile?.restaurant_id ?? null
+    if (!rid) {
+      const m = document.cookie.match(/(?:^|;\s*)sa_impersonate=([^;]*)/)
+      if (m) { try { const imp = JSON.parse(decodeURIComponent(m[1])); if (imp.expiresAt > Date.now()) rid = imp.restaurantId } catch { /* */ } }
+    }
+    if (!rid) { setLoading(false); return }
 
     // Get plan
     const { data: sub } = await supabase
@@ -91,7 +95,7 @@ export default function AnalyticsPage() {
       supabase.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).not('status', 'in', '("cancelled","delivery_cancelled")').gte('created_at', monthStart),
       supabase.from('orders').select('total')
-        .eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', monthStart),
+        .eq('restaurant_id', rid).eq('is_paid', true).gte('created_at', monthStart),
       supabase.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).eq('status', 'pending'),
     ])
