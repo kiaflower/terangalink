@@ -339,7 +339,7 @@ export function useSmartCards(): UseSmartCardsReturn {
     ] = await Promise.all([
       supabase.from('restaurants').select('smart_cards_data, wave_number, orange_money_number, opening_hours, updated_at, created_at').eq('id', rid).single(),
       supabase.from('subscriptions').select('plan').eq('restaurant_id', rid).single(),
-      supabase.from('orders').select('*', { count: 'exact', head: true }).eq('restaurant_id', rid).in('status', ['pending', 'confirmed']),
+      supabase.from('orders').select('*', { count: 'exact', head: true }).eq('restaurant_id', rid).in('status', ['pending', 'paid']),
       supabase.from('orders').select('*', { count: 'exact', head: true }).eq('restaurant_id', rid).gte('created_at', `${today}T00:00:00`),
       supabase.from('orders').select('*', { count: 'exact', head: true }).eq('restaurant_id', rid),
       supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('restaurant_id', rid).eq('event_type', 'page_view'),

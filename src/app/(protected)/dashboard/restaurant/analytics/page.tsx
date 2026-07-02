@@ -91,7 +91,7 @@ export default function AnalyticsPage() {
       supabase.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).neq('status', 'cancelled').gte('created_at', monthStart),
       supabase.from('orders').select('total')
-        .eq('restaurant_id', rid).eq('status', 'delivered').gte('created_at', monthStart),
+        .eq('restaurant_id', rid).in('status', ['paid', 'delivered']).gte('created_at', monthStart),
       supabase.from('orders').select('*', { count: 'exact', head: true })
         .eq('restaurant_id', rid).eq('status', 'pending'),
     ])

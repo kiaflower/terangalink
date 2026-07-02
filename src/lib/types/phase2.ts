@@ -29,7 +29,7 @@ export interface MenuItem {
   category?: MenuCategory
 }
 
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'paid' | 'delivered' | 'cancelled'
 export type PaymentMethod = 'cash' | 'wave' | 'orange_money'
 
 export interface OrderItem {
@@ -50,6 +50,7 @@ export interface Order {
   payment_method: PaymentMethod | null
   status: OrderStatus
   notes: string | null
+  paid_at: string | null
   created_at: string
   updated_at: string
 }
@@ -115,6 +116,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'En attente',
   preparing: 'En préparation',
   ready: 'Prêt',
+  paid: 'Payé',
   delivered: 'Livré',
   cancelled: 'Annulé',
 }
@@ -123,6 +125,7 @@ export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   pending: 'warning',
   preparing: 'info',
   ready: 'success',
+  paid: 'orange',
   delivered: 'default',
   cancelled: 'danger',
 }
