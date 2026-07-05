@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 const VALID_STATUSES = [
-  'pending', 'confirmed', 'preparing', 'ready',
+  'pending', 'confirmed',
   'delivered', 'cancelled', 'delivery_cancelled'
 ]
 

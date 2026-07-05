@@ -45,7 +45,7 @@ export interface MenuItem {
   variants?: MenuItemVariant[]
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled' | 'delivery_cancelled'
+export type OrderStatus = 'pending' | 'confirmed' | 'delivered' | 'cancelled' | 'delivery_cancelled'
 export type PaymentMethod = 'cash' | 'wave' | 'orange_money'
 
 export interface OrderItem {
@@ -197,8 +197,6 @@ export interface MenuCategoryForm {
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending:            'En attente',
   confirmed:          'Confirmée',
-  preparing:          'En préparation',
-  ready:              'Prête',
   delivered:          'Livrée',
   cancelled:          'Annulée',
   delivery_cancelled: 'Livraison annulée',
@@ -207,8 +205,6 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 export const ORDER_STATUS_COLORS: Record<OrderStatus, string> = {
   pending:            'warning',
   confirmed:          'info',
-  preparing:          'info',
-  ready:              'success',
   delivered:          'success',
   cancelled:          'danger',
   delivery_cancelled: 'danger',

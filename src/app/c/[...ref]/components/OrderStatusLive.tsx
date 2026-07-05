@@ -27,21 +27,9 @@ const STATUS_CONFIG: Record<string, {
   },
   confirmed: {
     label: 'Confirmée',
-    icon: CheckCircle2,
+    icon: Package,
     color: '#10B981',
     desc: 'Le restaurant a confirmé votre commande. Préparation en cours.',
-  },
-  preparing: {
-    label: 'En préparation',
-    icon: Package,
-    color: '#6366F1',
-    desc: 'Votre commande est en cours de préparation.',
-  },
-  ready: {
-    label: 'Prête',
-    icon: CheckCircle2,
-    color: '#10B981',
-    desc: 'Votre commande est prête ! Le restaurant va vous contacter.',
   },
   delivered: {
     label: 'Livrée ✓',
@@ -63,7 +51,7 @@ const STATUS_CONFIG: Record<string, {
   },
 }
 
-const PROGRESS_STEPS = ['pending', 'confirmed', 'preparing', 'ready', 'delivered']
+const PROGRESS_STEPS = ['pending', 'confirmed', 'delivered']
 
 interface OrderStatusLiveProps {
   order: OrderLive

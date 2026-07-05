@@ -6,7 +6,6 @@ import { useCart } from '@/lib/hooks/useCart'
 import { formatCurrency } from '@/lib/utils'
 import Image from 'next/image'
 import type { ThemeTokens } from '@/lib/theme'
-import { useSettings } from '@/lib/hooks/useSettings'
 
 interface Props {
   onClose?: () => void
@@ -107,8 +106,6 @@ export function CartButton({ tokens = DEFAULT_TOKENS, isPremium = false }: { tok
 
 export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, isPremium = false }: Props) {
   const { state, updateQty, clearCart, totalItems, totalPrice } = useCart()
-  const settings = useSettings()
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : settings.platform_url
 
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -116,6 +113,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
   const [customerPhone, setCustomerPhone] = useState('')
   const [customerAddress, setCustomerAddress] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'Wave' | 'Orange Money' | 'Cash'>('Wave')
+  const [notes, setNotes] = useState('')
 
   const promo = usePromoCode(state.restaurantId)
   const discount = computeDiscount(totalPrice, promo.applied)
@@ -162,7 +160,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
           })),
           total: finalTotal,
           payment_method: paymentMethod === 'Wave' ? 'wave' : paymentMethod === 'Orange Money' ? 'orange_money' : 'cash',
-          notes: null,
+          notes: notes.trim() || null,
           promo_code_id: promo.applied?.promo_code_id ?? null,
           discount_amount: discount,
         }),
@@ -173,78 +171,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
         throw new Error(payload?.error || 'Erreur de création de commande')
       }
 
-      const order = payload.data as { id: string; created_at: string }
-      const orderNumber: string = payload.order_number || order.id.slice(0, 8).toUpperCase()
-
-      // Lien de suivi : toujours /c/slug/TL-XXXXXX
-      // payload.slug est retourné par l'API, payload.short_url est le lien complet
-      const restaurantSlug: string = payload.slug || state.restaurantSlug || ''
-      const shortUrl: string =
-        payload.short_url ||
-        (restaurantSlug
-          ? `${baseUrl}/c/${restaurantSlug}/${orderNumber}`
-          : `${baseUrl}/c/${orderNumber}`)
-
-      // Detect preorder
-      const preorderItem = state.items.find(i => i.preorder_delivery_date)
-      const isPreorder = !!preorderItem
-      const deliveryText = preorderItem?.preorder_delivery_date ?? ''
-
-      const itemsLines = state.items.map(i => {
-        const variantPart = i.variant_name ? ` (${i.variant_name})` : ''
-        return `• ${i.quantity}× ${i.name}${variantPart} — ${(i.price * i.quantity).toLocaleString('fr-SN')} FCFA`
-      }).join('\n')
-
-      const promoLine = promo.applied
-        ? `\nCode promo : ${promo.applied.code} (−${formatCurrency(discount)})`
-        : ''
-
-      const addressLine = customerAddress.trim()
-        ? `Adresse : ${customerAddress.trim()}\n`
-        : ''
-
-      const rawDate = order.created_at
-      const parsedDate = rawDate ? new Date(rawDate) : new Date()
-      const orderTime = isNaN(parsedDate.getTime())
-        ? new Date().toLocaleString('fr-SN', { timeZone: 'Africa/Dakar' })
-        : new Intl.DateTimeFormat('fr-SN', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Dakar' }).format(parsedDate)
-
-      let message: string
-      if (isPreorder) {
-        message = encodeURIComponent(
-          `📅 Précommande ${orderNumber} — ${state.restaurantName}\n\n` +
-          `Client : ${customerName.trim() || 'Client'}\n` +
-          `Tél : ${cleanedCustomerPhone}\n` +
-          `${addressLine}\n` +
-          `Articles :\n${itemsLines}${promoLine}\n\n` +
-          `Livraison : ${deliveryText}\n\n` +
-          `Total : ${formatCurrency(finalTotal)}\n` +
-          `Paiement : ${paymentMethod}\n` +
-          `Heure : ${orderTime}\n\n` +
-          `🔗 Voir la commande :\n${shortUrl}`
-        )
-      } else {
-        message = encodeURIComponent(
-          `🍽 Commande ${orderNumber} — ${state.restaurantName}\n\n` +
-          `Client : ${customerName.trim() || 'Client'}\n` +
-          `Tél : ${cleanedCustomerPhone}\n` +
-          `${addressLine}\n` +
-          `Articles :\n${itemsLines}${promoLine}\n\n` +
-          `Total : ${formatCurrency(finalTotal)}\n` +
-          `Paiement : ${paymentMethod}\n` +
-          `Heure : ${orderTime}\n\n` +
-          `🔗 Voir la commande :\n${shortUrl}`
-        )
-      }
-
-      const restaurantPhone = (payload.whatsapp_url
-        ? payload.whatsapp_url.split('wa.me/')[1]?.split('?')[0]
-        : state.restaurantPhone.replace(/\D/g, '')) || state.restaurantPhone.replace(/\D/g, '')
-
-      openWhatsappSafely(
-        payload.whatsapp_url || `https://wa.me/${restaurantPhone}?text=${message}`,
-        pendingWindow
-      )
+      openWhatsappSafely(payload.whatsapp_url, pendingWindow)
 
       clearCart()
       onClose?.()
@@ -298,7 +225,7 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
               style={{ backgroundColor: tokens.bgCardHover }}>
               {item.image_url && (
                 <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                  <Image src={item.image_url} alt={item.name} fill className="object-cover" sizes="48px" unoptimized />
+                  <Image src={item.image_url} alt={item.name} fill className="object-cover" sizes="48px" />
                 </div>
               )}
               <div className="flex-1 min-w-0">
@@ -375,6 +302,15 @@ export function CartDrawer({ onClose, inline = false, tokens = DEFAULT_TOKENS, i
             <option value="Orange Money">Paiement : Orange Money</option>
             <option value="Cash">Paiement : Cash</option>
           </select>
+
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Note pour le restaurant (optionnel)"
+            rows={2}
+            className="w-full rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none"
+            style={{ backgroundColor: tokens.bgCardHover, color: tokens.textPrimary, border: `1px solid ${tokens.border}` }}
+          />
 
           {/* Code promo */}
           <div>

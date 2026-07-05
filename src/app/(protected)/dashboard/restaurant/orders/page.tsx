@@ -14,6 +14,7 @@ import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '@/lib/types'
 import type { Order, OrderStatus } from '@/lib/types'
 import { ReceiptGenerator } from '@/components/orders/ReceiptGenerator'
 import { canUseFeature, normalizePlan } from '@/lib/plans'
+import { ToastStack, type ToastItem } from '@/components/ui/Toast'
 
 type OrderItemRaw = {
   name: string
@@ -48,6 +49,8 @@ function OrdersInner() {
   const [updateError, setUpdateError] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
+  const [restaurantId, setRestaurantId] = useState<string | null>(null)
+  const [toasts, setToasts] = useState<ToastItem[]>([])
 
   const fetchOrders = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -65,6 +68,7 @@ function OrdersInner() {
       if (m) { try { const imp = JSON.parse(decodeURIComponent(m[1])); if (imp.expiresAt > Date.now()) rid = imp.restaurantId } catch { /* */ } }
     }
     if (!rid) { setLoading(false); return }
+    setRestaurantId(rid)
 
     const [ordersResult, restaurantResult, subscriptionResult] = await Promise.all([
       supabase.from('orders').select('*').eq('restaurant_id', rid).order('created_at', { ascending: false }),
@@ -116,6 +120,33 @@ function OrdersInner() {
   }, [fetchOrders])
 
   useEffect(() => {
+    if (!restaurantId) return
+
+    const channel = supabase
+      .channel(`restaurant-orders-${restaurantId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${restaurantId}` },
+        (payload) => {
+          const newOrder = payload.new as Order
+          setToasts(prev => [...prev, {
+            id: newOrder.id,
+            title: 'Nouvelle commande !',
+            message: `${newOrder.customer_name || 'Client'} — ${formatCurrency(newOrder.total)}`,
+          }])
+          fetchOrders()
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [restaurantId, supabase, fetchOrders])
+
+  function dismissToast(id: string) {
+    setToasts(prev => prev.filter(t => t.id !== id))
+  }
+
+  useEffect(() => {
     const targetOrderId = searchParams.get('order')
     if (targetOrderId) setExpandedId(targetOrderId)
   }, [searchParams])
@@ -165,23 +196,28 @@ function OrdersInner() {
     const numStr = orderNum ? ` (${orderNum})` : ''
     const deliveryDate = getDeliveryDate(order)
     const isPreorder = !!deliveryDate
+    const isCash = order.payment_method === 'cash'
+    const paymentLines = isCash
+      ? ''
+      : `• Wave : ${waveNumber || 'À confirmer'}\n• Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n`
 
     let messageText: string
     if (isPreorder) {
-      messageText =
-        `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été enregistrée par ${restaurantName} ! 🎉\n\n` +
-        `📅 Date de livraison : ${deliveryDate}\n\n` +
-        `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
-        `💳 Pour confirmer votre précommande, veuillez effectuer le paiement :\n` +
-        `• Wave : ${waveNumber || 'À confirmer'}\n` +
-        `• Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
-        `Envoyez-nous une capture de votre paiement pour valider définitivement votre commande. Merci ! 🙏`
+      messageText = isCash
+        ? `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été enregistrée par ${restaurantName} ! 🎉\n\n` +
+          `📅 Date de livraison : ${deliveryDate}\n\n` +
+          `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
+          `Le paiement se fera en espèces à la livraison. Merci ! 🙏`
+        : `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été enregistrée par ${restaurantName} ! 🎉\n\n` +
+          `📅 Date de livraison : ${deliveryDate}\n\n` +
+          `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
+          `💳 Pour confirmer votre précommande, veuillez effectuer le paiement :\n${paymentLines}` +
+          `Envoyez-nous une capture de votre paiement pour valider définitivement votre commande. Merci ! 🙏`
     } else {
       messageText =
         `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n` +
         `Temps de préparation estimé : 25 min.\n` +
-        `Paiement Wave : ${waveNumber || 'À confirmer'}\n` +
-        `Paiement Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
+        (isCash ? `Paiement en espèces à la livraison.\n\n` : `${paymentLines}`) +
         `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
         `Merci 🙏`
     }
@@ -216,7 +252,30 @@ function OrdersInner() {
     await updateStatus(order, 'confirmed')
   }
 
+  function buildPaymentConfirmedWhatsApp(order: Order) {
+    const phone = (order.customer_phone || '').replace(/\D/g, '')
+    if (!phone) return null
+
+    const orderNum = (order as unknown as { order_number?: string }).order_number
+    const numStr = orderNum ? ` (${orderNum})` : ''
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const trackingUrl = orderNum && restaurantSlug
+      ? `${origin}/c/${restaurantSlug}/${orderNum}`
+      : ''
+
+    const messageText =
+      `Bonjour ${order.customer_name || ''}${numStr}, nous avons bien reçu votre paiement ✅\n\n` +
+      `Votre commande est en cours de préparation et sera livrée très bientôt.\n` +
+      `${trackingUrl ? `\n🔗 Suivre ma commande :\n${trackingUrl}\n` : ''}` +
+      `\nMerci pour votre confiance ! 🙏`
+
+    return `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`
+  }
+
   async function marquerPayee(order: Order) {
+    const url = buildPaymentConfirmedWhatsApp(order)
+    if (url) window.open(url, '_blank')
+
     setMarkingPaid(order.id)
     const res = await fetch(`/api/orders/${order.id}/paid`, { method: 'PATCH' })
     setMarkingPaid(null)
@@ -253,6 +312,11 @@ function OrdersInner() {
 
   return (
     <div className="p-6 sm:p-8 max-w-4xl">
+      <ToastStack
+        toasts={toasts}
+        onDismiss={dismissToast}
+        onClickToast={(t) => { setExpandedId(t.id); dismissToast(t.id) }}
+      />
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -312,7 +376,7 @@ function OrdersInner() {
             const annulee = status === 'cancelled' || status === 'delivery_cancelled'
             const isDelivered = status === 'delivered'
             const isPending = status === 'pending'
-            const isConfirmed = status === 'confirmed' || status === 'preparing' || status === 'ready'
+            const isConfirmed = status === 'confirmed'
             const isUpdating = updating === order.id
             const isMarkingPaid = markingPaid === order.id
             const deliveryDate = getDeliveryDate(order)
