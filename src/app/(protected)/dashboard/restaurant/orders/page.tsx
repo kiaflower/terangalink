@@ -197,27 +197,24 @@ function OrdersInner() {
     const deliveryDate = getDeliveryDate(order)
     const isPreorder = !!deliveryDate
     const isCash = order.payment_method === 'cash'
-    const paymentLines = isCash
-      ? ''
-      : `• Wave : ${waveNumber || 'À confirmer'}\n• Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n`
+    const paymentInstructions = isCash
+      ? `Le paiement se fait à la livraison, en espèces. Pensez à prévoir l'appoint pour votre livreur.\n\n`
+      : `• Wave : ${waveNumber || 'À confirmer'}\n• Orange Money : ${orangeMoneyNumber || 'À confirmer'}\n\n` +
+        `Merci de valider votre paiement avec le moyen choisi et de nous envoyer la capture d'écran, afin qu'on puisse confirmer votre commande de notre côté.\n\n`
 
     let messageText: string
     if (isPreorder) {
-      messageText = isCash
-        ? `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été enregistrée par ${restaurantName} ! 🎉\n\n` +
-          `📅 Date de livraison : ${deliveryDate}\n\n` +
-          `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
-          `Le paiement se fera en espèces à la livraison. Merci ! 🙏`
-        : `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été enregistrée par ${restaurantName} ! 🎉\n\n` +
-          `📅 Date de livraison : ${deliveryDate}\n\n` +
-          `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
-          `💳 Pour confirmer votre précommande, veuillez effectuer le paiement :\n${paymentLines}` +
-          `Envoyez-nous une capture de votre paiement pour valider définitivement votre commande. Merci ! 🙏`
+      messageText =
+        `Bonjour ${order.customer_name || ''}${numStr}, votre précommande a bien été enregistrée par ${restaurantName} ! 🎉\n\n` +
+        `📅 Date de livraison : ${deliveryDate}\n\n` +
+        `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
+        paymentInstructions +
+        `Merci ! 🙏`
     } else {
       messageText =
-        `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été validée par ${restaurantName}.\n` +
+        `Bonjour ${order.customer_name || ''}${numStr}, votre commande a bien été prise en compte par ${restaurantName}.\n` +
         `Temps de préparation estimé : 25 min.\n` +
-        (isCash ? `Paiement en espèces à la livraison.\n\n` : `${paymentLines}`) +
+        paymentInstructions +
         `${itemLines ? `Résumé :\n${itemLines}\n\n` : ''}` +
         `Merci 🙏`
     }
@@ -266,7 +263,7 @@ function OrdersInner() {
     const messageText =
       `Bonjour ${order.customer_name || ''}${numStr}, nous avons bien reçu votre paiement ✅\n\n` +
       `Votre commande est en cours de préparation et sera livrée très bientôt.\n` +
-      `${trackingUrl ? `\n🔗 Suivre ma commande :\n${trackingUrl}\n` : ''}` +
+      `${trackingUrl ? `\n🔗 Suivez votre commande ici :\n${trackingUrl}\n` : ''}` +
       `\nMerci pour votre confiance ! 🙏`
 
     return `https://wa.me/${phone}?text=${encodeURIComponent(messageText)}`
