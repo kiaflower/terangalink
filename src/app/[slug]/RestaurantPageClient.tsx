@@ -4,6 +4,7 @@ import { FaSnapchatGhost } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home,
   Instagram, Facebook, Music2, UtensilsCrossed, LayoutGrid,
@@ -105,6 +106,8 @@ function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeToke
 
 function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborhoodRestaurants, seoContent }: Props) {
   const { restaurant, categories, items } = data
+  const searchParams = useSearchParams()
+  const fromAnnuaire = searchParams.get('from') === 'annuaire'
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [showAllMenu, setShowAllMenu] = useState(false)
@@ -669,8 +672,8 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
 
       </div>
 
-      {/* ── DÉCOUVREZ DANS LE MÊME QUARTIER ── */}
-      {neighborhoodRestaurants && neighborhoodRestaurants.length > 0 && (
+      {/* ── DÉCOUVREZ DANS LE MÊME QUARTIER (uniquement en provenance de l'annuaire) ── */}
+      {fromAnnuaire && neighborhoodRestaurants && neighborhoodRestaurants.length > 0 && (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-10">
           <section style={{ borderTop: `1px solid ${tokens.border}`, paddingTop: 32 }}>
             <h2 className="text-lg font-bold mb-4" style={{ color: tokens.textPrimary }}>

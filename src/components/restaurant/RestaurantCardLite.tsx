@@ -11,7 +11,7 @@ export function RestaurantCardLite({ restaurant }: { restaurant: RestaurantSumma
 
   return (
     <Link
-      href={`/${restaurant.slug}`}
+      href={`/${restaurant.slug}?from=annuaire`}
       className="group block rounded-2xl overflow-hidden bg-white border transition-shadow hover:shadow-lg"
       style={{ borderColor: restaurant.is_boosted ? '#F97316' : '#E5E7EB' }}
     >
