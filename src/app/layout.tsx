@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import { buildOrganizationSchema, buildWebsiteSchema } from '@/lib/seo'
 import './globals.css'
 
 const inter = Inter({
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   description: 'TerangaLink donne à chaque restaurant son propre site ...',
 
   icons: {
-    icon: '/favicogit add <div className=""></div>n.ico',
+    icon: '/favicon.ico',
     shortcut: '/favicon.ico',
     apple: '/icon.png',
   },
@@ -40,6 +41,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className="dark">
       <body className={`${inter.variable} font-sans bg-surface text-white antialiased`}>
+        <script
+          id="schema-organization"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationSchema()) }}
+        />
+        <script
+          id="schema-website"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteSchema()) }}
+        />
         {children}
       </body>
     </html>

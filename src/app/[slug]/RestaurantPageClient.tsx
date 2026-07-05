@@ -3,6 +3,7 @@ import { FaSnapchatGhost } from 'react-icons/fa'
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import {
   MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home,
   Instagram, Facebook, Music2, UtensilsCrossed, LayoutGrid,
@@ -24,6 +25,7 @@ import { canUseFeature, normalizePlan, isPremiumPlan } from '@/lib/plans'
 import { BackToAnnuaire } from '@/components/restaurant/BackToAnnuaire'
 import type { RestaurantPageData, MenuItem } from '@/lib/types'
 import type { Banner } from '@/components/restaurant/PromoBanners'
+import { isOpenNow } from '@/lib/opening-hours'
 
 type RestaurantFull = RestaurantPageData['restaurant'] & {
   primary_color?: string | null
@@ -52,6 +54,9 @@ type RestaurantFull = RestaurantPageData['restaurant'] & {
 
 interface Props {
   data: Omit<RestaurantPageData, 'restaurant'> & { restaurant: RestaurantFull }
+  breadcrumbItems?: { label: string; href?: string }[]
+  similarRestaurants?: import('@/lib/taxonomy').RestaurantSummary[]
+  seoContent?: string
 }
 
 const DAYS_FR: Record<string, string> = {
@@ -59,20 +64,6 @@ const DAYS_FR: Record<string, string> = {
   jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi', dimanche: 'Dimanche'
 }
 const DAYS_ORDER = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
-
-function isOpenNow(opening_hours?: Record<string, { ouverture?: string; fermeture?: string; ferme?: boolean }> | null): boolean {
-  if (!opening_hours || Object.keys(opening_hours).length === 0) return true
-  const jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
-  const now = new Date()
-  const jour = jours[now.getDay()]
-  const h = opening_hours[jour]
-  if (!h || h.ferme) return false
-  if (!h.ouverture || !h.fermeture) return true
-  const [oh, om] = h.ouverture.split(':').map(Number)
-  const [fh, fm] = h.fermeture.split(':').map(Number)
-  const cur = now.getHours() * 60 + now.getMinutes()
-  return cur >= oh * 60 + om && cur < fh * 60 + fm
-}
 
 function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeTokens> }) {
   const { totalItems } = useCart()
@@ -111,7 +102,7 @@ function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeToke
   )
 }
 
-function RestaurantInner({ data }: Props) {
+function RestaurantInner({ data, breadcrumbItems, similarRestaurants, seoContent }: Props) {
   const { restaurant, categories, items } = data
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -234,7 +225,7 @@ function RestaurantInner({ data }: Props) {
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: tokens.bgCardHover }}>
               {restaurant.logo_url ? (
-                <Image src={restaurant.logo_url} alt={restaurant.name} width={36} height={36} className="object-cover w-full h-full" unoptimized />
+                <Image src={restaurant.logo_url} alt={restaurant.name} width={36} height={36} className="object-cover w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-base font-black" style={{ color: tokens.accent }}>
                   {restaurant.name.charAt(0)}
@@ -301,12 +292,11 @@ function RestaurantInner({ data }: Props) {
         {(restaurant.banner_url || restaurant.cover_url) ? (
           <Image
             src={restaurant.banner_url || restaurant.cover_url!}
-            alt={restaurant.name}
+            alt={`${restaurant.name}${restaurant.city ? ` — ${restaurant.city}` : ''}`}
             fill
             className="object-cover"
             priority
             sizes="100vw"
-            unoptimized
           />
         ) : (
           <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${tokens.accent}25 0%, ${tokens.bgPage} 100%)` }} />
@@ -323,6 +313,20 @@ function RestaurantInner({ data }: Props) {
         )}
 
         <div className="absolute bottom-0 left-0 right-0 px-5 sm:px-8 pb-6">
+          {breadcrumbItems && breadcrumbItems.length > 0 && (
+            <nav aria-label="Fil d'ariane" className="flex items-center flex-wrap gap-1 text-[11px] text-white/60 mb-2">
+              {breadcrumbItems.map((item, i) => (
+                <span key={`${item.label}-${i}`} className="flex items-center gap-1">
+                  {i > 0 && <span className="text-white/40">/</span>}
+                  {item.href ? (
+                    <Link href={item.href} className="hover:text-white/90 transition-colors">{item.label}</Link>
+                  ) : (
+                    <span>{item.label}</span>
+                  )}
+                </span>
+              ))}
+            </nav>
+          )}
           <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1">{restaurant.name}</h1>
           {restaurant.description && (
             <p className="text-white/75 text-sm mb-4 max-w-lg line-clamp-2">{restaurant.description}</p>
@@ -626,6 +630,42 @@ function RestaurantInner({ data }: Props) {
                 )}
               </div>
             </section>
+
+            {/* ── BLOC SEO AUTOMATIQUE ── */}
+            {seoContent && (
+              <section className="mb-10" style={{ borderTop: `1px solid ${tokens.border}`, paddingTop: 32 }}>
+                <p className="text-sm leading-relaxed" style={{ color: tokens.textSecondary }}>{seoContent}</p>
+              </section>
+            )}
+
+            {/* ── RESTAURANTS SIMILAIRES ── */}
+            {similarRestaurants && similarRestaurants.length > 0 && (
+              <section className="mb-10" style={{ borderTop: `1px solid ${tokens.border}`, paddingTop: 32 }}>
+                <h2 className="text-lg font-bold mb-4" style={{ color: tokens.textPrimary }}>Restaurants similaires</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {similarRestaurants.map(r => (
+                    <Link
+                      key={r.id}
+                      href={`/${r.slug}`}
+                      className="rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
+                      style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+                    >
+                      <div className="relative w-full h-20" style={{ backgroundColor: tokens.bgCardHover }}>
+                        {(r.cover_url || r.logo_url) && (
+                          <Image src={(r.cover_url || r.logo_url) as string} alt={r.name} fill className="object-cover" sizes="200px" />
+                        )}
+                      </div>
+                      <div className="p-2">
+                        <p className="text-xs font-semibold truncate" style={{ color: tokens.textPrimary }}>{r.name}</p>
+                        <p className="text-[11px] truncate" style={{ color: tokens.textMuted }}>
+                          {[r.neighborhood, r.city].filter(Boolean).join(', ')}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
 
           </div>
 

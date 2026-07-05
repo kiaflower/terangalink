@@ -384,7 +384,7 @@ export default function SubscriptionsPage() {
                 {/* Logo */}
                 <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-gray-200 flex items-center justify-center">
                   {row.restaurant_logo ? (
-                    <Image src={row.restaurant_logo} alt={row.restaurant_name} width={36} height={36} className="object-cover w-full h-full" unoptimized />
+                    <Image src={row.restaurant_logo} alt={row.restaurant_name} width={36} height={36} className="object-cover w-full h-full" />
                   ) : (
                     <span className="text-gray-500 text-xs font-bold">{row.restaurant_name.slice(0, 2).toUpperCase()}</span>
                   )}

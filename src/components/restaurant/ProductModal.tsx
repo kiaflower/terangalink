@@ -296,7 +296,7 @@ export function ProductModal({
               >
                 {currentImg ? (
                   <Image src={currentImg} alt={`${item.name} ${activeIdx + 1}`} fill className="object-cover"
-                    sizes="(max-width: 640px) 100vw, 480px" unoptimized priority />
+                    sizes="(max-width: 640px) 100vw, 480px" priority />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <span className="text-6xl opacity-20">🍽️</span>

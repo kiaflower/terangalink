@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import Script from 'next/script'
 import RestaurantPageClient from './RestaurantPageClient'
 import {
   buildAutoDescription,
@@ -11,8 +10,15 @@ import {
   buildCanonical,
   buildOgImageUrl,
   buildSchemaOrg,
+  buildBreadcrumbSchema,
+  buildFaqEntries,
+  buildFaqSchema,
+  buildSeoContentBlock,
   SITE_NAME,
+  SITE_URL,
 } from '@/lib/seo'
+import { slugifyToken } from '@/lib/slug'
+import { getSimilarRestaurants } from '@/lib/taxonomy'
 
 interface Props { params: { slug: string } }
 
@@ -26,6 +32,7 @@ interface RestaurantRow {
   slug: string
   description: string | null
   city: string | null
+  neighborhood: string | null
   phone: string | null
   whatsapp_number: string | null
   address: string | null
@@ -64,7 +71,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { data } = await supabase
     .from('restaurants')
-    .select('name, slug, description, city, address, cuisine_type, phone, whatsapp_number, logo_url, cover_url, latitude, longitude, opening_hours, facebook_url, instagram_url, tiktok_url, is_active')
+    .select('id, name, slug, description, city, address, cuisine_type, phone, whatsapp_number, logo_url, cover_url, latitude, longitude, opening_hours, facebook_url, instagram_url, tiktok_url, is_active')
     .eq('slug', params.slug)
     .single()
 
@@ -72,18 +79,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Restaurant introuvable', robots: { index: false, follow: false } }
   }
 
-  const { data: restRow } = await supabase.from('restaurants').select('id').eq('slug', params.slug).single()
-  const { data: items } = await supabase
-    .from('menu_items')
-    .select('name')
-    .eq('restaurant_id', restRow?.id ?? '')
-    .eq('is_available', true)
-    .limit(6)
+  // Colonne récente : tolère son absence tant que la migration n'est pas appliquée
+  const { data: nbData } = await supabase.from('restaurants').select('neighborhood').eq('id', data.id).single()
+  const neighborhood = (nbData as { neighborhood?: string | null } | null)?.neighborhood ?? null
 
-  const topItems = (items ?? []).map((i: { name: string }) => i.name.toLowerCase()).slice(0, 4)
-  const seoData = { ...data, topItems, topCategories: [] as string[] }
+  const [{ data: items }, { data: categories }] = await Promise.all([
+    supabase.from('menu_items').select('name').eq('restaurant_id', data.id).eq('is_available', true).limit(10),
+    supabase.from('menu_categories').select('name').eq('restaurant_id', data.id).eq('is_active', true).limit(10),
+  ])
+
+  const menuItemNames = (items ?? []).map((i: { name: string }) => i.name)
+  const menuCategoryNames = (categories ?? []).map((c: { name: string }) => c.name)
+  const topItems = menuItemNames.map(n => n.toLowerCase()).slice(0, 4)
+  const topCategories = menuCategoryNames.map(n => n.toLowerCase()).slice(0, 4)
+  const seoData = { ...data, neighborhood, topItems, topCategories, menuItemNames, menuCategoryNames }
   const description = data.description?.trim() ? data.description : buildAutoDescription(seoData)
-  const title = buildTitle(data)
+  const title = buildTitle(seoData)
   const canonical = buildCanonical(params.slug)
   const ogImage = buildOgImageUrl(params.slug)
   const keywords = buildKeywords(seoData)
@@ -177,6 +188,12 @@ export default async function RestaurantPage({ params }: Props) {
     console.warn('Extended columns not yet available')
   }
 
+  // Colonne récente isolée : tolère son absence tant que la migration n'est pas appliquée,
+  // sans faire échouer la requête groupée des colonnes étendues ci-dessus.
+  let neighborhood: string | null = null
+  const { data: nbData } = await supabase.from('restaurants').select('neighborhood').eq('id', base.id).single()
+  if (nbData) neighborhood = (nbData as { neighborhood: string | null }).neighborhood
+
   const adminClient = createAdminClient()
   const { data: subscriptionData, error: subscriptionError } = await adminClient
     .from('subscriptions')
@@ -229,6 +246,7 @@ export default async function RestaurantPage({ params }: Props) {
 
   const restaurant: RestaurantRow = {
     ...base,
+    neighborhood,
     whatsapp_number: extended.whatsapp_number ?? null,
     banner_url: extended.banner_url ?? base.cover_url ?? null,
     cover_url: extended.banner_url ?? base.cover_url ?? null,
@@ -253,11 +271,12 @@ export default async function RestaurantPage({ params }: Props) {
     show_full_menu: extended.show_full_menu ?? false,
   }
 
-  const schemaOrg = buildSchemaOrg({
+  const seoData = {
     name: restaurant.name,
     slug: restaurant.slug,
     description: restaurant.description,
     city: restaurant.city,
+    neighborhood: restaurant.neighborhood,
     address: restaurant.address,
     cuisine_type: restaurant.cuisine_type,
     phone: restaurant.phone,
@@ -281,22 +300,67 @@ export default async function RestaurantPage({ params }: Props) {
       category_id: i.category_id,
       is_available: i.is_available,
     })),
-  })
+  }
+
+  const schemaOrg = buildSchemaOrg(seoData)
+  const faqEntries = buildFaqEntries(seoData)
+  const faqSchema = buildFaqSchema(faqEntries)
+  const seoContent = buildSeoContentBlock(seoData)
+
+  const citySlug = restaurant.city ? slugifyToken(restaurant.city) : null
+  const cuisineSlug = restaurant.cuisine_type ? slugifyToken(restaurant.cuisine_type) : null
+  const canonicalUrl = buildCanonical(restaurant.slug)
+
+  const breadcrumbItems: { label: string; href?: string }[] = [
+    { label: 'Accueil', href: '/' },
+    { label: 'Restaurants', href: '/restaurants' },
+  ]
+  if (restaurant.city && citySlug) {
+    breadcrumbItems.push({ label: restaurant.city, href: `/restaurants/${citySlug}` })
+  }
+  if (restaurant.cuisine_type && citySlug && cuisineSlug) {
+    breadcrumbItems.push({ label: restaurant.cuisine_type, href: `/restaurants/${citySlug}/${cuisineSlug}` })
+  }
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    ...breadcrumbItems.map(b => ({ name: b.label, url: `${SITE_URL}${b.href}` })),
+    { name: restaurant.name, url: canonicalUrl },
+  ])
+
+  const similarRestaurants = await getSimilarRestaurants({
+    id: base.id,
+    city: restaurant.city,
+    neighborhood: restaurant.neighborhood,
+    cuisine_type: restaurant.cuisine_type,
+  }, 8)
 
   return (
     <>
-      <Script
+      <script
         id="schema-restaurant"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }}
-        strategy="beforeInteractive"
       />
+      <script
+        id="schema-breadcrumb"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      {faqSchema && (
+        <script
+          id="schema-faq"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
       <RestaurantPageClient
         data={{
           restaurant: { ...restaurant, plan, banners },
           categories: (categoriesData as never[]) ?? [],
           items: enrichedItems,
         }}
+        breadcrumbItems={breadcrumbItems}
+        similarRestaurants={similarRestaurants}
+        seoContent={seoContent}
       />
     </>
   )

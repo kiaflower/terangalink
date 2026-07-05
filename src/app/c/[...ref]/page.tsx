@@ -164,7 +164,6 @@ export default async function OrderStatusPage({ params }: { params: { ref: strin
                 width={36}
                 height={36}
                 className="rounded-xl object-cover"
-                unoptimized
               />
             ) : (
               <div

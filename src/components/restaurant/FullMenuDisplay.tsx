@@ -37,7 +37,6 @@ export function FullMenuDisplay({ menuImageUrl, enabled, tokens }: FullMenuDispl
               width={1200}
               height={900}
               className="w-full h-auto object-contain"
-              unoptimized
               priority
             />
           </div>
@@ -80,7 +79,6 @@ export function FullMenuDisplay({ menuImageUrl, enabled, tokens }: FullMenuDispl
               width={1600}
               height={1200}
               className="w-full h-auto"
-              unoptimized
               priority
             />
           </div>

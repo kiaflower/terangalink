@@ -8,7 +8,8 @@ import { SITE_URL } from '@/lib/seo'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Restaurants à Dakar — Commandez via WhatsApp | TerangaLink',
+  // Le layout racine ajoute déjà " | TerangaLink" au titre — ne pas le dupliquer ici.
+  title: 'Restaurants à Dakar — Commandez via WhatsApp',
   description: 'Découvrez les meilleurs restaurants de Dakar et du Sénégal. Commandez en ligne via WhatsApp — Yassa, Thiéboudienne, Fast food, Pâtisserie. Livraison rapide, sans appli.',
   keywords: 'restaurants Dakar, commander en ligne Dakar, livraison repas Sénégal, restaurant WhatsApp Dakar, annuaire restaurant Dakar',
   openGraph: {

@@ -55,6 +55,7 @@ export interface Database {
           whatsapp_number: string | null
           address: string | null
           city: string | null
+          neighborhood: string | null
           cuisine_type: string | null
           is_active: boolean
           is_verified: boolean
@@ -91,6 +92,7 @@ export interface Database {
           whatsapp_number?: string | null
           address?: string | null
           city?: string | null
+          neighborhood?: string | null
           cuisine_type?: string | null
           is_active?: boolean
           is_verified?: boolean
@@ -126,6 +128,7 @@ export interface Database {
           whatsapp_number?: string | null
           address?: string | null
           city?: string | null
+          neighborhood?: string | null
           cuisine_type?: string | null
           is_active?: boolean
           is_verified?: boolean

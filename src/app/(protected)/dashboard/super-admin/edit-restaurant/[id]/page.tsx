@@ -58,6 +58,7 @@ export default function EditRestaurantPage() {
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
   const [city, setCity] = useState('')
+  const [neighborhood, setNeighborhood] = useState('')
   const [address, setAddress] = useState('')
   const [phone, setPhone] = useState('')
   const [whatsapp, setWhatsapp] = useState('')
@@ -121,6 +122,7 @@ export default function EditRestaurantPage() {
     setSlug(r.slug || '')
     setDescription(r.description || '')
     setCity(r.city || '')
+    setNeighborhood((r as { neighborhood?: string | null }).neighborhood || '')
     setAddress(r.address || '')
     setPhone(r.phone || '')
     setWhatsapp(r.whatsapp_number || '')
@@ -185,6 +187,7 @@ export default function EditRestaurantPage() {
         slug,
         description,
         city,
+        neighborhood: neighborhood || null,
         address,
         phone: phone || null,
         whatsapp_number: whatsapp || null,
@@ -391,6 +394,7 @@ export default function EditRestaurantPage() {
           />
           <Input label="Description" value={description} onChange={e => setDescription(e.target.value)} />
           <Input label="Ville" value={city} onChange={e => setCity(e.target.value)} />
+          <Input label="Quartier" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} hint="Ex: Ouakam, Plateau, Almadies" />
           <Input label="Adresse" value={address} onChange={e => setAddress(e.target.value)} />
           <Input label="Téléphone" value={phone} onChange={e => setPhone(e.target.value)} hint="221771234567" />
           <Input label="WhatsApp" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} hint="221771234567" />

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Search, MapPin, Star, UtensilsCrossed, Zap, MessageCircle, ArrowRight } from 'lucide-react'
 import { CUISINE_FILTER_OPTIONS } from '@/lib/cuisines'
 
@@ -73,11 +74,10 @@ function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; 
           {restaurant.cover_url || restaurant.logo_url ? (
             <Image
               src={restaurant.cover_url || restaurant.logo_url!}
-              alt={restaurant.name}
+              alt={`Photo de ${restaurant.name}${restaurant.city ? ` à ${restaurant.city}` : ''}`}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              unoptimized
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -175,9 +175,16 @@ function trackEvent(event_type: string, restaurant_id?: string) {
 }
 
 export default function RestaurantsClient({ restaurants, menuItems }: { restaurants: Restaurant[]; menuItems: MenuItem[] }) {
-  const [query, setQuery] = useState('')
+  const searchParams = useSearchParams()
+  const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
   const [city, setCity] = useState('Toutes les régions')
   const [cuisine, setCuisine] = useState('Tous les types')
+
+  // Permet au SearchAction du schema WebSite (/restaurants?q=...) de préremplir la recherche
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q) setQuery(q)
+  }, [searchParams])
 
   // Tracker la vue de l'annuaire au chargement
   useEffect(() => {
