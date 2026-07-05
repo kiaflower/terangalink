@@ -56,6 +56,7 @@ interface Props {
   data: Omit<RestaurantPageData, 'restaurant'> & { restaurant: RestaurantFull }
   breadcrumbItems?: { label: string; href?: string }[]
   similarRestaurants?: import('@/lib/taxonomy').RestaurantSummary[]
+  neighborhoodRestaurants?: import('@/lib/taxonomy').RestaurantSummary[]
   seoContent?: string
 }
 
@@ -102,7 +103,7 @@ function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeToke
   )
 }
 
-function RestaurantInner({ data, breadcrumbItems, similarRestaurants, seoContent }: Props) {
+function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborhoodRestaurants, seoContent }: Props) {
   const { restaurant, categories, items } = data
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -314,12 +315,12 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, seoContent
 
         <div className="absolute bottom-0 left-0 right-0 px-5 sm:px-8 pb-6">
           {breadcrumbItems && breadcrumbItems.length > 0 && (
-            <nav aria-label="Fil d'ariane" className="flex items-center flex-wrap gap-1 text-[11px] text-white/60 mb-2">
+            <nav aria-label="Fil d'ariane" className="sr-only">
               {breadcrumbItems.map((item, i) => (
-                <span key={`${item.label}-${i}`} className="flex items-center gap-1">
-                  {i > 0 && <span className="text-white/40">/</span>}
+                <span key={`${item.label}-${i}`}>
+                  {i > 0 && <span> / </span>}
                   {item.href ? (
-                    <Link href={item.href} className="hover:text-white/90 transition-colors">{item.label}</Link>
+                    <Link href={item.href}>{item.label}</Link>
                   ) : (
                     <span>{item.label}</span>
                   )}
@@ -631,36 +632,21 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, seoContent
               </div>
             </section>
 
-            {/* ── BLOC SEO AUTOMATIQUE ── */}
+            {/* ── BLOC SEO AUTOMATIQUE (contenu conservé pour l'indexation, masqué visuellement) ── */}
             {seoContent && (
-              <section className="mb-10" style={{ borderTop: `1px solid ${tokens.border}`, paddingTop: 32 }}>
-                <p className="text-sm leading-relaxed" style={{ color: tokens.textSecondary }}>{seoContent}</p>
+              <section className="sr-only">
+                <p>{seoContent}</p>
               </section>
             )}
 
-            {/* ── RESTAURANTS SIMILAIRES ── */}
+            {/* ── RESTAURANTS SIMILAIRES (liens conservés pour le maillage SEO, masqués visuellement) ── */}
             {similarRestaurants && similarRestaurants.length > 0 && (
-              <section className="mb-10" style={{ borderTop: `1px solid ${tokens.border}`, paddingTop: 32 }}>
-                <h2 className="text-lg font-bold mb-4" style={{ color: tokens.textPrimary }}>Restaurants similaires</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <section className="sr-only">
+                <h2>Restaurants similaires</h2>
+                <div>
                   {similarRestaurants.map(r => (
-                    <Link
-                      key={r.id}
-                      href={`/${r.slug}`}
-                      className="rounded-xl overflow-hidden transition-transform hover:-translate-y-0.5"
-                      style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
-                    >
-                      <div className="relative w-full h-20" style={{ backgroundColor: tokens.bgCardHover }}>
-                        {(r.cover_url || r.logo_url) && (
-                          <Image src={(r.cover_url || r.logo_url) as string} alt={r.name} fill className="object-cover" sizes="200px" />
-                        )}
-                      </div>
-                      <div className="p-2">
-                        <p className="text-xs font-semibold truncate" style={{ color: tokens.textPrimary }}>{r.name}</p>
-                        <p className="text-[11px] truncate" style={{ color: tokens.textMuted }}>
-                          {[r.neighborhood, r.city].filter(Boolean).join(', ')}
-                        </p>
-                      </div>
+                    <Link key={r.id} href={`/${r.slug}`}>
+                      {r.name} — {[r.neighborhood, r.city].filter(Boolean).join(', ')}
                     </Link>
                   ))}
                 </div>
@@ -682,6 +668,72 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, seoContent
         </div>
 
       </div>
+
+      {/* ── DÉCOUVREZ DANS LE MÊME QUARTIER ── */}
+      {neighborhoodRestaurants && neighborhoodRestaurants.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-10">
+          <section style={{ borderTop: `1px solid ${tokens.border}`, paddingTop: 32 }}>
+            <h2 className="text-lg font-bold mb-4" style={{ color: tokens.textPrimary }}>
+              Découvrez dans le même quartier
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {neighborhoodRestaurants.map(r => {
+                const rOpen = isOpenNow(r.opening_hours)
+                return (
+                  <Link
+                    key={r.id}
+                    href={`/${r.slug}`}
+                    className="group rounded-2xl overflow-hidden transition-transform hover:-translate-y-1"
+                    style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
+                  >
+                    <div className="relative w-full h-28" style={{ backgroundColor: tokens.bgCardHover }}>
+                      {r.cover_url ? (
+                        <Image
+                          src={r.cover_url}
+                          alt={r.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <UtensilsCrossed className="w-6 h-6" style={{ color: tokens.textMuted }} />
+                        </div>
+                      )}
+                      {r.logo_url && (
+                        <div
+                          className="absolute bottom-2 left-2 w-9 h-9 rounded-full overflow-hidden"
+                          style={{ border: `2px solid ${tokens.bgCard}` }}
+                        >
+                          <Image src={r.logo_url} alt={`Logo ${r.name}`} fill className="object-cover" sizes="36px" />
+                        </div>
+                      )}
+                      <span
+                        className="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: rOpen ? tokens.openBg : tokens.closedBg, color: rOpen ? tokens.openText : tokens.closedText }}
+                      >
+                        {rOpen ? 'Ouvert' : 'Fermé'}
+                      </span>
+                    </div>
+                    <div className="p-3">
+                      <p className="text-sm font-semibold truncate" style={{ color: tokens.textPrimary }}>{r.name}</p>
+                      {r.neighborhood && (
+                        <p className="text-xs truncate mt-0.5" style={{ color: tokens.textMuted }}>{r.neighborhood}</p>
+                      )}
+                      <span
+                        className="mt-2 inline-block text-xs font-semibold px-3 py-1.5 rounded-full"
+                        style={{ backgroundColor: tokens.button, color: tokens.textOnButton }}
+                      >
+                        Voir le restaurant
+                      </span>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        </div>
+      )}
 
       {/* ── FOOTER ── */}
       <footer className="py-4 px-4" style={{ backgroundColor: '#000000' }}>

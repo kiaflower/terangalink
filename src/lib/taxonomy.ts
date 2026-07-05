@@ -290,3 +290,28 @@ export async function getSimilarRestaurants(
   scored.sort((a, b) => b.score - a.score)
   return scored.slice(0, limit).map(({ r }) => r)
 }
+
+// Uniquement le quartier : pas de scoring par cuisine/ville, pas de repli si le
+// quartier est vide — sert la section "Découvrez dans le même quartier".
+export async function getRestaurantsInSameNeighborhood(
+  restaurant: { id: string; city: string | null; neighborhood: string | null },
+  limit = 8
+): Promise<RestaurantSummary[]> {
+  const neighborhoodSlug = restaurant.neighborhood ? slugifyToken(restaurant.neighborhood) : null
+  if (!neighborhoodSlug) return []
+
+  const citySlug = restaurant.city ? slugifyToken(restaurant.city) : null
+  const restaurants = await fetchAllActiveRestaurantsCached()
+
+  const matches = restaurants.filter(r => {
+    if (r.id === restaurant.id) return false
+    if (!r.neighborhood || slugifyToken(r.neighborhood) !== neighborhoodSlug) return false
+    if (citySlug) {
+      const rCitySlug = r.city ? slugifyToken(r.city) : null
+      if (rCitySlug !== citySlug) return false
+    }
+    return true
+  })
+
+  return sortRestaurants(matches).slice(0, limit)
+}

@@ -18,7 +18,7 @@ interface FormData {
   ownerName: string; restaurantName: string; email: string
   whatsapp: string
   cuisineType: string; description: string
-  address: string; city: string; googleMapsUrl: string
+  address: string; city: string; neighborhood: string; googleMapsUrl: string
   openingHours: Record<string, { ouverture: string; fermeture: string; ferme: boolean }>
   logoUrl: string | null; bannerUrl: string | null; menuImageUrl: string | null; productPhotos: string[]
   facebookUrl: string; instagramUrl: string; tiktokUrl: string; snapchatUrl: string
@@ -101,7 +101,7 @@ const COLOR_PALETTES = [
 const INITIAL: FormData = {
   ownerName: '', restaurantName: '', email: '', whatsapp: '',
   cuisineType: '', description: '',
-  address: '', city: '', googleMapsUrl: '',
+  address: '', city: '', neighborhood: '', googleMapsUrl: '',
   openingHours: Object.fromEntries(JOURS.map(j => [j.key, { ouverture: '08:00', fermeture: '22:00', ferme: false }])),
   logoUrl: null, bannerUrl: null, menuImageUrl: null, productPhotos: [],
   facebookUrl: '', instagramUrl: '', tiktokUrl: '', snapchatUrl: '',
@@ -182,7 +182,7 @@ export default function InscriptionPage() {
       owner_name: form.ownerName, restaurant_name: form.restaurantName,
       email: form.email, whatsapp: form.whatsapp,
       cuisine_type: form.cuisineType || null, description: form.description || null,
-      address: form.address || null, city: form.city || null,
+      address: form.address || null, city: form.city || null, neighborhood: form.neighborhood || null,
       google_maps_url: form.googleMapsUrl || null, opening_hours: form.openingHours,
       logo_url: form.logoUrl, banner_url: form.bannerUrl,
       menu_image_url: form.menuImageUrl, product_photos: form.productPhotos,
@@ -260,10 +260,13 @@ export default function InscriptionPage() {
             <Field label="Ville (optionnel)">
               <TInput value={form.city} onChange={v => set('city', v)} placeholder="Dakar" />
             </Field>
-            <Field label="Adresse (optionnel)">
-              <TInput value={form.address} onChange={v => set('address', v)} placeholder="Rue 10, Plateau" />
+            <Field label="Quartier (optionnel)">
+              <TInput value={form.neighborhood} onChange={v => set('neighborhood', v)} placeholder="Castors" />
             </Field>
           </div>
+          <Field label="Adresse (optionnel)">
+            <TInput value={form.address} onChange={v => set('address', v)} placeholder="Rue 10, Plateau" />
+          </Field>
           <Field label="Lien Google Maps (optionnel)">
             <TInput value={form.googleMapsUrl} onChange={v => set('googleMapsUrl', v)} placeholder="https://maps.google.com/..." />
           </Field>

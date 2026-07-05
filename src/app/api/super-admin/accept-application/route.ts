@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
       description: app.description,
       city: app.city,
       address: app.address,
+      neighborhood: app.neighborhood,
       cuisine_type: app.cuisine_type,
       logo_url: app.logo_url,
       cover_url: app.banner_url,

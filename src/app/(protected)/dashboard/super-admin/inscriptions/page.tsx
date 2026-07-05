@@ -19,6 +19,7 @@ interface Application {
   description: string | null
   address: string | null
   city: string | null
+  neighborhood: string | null
   google_maps_url: string | null
   opening_hours: Record<string, { ouverture: string; fermeture: string; ferme: boolean }> | null
   logo_url: string | null
@@ -295,6 +296,7 @@ export default function InscriptionsPage() {
                 {selected.cuisine_type && <Row label="Type de cuisine" value={selected.cuisine_type} />}
                 {selected.description && <Row label="Description" value={selected.description} />}
                 {selected.city && <Row icon={<MapPin className="w-3.5 h-3.5" />} label="Ville" value={selected.city} />}
+                {selected.neighborhood && <Row label="Quartier" value={selected.neighborhood} />}
                 {selected.address && <Row label="Adresse" value={selected.address} />}
                 {selected.google_maps_url && (
                   <a href={selected.google_maps_url} target="_blank" rel="noopener noreferrer"

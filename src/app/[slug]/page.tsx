@@ -18,7 +18,7 @@ import {
   SITE_URL,
 } from '@/lib/seo'
 import { slugifyToken } from '@/lib/slug'
-import { getSimilarRestaurants } from '@/lib/taxonomy'
+import { getSimilarRestaurants, getRestaurantsInSameNeighborhood } from '@/lib/taxonomy'
 
 interface Props { params: { slug: string } }
 
@@ -333,6 +333,12 @@ export default async function RestaurantPage({ params }: Props) {
     cuisine_type: restaurant.cuisine_type,
   }, 8)
 
+  const neighborhoodRestaurants = await getRestaurantsInSameNeighborhood({
+    id: base.id,
+    city: restaurant.city,
+    neighborhood: restaurant.neighborhood,
+  }, 8)
+
   return (
     <>
       <script
@@ -360,6 +366,7 @@ export default async function RestaurantPage({ params }: Props) {
         }}
         breadcrumbItems={breadcrumbItems}
         similarRestaurants={similarRestaurants}
+        neighborhoodRestaurants={neighborhoodRestaurants}
         seoContent={seoContent}
       />
     </>
