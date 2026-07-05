@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { slugify } from '@/lib/utils'
 import { normalizePlan, PLAN_LABELS } from '@/lib/plans'
+import { buildCanonical } from '@/lib/seo'
+import { notifyGoogleIndexing } from '@/lib/google-indexing'
 import nodemailer from 'nodemailer'
 
 async function findUserByEmail(adminClient: ReturnType<typeof createAdminClient>, email: string) {
@@ -203,6 +205,14 @@ export async function POST(request: NextRequest) {
     } catch (emailErr) {
       emailError = emailErr instanceof Error ? emailErr.message : 'Erreur inconnue'
       console.error('[EMAIL] ❌ Erreur envoi:', emailErr)
+    }
+
+    // Notifier Google Indexing (best-effort, ne bloque pas la réponse en cas d'échec)
+    try {
+      const indexingTimeout = new Promise<void>(resolve => setTimeout(resolve, 4000))
+      await Promise.race([notifyGoogleIndexing(buildCanonical(slug)), indexingTimeout])
+    } catch (indexingErr) {
+      console.error('[google-indexing] create-restaurant-admin error:', indexingErr)
     }
 
     return NextResponse.json({

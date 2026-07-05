@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { buildCanonical } from '@/lib/seo'
+import { notifyGoogleIndexing } from '@/lib/google-indexing'
 
 function toSlug(name: string) {
   return name.toLowerCase()
@@ -110,6 +112,14 @@ export async function POST(req: NextRequest) {
     await admin.from('restaurant_applications')
       .update({ status: 'accepted', updated_at: new Date().toISOString() })
       .eq('id', application_id)
+
+    // 7. Notifier Google Indexing (best-effort, ne bloque pas la réponse en cas d'échec)
+    try {
+      const indexingTimeout = new Promise<void>(resolve => setTimeout(resolve, 4000))
+      await Promise.race([notifyGoogleIndexing(buildCanonical(slug)), indexingTimeout])
+    } catch (indexingErr) {
+      console.error('[google-indexing] accept-application error:', indexingErr)
+    }
 
     return NextResponse.json({
       ok: true,

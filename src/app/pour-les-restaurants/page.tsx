@@ -5,6 +5,7 @@ import { CtaDecouverte } from '@/components/landing/CtaDecouverte'
 import { MarqueeRestaurants } from '@/components/landing/MarqueeRestaurants'
 import { getPlatformSettings } from '@/lib/settings'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { SITE_URL } from '@/lib/seo'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -14,13 +15,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rejoignez TerangaLink | Pros de la food au Sénégal',
     description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre activité food au Sénégal.',
-    url: 'https://www.teranga-link.com/pour-les-restaurants',
+    url: `${SITE_URL}/pour-les-restaurants`,
     siteName: 'TerangaLink',
     locale: 'fr_SN',
     type: 'website',
   },
   twitter: { card: 'summary_large_image', title: 'Rejoignez TerangaLink | Pros de la food au Sénégal', description: 'Site de commande professionnel, annuaire, Google — tout pour développer votre activité food au Sénégal.' },
-  alternates: { canonical: 'https://www.teranga-link.com/pour-les-restaurants' },
+  alternates: { canonical: `${SITE_URL}/pour-les-restaurants` },
 }
 import {
   Zap, Smartphone, Shield, Globe, Search,

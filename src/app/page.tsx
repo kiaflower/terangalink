@@ -5,6 +5,7 @@ import { Footer } from '@/components/layout/Footer'
 import { MarqueeRestaurants } from '@/components/landing/MarqueeRestaurants'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPlatformSettings } from '@/lib/settings'
+import { SITE_URL } from '@/lib/seo'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -14,14 +15,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'TerangaLink — Commandez local au Sénégal',
     description: 'La plateforme qui connecte les pros de la food et leurs clients au Sénégal. Commandez via WhatsApp en un clic.',
-    url: 'https://www.teranga-link.com',
+    url: SITE_URL,
     siteName: 'TerangaLink',
     locale: 'fr_SN',
     type: 'website',
-    images: [{ url: 'https://www.teranga-link.com/logo-terangalink.jpg', width: 400, height: 400, alt: 'TerangaLink' }],
+    images: [{ url: `${SITE_URL}/logo-terangalink.jpg`, width: 400, height: 400, alt: 'TerangaLink' }],
   },
   twitter: { card: 'summary_large_image', title: 'TerangaLink — Commandez local au Sénégal', description: 'Commandez chez les meilleures adresses food de Dakar via WhatsApp.' },
-  alternates: { canonical: 'https://www.teranga-link.com' },
+  alternates: { canonical: SITE_URL },
 }
 
 const WHATSAPP_URL = `https://wa.me/221774739266?text=${encodeURIComponent("Bonjour, je souhaite inscrire mon restaurant sur TerangaLink.")}`

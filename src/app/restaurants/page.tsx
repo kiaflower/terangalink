@@ -3,6 +3,7 @@ import { Metadata } from 'next'
 import RestaurantsClient from './RestaurantsClient'
 import { Footer } from '@/components/layout/Footer'
 import { getPlatformSettings } from '@/lib/settings'
+import { SITE_URL } from '@/lib/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,13 +14,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Restaurants à Dakar — TerangaLink',
     description: 'Trouvez et commandez chez les meilleurs restaurants de Dakar via WhatsApp.',
-    url: 'https://www.teranga-link.com/restaurants',
+    url: `${SITE_URL}/restaurants`,
     siteName: 'TerangaLink',
     locale: 'fr_SN',
     type: 'website',
   },
   twitter: { card: 'summary_large_image', title: 'Restaurants à Dakar | TerangaLink', description: 'Commandez chez les meilleurs restaurants de Dakar via WhatsApp.' },
-  alternates: { canonical: 'https://www.teranga-link.com/restaurants' },
+  alternates: { canonical: `${SITE_URL}/restaurants` },
 }
 
 function calcRankingScore(r: {
@@ -170,7 +171,7 @@ export default async function RestaurantsPage() {
       item: {
         '@type': 'Restaurant',
         name: r.name,
-        url: `https://www.teranga-link.com/${r.slug}`,
+        url: `${SITE_URL}/${r.slug}`,
         address: { '@type': 'PostalAddress', addressLocality: r.city || 'Dakar', addressCountry: 'SN' },
         servesCuisine: r.cuisine_type || 'Sénégalaise',
         ...(r.rating ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: r.rating, reviewCount: r.review_count } } : {}),

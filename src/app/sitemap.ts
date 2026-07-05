@@ -1,9 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { SITE_URL } from '@/lib/seo'
 import { MetadataRoute } from 'next'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const admin = createAdminClient()
-  const baseUrl = 'https://www.teranga-link.com'
+  const baseUrl = SITE_URL
 
   const { data: restaurants } = await admin
     .from('restaurants')
