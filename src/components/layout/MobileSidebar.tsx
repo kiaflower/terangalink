@@ -6,9 +6,11 @@ import { Menu, X } from 'lucide-react'
 
 interface MobileSidebarProps {
   children: React.ReactNode
+  /** Décale le bouton, l'overlay et le tiroir sous une bannière fixe (ex. bannière d'impersonation), en px. */
+  bannerOffset?: number
 }
 
-export function MobileSidebar({ children }: MobileSidebarProps) {
+export function MobileSidebar({ children, bannerOffset = 0 }: MobileSidebarProps) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const isClosing = useRef(false)
@@ -36,8 +38,8 @@ export function MobileSidebar({ children }: MobileSidebarProps) {
       {/* Bouton burger */}
       <button
         onClick={handleOpen}
-        className="lg:hidden fixed top-4 left-4 z-30 w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-sm"
-        style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}
+        className="lg:hidden fixed left-4 z-30 w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-sm"
+        style={{ top: 16 + bannerOffset, backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}
         aria-label="Ouvrir le menu"
       >
         <Menu className="w-4 h-4" />
@@ -46,7 +48,8 @@ export function MobileSidebar({ children }: MobileSidebarProps) {
       {/* Overlay */}
       {open && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+          className="lg:hidden fixed left-0 right-0 bottom-0 z-40 bg-black/30 backdrop-blur-sm"
+          style={{ top: bannerOffset }}
           onClick={handleClose}
           aria-hidden="true"
         />
@@ -54,8 +57,8 @@ export function MobileSidebar({ children }: MobileSidebarProps) {
 
       {/* Drawer */}
       <div
-        className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 flex flex-col overflow-y-auto transition-transform duration-300 ease-out ${open ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ backgroundColor: '#FFFFFF', borderRight: '1px solid #E5E7EB' }}
+        className={`lg:hidden fixed left-0 bottom-0 z-50 w-72 flex flex-col overflow-y-auto transition-transform duration-300 ease-out ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ top: bannerOffset, backgroundColor: '#FFFFFF', borderRight: '1px solid #E5E7EB' }}
         aria-modal="true"
         role="dialog"
       >

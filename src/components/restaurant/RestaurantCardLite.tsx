@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { MapPin, UtensilsCrossed } from 'lucide-react'
 import type { RestaurantSummary } from '@/lib/taxonomy'
 import { isOpenNow } from '@/lib/opening-hours'
+import { FounderBadge, VerifiedBadge } from '@/components/restaurant/StatusBadges'
 
 export function RestaurantCardLite({ restaurant }: { restaurant: RestaurantSummary }) {
   const open = isOpenNow(restaurant.opening_hours)
@@ -42,7 +43,11 @@ export function RestaurantCardLite({ restaurant }: { restaurant: RestaurantSumma
         </span>
       </div>
       <div className="p-3">
-        <h3 className="font-semibold text-gray-900 text-sm truncate">{restaurant.name}</h3>
+        <h3 className="font-semibold text-gray-900 text-sm truncate flex items-center gap-1.5">
+          <span className="truncate">{restaurant.name}</span>
+          {restaurant.is_founder && <FounderBadge size={13} />}
+          {restaurant.is_verified && <VerifiedBadge size={13} />}
+        </h3>
         {locationLabel && (
           <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
             <MapPin className="w-3 h-3 shrink-0" />

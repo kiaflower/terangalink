@@ -42,7 +42,7 @@ const STEPS: Step[] = [
     key: 'go_orders',
     page: '/dashboard/restaurant/menu',
     title: 'Où voir vos commandes ?',
-    body: "Vos commandes apparaissent dans l'onglet \"Commandes\". Vous pouvez les accepter, les confirmer au client par WhatsApp, et générer un reçu téléchargeable si vous êtes en Pro ou Premium.",
+    body: "Vos commandes apparaissent dans l'onglet \"Commandes\". Vous pouvez les accepter, les confirmer au client par WhatsApp, et générer un reçu téléchargeable si vous êtes en Pro.",
     cta: 'Voir les commandes →',
     href: '/dashboard/restaurant/orders',
     dismissOnNav: true,

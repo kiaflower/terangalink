@@ -7,14 +7,14 @@ import {
   PauseCircle, RefreshCw, CreditCard, Calendar, ChevronDown, ChevronUp,
   FileText, Pencil, Check, X,
 } from 'lucide-react'
-import { PLAN_LABELS, normalizePlan } from '@/lib/plans'
+import { PLAN_LABELS, PLAN_PRICES, normalizePlan } from '@/lib/plans'
 import { formatDate } from '@/lib/utils'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import Image from 'next/image'
 
 type SubStatus = 'trial' | 'active' | 'overdue' | 'suspended' | 'cancelled'
-type PlanType = 'starter' | 'pro' | 'premium'
+type PlanType = 'starter' | 'pro'
 
 interface SubRow {
   restaurant_id: string
@@ -30,6 +30,7 @@ interface SubRow {
   last_payment_date: string | null
   amount_paid: number | null
   notes_admin: string | null
+  legacy_price: number | null
   created_at: string
 }
 
@@ -44,7 +45,6 @@ const STATUS_CONFIG: Record<SubStatus, { label: string; color: string; bg: strin
 const PLAN_COLORS: Record<PlanType, string> = {
   starter: 'bg-gray-200 text-gray-500 border-gray-300',
   pro:     'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  premium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
 }
 
 function getDaysInfo(row: SubRow): { label: string; color: string } | null {
@@ -121,6 +121,7 @@ export default function SubscriptionsPage() {
     last_payment_date: '',
     next_payment_due_date: '',
     amount_paid: '',
+    legacy_price: '',
   })
   const [savingDates, setSavingDates] = useState(false)
 
@@ -146,6 +147,7 @@ export default function SubscriptionsPage() {
         last_payment_date: s.last_payment_date as string | null,
         amount_paid: s.amount_paid as number | null,
         notes_admin: s.notes_admin as string | null,
+        legacy_price: s.legacy_price as number | null,
         created_at: s.created_at as string,
       }
     })
@@ -247,6 +249,7 @@ export default function SubscriptionsPage() {
       last_payment_date: row.last_payment_date?.split('T')[0] || '',
       next_payment_due_date: row.next_payment_due_date?.split('T')[0] || '',
       amount_paid: row.amount_paid != null ? String(row.amount_paid) : '',
+      legacy_price: row.legacy_price != null ? String(row.legacy_price) : '',
     })
     setDatesModal(true)
   }
@@ -261,6 +264,7 @@ export default function SubscriptionsPage() {
       last_payment_date: datesForm.last_payment_date || null,
       next_payment_due_date: datesForm.next_payment_due_date || null,
       amount_paid: datesForm.amount_paid !== '' ? datesForm.amount_paid : null,
+      legacy_price: datesForm.legacy_price !== '' ? datesForm.legacy_price : null,
     })
     setSavingDates(false)
     setDatesModal(false)
@@ -278,8 +282,7 @@ export default function SubscriptionsPage() {
       return diff >= 0 && diff <= 7
     }).length,
     revenueEstimated: rows.filter(r => r.status === 'active').reduce((sum, r) => {
-      const p = normalizePlan(r.plan)
-      return sum + (p === 'premium' ? 25000 : p === 'pro' ? 15000 : 9000)
+      return sum + (r.legacy_price ?? PLAN_PRICES[normalizePlan(r.plan)])
     }, 0),
     revenueReal: rows.reduce((sum, r) => sum + (r.amount_paid ?? 0), 0),
   }
@@ -348,7 +351,7 @@ export default function SubscriptionsPage() {
 
       {/* Filtres plan */}
       <div className="flex flex-wrap gap-2 mb-5">
-        {([['all', 'Tous les plans'], ['starter', 'Starter'], ['pro', 'Pro'], ['premium', 'Premium']] as const).map(([p, label]) => (
+        {([['all', 'Tous les plans'], ['starter', 'Starter'], ['pro', 'Pro']] as const).map(([p, label]) => (
           <button
             key={p}
             onClick={() => setPlanFilter(p as 'all' | PlanType)}
@@ -399,6 +402,11 @@ export default function SubscriptionsPage() {
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${PLAN_COLORS[plan]}`}>
                       {PLAN_LABELS[plan]}
                     </span>
+                    {row.legacy_price != null && row.legacy_price !== PLAN_PRICES[plan] && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold border bg-gray-100 text-gray-500 border-gray-300">
+                        Prix verrouillé {row.legacy_price.toLocaleString('fr-SN')} FCFA
+                      </span>
+                    )}
                     {daysInfo && <span className={`text-xs font-bold ${daysInfo.color}`}>{daysInfo.label}</span>}
                   </div>
                   <div className="flex flex-wrap gap-3 text-xs text-gray-500">
@@ -429,9 +437,8 @@ export default function SubscriptionsPage() {
                           onChange={e => setPlanValue(e.target.value as PlanType)}
                           className="bg-gray-100 border border-gray-300 rounded-lg px-2 py-1 text-sm text-gray-900 focus:outline-none"
                         >
-                          <option value="starter">Starter — 9 000 FCFA</option>
-                          <option value="pro">Pro — 15 000 FCFA</option>
-                          <option value="premium">Premium — 25 000 FCFA</option>
+                          <option value="starter">Starter — 9 900 FCFA</option>
+                          <option value="pro">Pro — 19 900 FCFA</option>
                         </select>
                         <button onClick={() => savePlan(row.restaurant_id)} disabled={savingPlan} className="p-1.5 text-green-400 hover:text-green-300">
                           {savingPlan ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
@@ -555,7 +562,7 @@ export default function SubscriptionsPage() {
       <Modal open={payModal} onClose={() => setPayModal(false)} title="Marquer comme payé">
         <div className="space-y-4">
           <p className="text-gray-500 text-sm">{payRow?.restaurant_name} — {PLAN_LABELS[normalizePlan(payRow?.plan ?? 'starter') as PlanType]}</p>
-          <Input label="Montant payé (FCFA)" value={payAmount} onChange={e => setPayAmount(e.target.value)} type="number" placeholder="15000" />
+          <Input label="Montant payé (FCFA)" value={payAmount} onChange={e => setPayAmount(e.target.value)} type="number" placeholder="19900" />
           <Input label="Date du paiement" value={payDate} onChange={e => setPayDate(e.target.value)} type="date" />
           <Input label="Prochaine échéance" value={payNextDue} onChange={e => setPayNextDue(e.target.value)} type="date" />
           <Input label="Notes (optionnel)" value={payNotes} onChange={e => setPayNotes(e.target.value)} placeholder="Ex: Paiement Wave reçu" />
@@ -628,6 +635,13 @@ export default function SubscriptionsPage() {
               value={datesForm.amount_paid}
               onChange={e => setDatesForm(f => ({ ...f, amount_paid: e.target.value }))}
               placeholder="0"
+            />
+            <Input
+              label="Prix verrouillé (FCFA, optionnel)"
+              type="number"
+              value={datesForm.legacy_price}
+              onChange={e => setDatesForm(f => ({ ...f, legacy_price: e.target.value }))}
+              placeholder="Laisser vide pour le tarif standard"
             />
           </div>
 

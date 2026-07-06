@@ -59,6 +59,7 @@ export interface Database {
           cuisine_type: string | null
           is_active: boolean
           is_verified: boolean
+          is_founder: boolean
           is_demo: boolean
           owner_id: string | null
           latitude: number | null
@@ -297,6 +298,90 @@ export interface Database {
         }
         Update: {
           event_type?: string
+        }
+      }
+      early_access_leads: {
+        Row: {
+          id: string
+          prenom: string
+          whatsapp: string
+          type: 'reservation' | 'waitlist'
+          contacted: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          prenom: string
+          whatsapp: string
+          type?: 'reservation' | 'waitlist'
+          contacted?: boolean
+          created_at?: string
+        }
+        Update: {
+          contacted?: boolean
+        }
+      }
+      early_access_registrations: {
+        Row: {
+          id: string
+          restaurant_name: string
+          admin_name: string
+          phone: string
+          whatsapp: string
+          address: string | null
+          neighborhood: string | null
+          city: string | null
+          wave_number: string | null
+          orange_money_number: string | null
+          logo_url: string | null
+          banner_url: string | null
+          color_choice: 'terangalink' | 'custom'
+          primary_color: string | null
+          secondary_color: string | null
+          facebook_url: string | null
+          instagram_url: string | null
+          tiktok_url: string | null
+          snapchat_url: string | null
+          status: 'pending' | 'accepted' | 'rejected'
+          slot_number: number | null
+          admin_notes: string | null
+          restaurant_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          restaurant_name: string
+          admin_name: string
+          phone: string
+          whatsapp: string
+          address?: string | null
+          neighborhood?: string | null
+          city?: string | null
+          wave_number?: string | null
+          orange_money_number?: string | null
+          logo_url?: string | null
+          banner_url?: string | null
+          color_choice?: 'terangalink' | 'custom'
+          primary_color?: string | null
+          secondary_color?: string | null
+          facebook_url?: string | null
+          instagram_url?: string | null
+          tiktok_url?: string | null
+          snapchat_url?: string | null
+          status?: 'pending' | 'accepted' | 'rejected'
+          slot_number?: number | null
+          admin_notes?: string | null
+          restaurant_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          status?: 'pending' | 'accepted' | 'rejected'
+          slot_number?: number | null
+          admin_notes?: string | null
+          restaurant_id?: string | null
+          updated_at?: string
         }
       }
     }

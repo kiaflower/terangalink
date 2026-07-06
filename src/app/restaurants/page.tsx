@@ -75,6 +75,20 @@ export default async function RestaurantsPage() {
   }
 
   const restaurantIds = restaurants.map(r => r.id)
+
+  // Colonnes récentes : tolère leur absence tant que la migration n'est pas appliquée.
+  const badgesById = new Map<string, { is_founder: boolean; is_verified: boolean }>()
+  try {
+    const { data: badgeRows } = await admin
+      .from('restaurants')
+      .select('id, is_founder, is_verified')
+      .in('id', restaurantIds)
+    for (const row of badgeRows ?? []) {
+      badgesById.set(row.id, { is_founder: row.is_founder === true, is_verified: row.is_verified === true })
+    }
+  } catch {
+    console.warn('is_founder/is_verified columns not yet available')
+  }
   const [{ data: reviews }, { data: menuItems }] = await Promise.all([
     admin.from('reviews')
       .select('restaurant_id, rating')
@@ -142,6 +156,8 @@ export default async function RestaurantsPage() {
       review_count,
       is_boosted: isBoosted,
       is_new: isNew,
+      is_founder: badgesById.get(r.id)?.is_founder ?? false,
+      is_verified: badgesById.get(r.id)?.is_verified ?? false,
       rank_score: rankScore,
     }
   })

@@ -75,8 +75,8 @@ export default async function LegalPage() {
             <div className="space-y-3">
               <p>TerangaLink propose deux formules d&apos;abonnement :</p>
               <div className="bg-surface-50 border border-surface-200 rounded-xl p-4 space-y-2">
-                <p>• <span className="text-gray-300 font-medium">Starter :</span> 9 000 FCFA / mois</p>
-                <p>• <span className="text-gray-300 font-medium">Pro :</span> 15 000 FCFA / mois</p>
+                <p>• <span className="text-gray-300 font-medium">Starter :</span> 9 900 FCFA / mois</p>
+                <p>• <span className="text-gray-300 font-medium">Pro :</span> 19 900 FCFA / mois</p>
               </div>
               <p>Les paiements sont gérés directement entre TerangaLink et le client. En cas de non-paiement, le compte peut être suspendu sans préavis.</p>
               <p>Les abonnements Starter et Pro sont renouvelables à la demande et peuvent être résiliés à tout moment, avec effet à la fin de la période mensuelle en cours.</p>

@@ -3,6 +3,7 @@ import { LandingNav } from '@/components/landing/LandingNav'
 import { Footer } from '@/components/layout/Footer'
 import { CtaDecouverte } from '@/components/landing/CtaDecouverte'
 import { MarqueeRestaurants } from '@/components/landing/MarqueeRestaurants'
+import { EarlyAccessCta } from '@/components/landing/EarlyAccessCta'
 import { getPlatformSettings } from '@/lib/settings'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { SITE_URL } from '@/lib/seo'
@@ -28,6 +29,8 @@ import {
   Check, Star, ArrowRight, UtensilsCrossed, ShoppingBag, BarChart3, MessageCircle, Store,
 } from 'lucide-react'
 
+const EARLY_ACCESS_MAX_SLOTS = 15
+
 const WHATSAPP_NUMBER = '221774739266'
 const WHATSAPP_MSG = encodeURIComponent("Bonjour, j'ai découvert TerangaLink et je souhaite inscrire mon restaurant.")
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`
@@ -45,16 +48,12 @@ const features = [
 
 const plans = [
   {
-    name: 'Starter', price: '9 000', period: '/mois', description: "L'essentiel pour démarrer en ligne", badge: null, popular: false,
+    name: 'Starter', price: '9 900', period: '/mois', description: "L'essentiel pour démarrer en ligne", badge: null, popular: false,
     features: ['Listé dans l\'annuaire TerangaLink', 'Site de commande', 'Menu illimité', 'Commandes WhatsApp', 'Dashboard administrateur', 'Statistiques & revenus', 'QR Code', 'Support WhatsApp', '⚡ 1er boost offert sur nos plateformes'],
   },
   {
-    name: 'Pro', price: '15 000', period: '/mois', description: 'Personnalisation + visibilité maximale', badge: null, popular: true,
-    features: ['Tout Starter', 'Mise en avant dans l\'annuaire', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Couleurs personnalisées', 'Réseaux sociaux affichés', 'Génération de reçus', 'Support prioritaire', '⚡ 1er boost offert sur nos plateformes'],
-  },
-  {
-    name: 'Premium', price: '25 000', period: '/mois', description: 'E-commerce avancé pour les restaurants ambitieux', badge: 'NOUVEAU', popular: false,
-    features: ['Tout Pro', 'Variantes de produits', 'Gestion de stock', 'Précommandes', 'Codes promo clients', 'Produits mis en avant', 'Bannières promotionnelles', '⚡ 1er boost offert sur nos plateformes'],
+    name: 'Pro', price: '19 900', period: '/mois', description: 'Personnalisation + e-commerce avancé', badge: null, popular: true,
+    features: ['Tout Starter', 'Mise en avant dans l\'annuaire', 'Branding TerangaLink supprimé', 'Thème clair ou sombre', 'Couleurs personnalisées', 'Réseaux sociaux affichés', 'Génération de reçus', 'Codes promo clients', 'Précommandes', 'Variantes de produits', 'Bannières promotionnelles', 'Support prioritaire', '⚡ 1er boost offert sur nos plateformes'],
   },
 ]
 
@@ -71,16 +70,20 @@ const faqs = [
   { q: "Combien de temps pour être en ligne ?", a: "Moins de 24h. Vous remplissez votre profil, ajoutez votre menu, et vous êtes prêts à recevoir des commandes et à apparaître dans l'annuaire." },
   { q: 'Mon adresse sera-t-elle visible sur Google ?', a: "Oui, automatiquement. Dès que votre activité est créée sur TerangaLink, elle est référencée sur Google. Vos clients peuvent vous trouver en tapant votre nom, et quand ils partagent votre lien sur WhatsApp, une belle carte visuelle apparaît." },
   { q: "Comment les clients paient-ils ?", a: "Les clients commandent via WhatsApp. Vous gérez le paiement directement avec eux — Wave, Orange Money, cash, comme vous préférez." },
-  { q: "Puis-je annuler à tout moment ?", a: "Oui, les offres Starter, Pro et Premium sont mensuelles et peuvent être résiliées à la fin du mois en cours." },
+  { q: "Puis-je annuler à tout moment ?", a: "Oui, les offres Starter et Pro sont mensuelles et peuvent être résiliées à la fin du mois en cours." },
 ]
 
 export default async function PourLesRestaurantsPage() {
   const admin = createAdminClient()
-  const [{ data: restaurants }, settings] = await Promise.all([
+  const [{ data: restaurants }, settings, { count: earlyAccessTaken }, { data: earlyAccessSetting }] = await Promise.all([
     admin.from('restaurants').select('name').eq('is_active', true).eq('is_demo', false).order('name'),
     getPlatformSettings(),
+    admin.from('early_access_registrations').select('*', { count: 'exact', head: true }).neq('status', 'rejected'),
+    admin.from('platform_settings').select('value').eq('key', 'early_access_open').maybeSingle(),
   ])
   const restaurantNames = (restaurants ?? []).map((r: { name: string }) => r.name)
+  const earlyAccessOpen = earlyAccessSetting?.value !== 'false'
+  const earlyAccessRemaining = earlyAccessOpen ? Math.max(0, EARLY_ACCESS_MAX_SLOTS - (earlyAccessTaken ?? 0)) : 0
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ backgroundColor: '#FFFFFF', color: '#111111' }}>
@@ -145,18 +148,8 @@ export default async function PourLesRestaurantsPage() {
                 Voir la démo
               </Link>
             </div>
-            <div className="flex items-center justify-center gap-6 mt-12 flex-wrap">
-              <div className="flex -space-x-2">
-                {['M', 'I', 'A', 'F'].map((letter, i) => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold text-white"
-                    style={{ backgroundColor: '#F97316', borderColor: '#FFFFFF' }}>
-                    {letter}
-                  </div>
-                ))}
-              </div>
-              <div className="text-sm" style={{ color: '#9CA3AF' }}>
-                <span className="font-bold" style={{ color: '#111111' }}>+25 restaurants</span> actifs sur TerangaLink
-              </div>
+            <div className="flex items-center justify-center mt-12">
+              <EarlyAccessCta initialRemaining={earlyAccessRemaining} />
             </div>
           </div>
         </div>
@@ -219,7 +212,7 @@ export default async function PourLesRestaurantsPage() {
             <h2 className="heading-lg mb-4" style={{ color: '#111111' }}>Tarifs simples et transparents</h2>
             <p className="text-lg" style={{ color: '#6B7280' }}>En FCFA. Sans frais cachés sur vos abonnements.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {plans.map(plan => (
               <div key={plan.name}
                 className="relative rounded-2xl p-6 sm:p-8 flex flex-col transition-all hover:-translate-y-0.5 hover:shadow-lg"

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Search, MapPin, Star, UtensilsCrossed, Zap, MessageCircle, ArrowRight } from 'lucide-react'
 import { CUISINE_FILTER_OPTIONS } from '@/lib/cuisines'
+import { FounderBadge, VerifiedBadge } from '@/components/restaurant/StatusBadges'
 
 interface Restaurant {
   id: string
@@ -20,6 +21,8 @@ interface Restaurant {
   review_count: number
   is_boosted?: boolean
   is_new?: boolean
+  is_founder?: boolean
+  is_verified?: boolean
   rank_score?: number
   created_at?: string
 }
@@ -126,9 +129,11 @@ function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; 
 
       {/* Infos — padding-top pour compenser le logo overlay qui déborde de 16px */}
       <div className="p-3 sm:p-4 pt-6">
-        <h3 className="font-bold text-sm leading-tight mb-1 transition-colors group-hover:text-orange-500"
+        <h3 className="font-bold text-sm leading-tight mb-1 transition-colors group-hover:text-orange-500 flex items-center gap-1.5"
           style={{ color: '#111111' }}>
-          {restaurant.name}
+          <span className="truncate">{restaurant.name}</span>
+          {restaurant.is_founder && <FounderBadge size={13} />}
+          {restaurant.is_verified && <VerifiedBadge size={13} />}
         </h3>
 
         <div className="flex items-center gap-1.5 mb-3 flex-wrap">

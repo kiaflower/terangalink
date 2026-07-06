@@ -19,6 +19,7 @@ import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { useSettings } from '@/lib/hooks/useSettings'
 import { getInitials } from '@/lib/utils'
 import { DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR, generateThemeTokens } from '@/lib/theme'
+import { FounderBadge, VerifiedBadge } from '@/components/restaurant/StatusBadges'
 const JOURS = [
   { key: 'lundi', label: 'Lun' }, { key: 'mardi', label: 'Mar' },
   { key: 'mercredi', label: 'Mer' }, { key: 'jeudi', label: 'Jeu' },
@@ -74,6 +75,8 @@ export default function EditRestaurantPage() {
   const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark')
   const [cuisineType, setCuisineType] = useState('')
   const [isActive, setIsActive] = useState(true)
+  const [isFounder, setIsFounder] = useState(false)
+  const [isVerified, setIsVerified] = useState(false)
   const [openingHours, setOpeningHours] = useState<OpeningHours>({})
   const [deliveryFee, setDeliveryFee] = useState('0')
   const [showDeliveryFee, setShowDeliveryFee] = useState(false)
@@ -141,6 +144,8 @@ export default function EditRestaurantPage() {
     setPreviewMode(r.theme_mode || 'dark')
     setCuisineType(r.cuisine_type || '')
     setIsActive(r.is_active ?? true)
+    setIsFounder(!!r.is_founder)
+    setIsVerified(!!r.is_verified)
     setOpeningHours((r.opening_hours as OpeningHours) || {})
     setDeliveryFee(String(r.delivery_fee ?? 0))
     setShowDeliveryFee(!!r.show_delivery_fee)
@@ -204,6 +209,8 @@ export default function EditRestaurantPage() {
         snapchat_url: snapchatUrl || null,
         cuisine_type: cuisineType || null,
         is_active: isActive,
+        is_founder: isFounder,
+        is_verified: isVerified,
         opening_hours: openingHours,
         delivery_fee: Number(deliveryFee) || 0,
         show_delivery_fee: showDeliveryFee,
@@ -425,6 +432,32 @@ export default function EditRestaurantPage() {
             </div>
             <button onClick={() => setIsActive(v => !v)} className="text-brand-orange">
               {isActive ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between bg-gray-100 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2">
+              <FounderBadge size={18} />
+              <div>
+                <p className="text-gray-900 text-sm font-medium">Badge Fondateur</p>
+                <p className="text-gray-500 text-xs">Offert aux restaurants Early Access — activable manuellement</p>
+              </div>
+            </div>
+            <button onClick={() => setIsFounder(v => !v)} className="text-brand-orange">
+              {isFounder ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between bg-gray-100 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2">
+              <VerifiedBadge size={18} />
+              <div>
+                <p className="text-gray-900 text-sm font-medium">Badge Vérifié</p>
+                <p className="text-gray-500 text-xs">Manuel, ou automatique après 3 mois, 100 commandes livrées, note &gt; 4,5 et 50+ avis</p>
+              </div>
+            </div>
+            <button onClick={() => setIsVerified(v => !v)} className="text-brand-orange">
+              {isVerified ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
             </button>
           </div>
         </div>

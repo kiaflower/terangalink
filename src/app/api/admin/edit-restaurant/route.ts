@@ -41,15 +41,15 @@ async function updateRestaurant(request: NextRequest) {
     if (!id) return NextResponse.json({ error: 'id requis' }, { status: 400 })
 
     const normalizedPlan = plan ? normalizePlan(String(plan)) : null
-    // Thème personnalisé et réseaux sociaux disponibles pour Pro ET Premium
-    const hasAdvancedTheme = normalizedPlan === 'pro' || normalizedPlan === 'premium'
+    // Thème personnalisé et réseaux sociaux disponibles pour le plan Pro
+    const hasAdvancedTheme = normalizedPlan === 'pro'
 
     // Payload de base
     const corePayload: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     }
 
-    const coreFields = ['name', 'slug', 'description', 'city', 'neighborhood', 'address', 'cuisine_type', 'is_active', 'opening_hours', 'delivery_fee', 'show_delivery_fee']
+    const coreFields = ['name', 'slug', 'description', 'city', 'neighborhood', 'address', 'cuisine_type', 'is_active', 'opening_hours', 'delivery_fee', 'show_delivery_fee', 'is_founder', 'is_verified']
     for (const field of coreFields) {
       if (field in rest) corePayload[field] = rest[field]
     }
@@ -66,7 +66,7 @@ async function updateRestaurant(request: NextRequest) {
       corePayload.cover_url = resolvedBanner
     }
 
-    // Thème : sauvegardé pour Pro ET Premium, remis par défaut pour Starter
+    // Thème : sauvegardé pour le plan Pro, remis par défaut pour Starter
     if (normalizedPlan) {
       if (hasAdvancedTheme) {
         corePayload.primary_color = primary_color || DEFAULT_PRIMARY_COLOR

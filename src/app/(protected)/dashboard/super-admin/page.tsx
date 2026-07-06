@@ -35,7 +35,7 @@ export default async function SuperAdminDashboard() {
   ])
 
   const estimatedRevenue = (subscriptions ?? []).reduce((sum, sub: Subscription) => {
-    return sum + (PLAN_PRICES[normalizePlan(sub.plan)] ?? 0)
+    return sum + (sub.legacy_price ?? PLAN_PRICES[normalizePlan(sub.plan)] ?? 0)
   }, 0)
 
   const planCounts = (subscriptions ?? []).reduce((acc, sub: Subscription) => {
@@ -68,8 +68,8 @@ export default async function SuperAdminDashboard() {
       </div>
 
       {/* Répartition plans */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
-        {(['starter', 'pro', 'premium'] as const).map(plan => (
+      <div className="grid grid-cols-2 gap-3 mb-8">
+        {(['starter', 'pro'] as const).map(plan => (
           <div key={plan} className="rounded-2xl p-4 text-center"
             style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
             <p className="text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wide">{plan}</p>

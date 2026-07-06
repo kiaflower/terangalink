@@ -291,7 +291,7 @@ function buildOptimizationCards(props: RestaurantProps, state: CardState): Smart
       accentColor: '#F97316',
       label: 'Félicitations 🎉',
       title: '50 commandes — vous êtes en forme !',
-      body: 'Excellent travail ! Avez-vous pensé à passer au plan Premium pour bénéficier des mises en avant sponsorisées ?',
+      body: 'Excellent travail ! Avez-vous pensé à passer au plan Pro pour bénéficier des mises en avant sponsorisées ?',
       cta: { label: 'Voir les plans', href: '/dashboard/restaurant/settings' },
     })
   }

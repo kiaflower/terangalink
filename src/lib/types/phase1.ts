@@ -49,6 +49,7 @@ export interface Subscription {
   last_payment_date: string | null
   amount_paid: number | null
   notes_admin: string | null
+  legacy_price: number | null
   updated_at: string
 }
 

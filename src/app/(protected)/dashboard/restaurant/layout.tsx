@@ -39,10 +39,10 @@ export default async function RestaurantLayout({ children }: { children: React.R
             <RestaurantSidebar impersonatedRestaurantId={impersonation.restaurantId} />
           </div>
         </div>
-        <MobileSidebar>
+        <MobileSidebar bannerOffset={44}>
           <RestaurantSidebar mobile impersonatedRestaurantId={impersonation.restaurantId} />
         </MobileSidebar>
-        <main className="flex-1 min-w-0 overflow-y-auto" style={{ paddingTop: '44px' }}>
+        <main className="flex-1 min-w-0 overflow-y-auto pt-[calc(44px+4rem)] lg:pt-[44px]">
           {children}
         </main>
         {resto?.slug && <OnboardingWrapper restaurantSlug={resto.slug} />}

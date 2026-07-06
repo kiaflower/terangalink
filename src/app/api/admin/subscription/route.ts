@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
       if (body.last_payment_date !== undefined) updates.last_payment_date = body.last_payment_date ? new Date(body.last_payment_date).toISOString() : null
       if (body.next_payment_due_date !== undefined) updates.next_payment_due_date = body.next_payment_due_date ? new Date(body.next_payment_due_date).toISOString() : null
       if (body.amount_paid !== undefined) updates.amount_paid = body.amount_paid !== '' ? Number(body.amount_paid) : null
+      if (body.legacy_price !== undefined) updates.legacy_price = body.legacy_price !== '' ? Number(body.legacy_price) : null
 
       if (Object.keys(updates).length === 0) {
         return NextResponse.json({ error: 'Aucune donnée à mettre à jour' }, { status: 400 })

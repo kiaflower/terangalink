@@ -170,6 +170,9 @@ export interface RestaurantPageData {
     // Géolocalisation
     latitude?: number | null
     longitude?: number | null
+    // Badges
+    is_founder?: boolean
+    is_verified?: boolean
   }
   categories: MenuCategory[]
   items: MenuItem[]

@@ -22,7 +22,7 @@ interface FormData {
   openingHours: Record<string, { ouverture: string; fermeture: string; ferme: boolean }>
   logoUrl: string | null; bannerUrl: string | null; menuImageUrl: string | null; productPhotos: string[]
   facebookUrl: string; instagramUrl: string; tiktokUrl: string; snapchatUrl: string
-  selectedPlan: 'starter' | 'pro' | 'premium'
+  selectedPlan: 'starter' | 'pro'
   colorChoice: 'terangalink' | 'custom'
   primaryColor: string; secondaryColor: string
   allowSocialMedia: boolean; allowPhotos: boolean; allowPromoOffer: boolean
@@ -70,12 +70,10 @@ const JOURS = [
 ]
 
 const PLANS = [
-  { id: 'starter' as const, name: 'Starter', price: '9 000', description: "L'essentiel pour démarrer", popular: false,
+  { id: 'starter' as const, name: 'Starter', price: '9 900', description: "L'essentiel pour démarrer", popular: false,
     features: ["Listé dans l'annuaire TerangaLink", 'Site de commande', 'Menu illimité', 'Commandes WhatsApp', 'Dashboard administrateur', 'QR Code'] },
-  { id: 'pro' as const, name: 'Pro', price: '15 000', description: 'Personnalisation avancée', popular: true,
-    features: ['Tout Starter', "Mise en avant dans l'annuaire", 'Branding TerangaLink supprimé', 'Couleurs personnalisées', 'Réseaux sociaux affichés', 'Support prioritaire'] },
-  { id: 'premium' as const, name: 'Premium', price: '25 000', description: 'E-commerce avancé', popular: false,
-    features: ['Tout Pro', 'Variantes de produits', 'Gestion de stock', 'Précommandes', 'Codes promo clients', 'Bannières promotionnelles'] },
+  { id: 'pro' as const, name: 'Pro', price: '19 900', description: 'Personnalisation + e-commerce avancé', popular: true,
+    features: ['Tout Starter', "Mise en avant dans l'annuaire", 'Branding TerangaLink supprimé', 'Couleurs personnalisées', 'Réseaux sociaux affichés', 'Variantes de produits', 'Précommandes', 'Codes promo clients', 'Bannières promotionnelles', 'Support prioritaire'] },
 ]
 
 const STEPS = [
@@ -189,9 +187,9 @@ export default function InscriptionPage() {
       facebook_url: form.facebookUrl || null, instagram_url: form.instagramUrl || null,
       tiktok_url: form.tiktokUrl || null, snapchat_url: form.snapchatUrl || null,
       selected_plan: form.selectedPlan,
-      color_choice: (form.selectedPlan === 'pro' || form.selectedPlan === 'premium') ? form.colorChoice : null,
-      primary_color: (form.selectedPlan === 'pro' || form.selectedPlan === 'premium') && form.colorChoice === 'custom' ? form.primaryColor : null,
-      secondary_color: (form.selectedPlan === 'pro' || form.selectedPlan === 'premium') && form.colorChoice === 'custom' ? form.secondaryColor : null,
+      color_choice: form.selectedPlan === 'pro' ? form.colorChoice : null,
+      primary_color: form.selectedPlan === 'pro' && form.colorChoice === 'custom' ? form.primaryColor : null,
+      secondary_color: form.selectedPlan === 'pro' && form.colorChoice === 'custom' ? form.secondaryColor : null,
       allow_social_media: form.allowSocialMedia, allow_photos: form.allowPhotos,
       allow_promo_offer: form.allowPromoOffer,
       promo_offer_type: form.allowPromoOffer ? form.promoOfferType : null,
@@ -377,7 +375,7 @@ export default function InscriptionPage() {
           <Field label="Snapchat (optionnel)">
             <TInput value={form.snapchatUrl} onChange={v => set('snapchatUrl', v)} placeholder="https://snapchat.com/add/votre-snap" />
           </Field>
-          <p className="text-xs" style={{ color: '#9CA3AF' }}>Ces informations ne seront affichées que sur les plans Pro et Premium.</p>
+          <p className="text-xs" style={{ color: '#9CA3AF' }}>Ces informations ne seront affichées que sur le plan Pro.</p>
         </div>
       )
 
@@ -422,13 +420,13 @@ export default function InscriptionPage() {
           ))}
 
           {/* ── Personnalisation couleurs (Pro / Premium uniquement) ── */}
-          {(form.selectedPlan === 'pro' || form.selectedPlan === 'premium') && (
+          {form.selectedPlan === 'pro' && (
             <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid #E5E7EB' }}>
               <div className="px-5 py-3 flex items-center justify-between"
                 style={{ backgroundColor: '#FFF7ED', borderBottom: '1px solid #E5E7EB' }}>
                 <div>
                   <p className="text-sm font-bold" style={{ color: '#111111' }}>🎨 Couleurs de votre page</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Inclus avec votre plan {form.selectedPlan === 'pro' ? 'Pro' : 'Premium'}</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Inclus avec votre plan Pro</p>
                 </div>
               </div>
 
@@ -686,7 +684,7 @@ export default function InscriptionPage() {
             { title: 'Restaurant', items: [['Type de cuisine', form.cuisineType || '—'], ['Description', form.description ? form.description.slice(0, 60) + '...' : '—'], ['Ville', form.city || '—']] },
             { title: 'Abonnement', items: [
               ['Plan choisi', PLANS.find(p => p.id === form.selectedPlan)?.name + ' — ' + PLANS.find(p => p.id === form.selectedPlan)?.price + ' FCFA/mois'],
-              ...(form.selectedPlan === 'pro' || form.selectedPlan === 'premium'
+              ...(form.selectedPlan === 'pro'
                 ? [['Couleurs', form.colorChoice === 'terangalink' ? 'Laissé à TerangaLink' : `${form.primaryColor} / ${form.secondaryColor}`]]
                 : [])
             ] as [string, string][] },
@@ -712,7 +710,7 @@ export default function InscriptionPage() {
               {form.bannerUrl && <img src={form.bannerUrl} alt="Bannière" className="h-16 w-auto rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />}
             </div>
           )}
-          {(form.selectedPlan === 'pro' || form.selectedPlan === 'premium') && form.colorChoice === 'custom' && (
+          {form.selectedPlan === 'pro' && form.colorChoice === 'custom' && (
             <div className="flex items-center gap-3 p-3 rounded-xl" style={{ border: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
               <div className="flex gap-2">
                 <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: form.primaryColor }} />

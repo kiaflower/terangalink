@@ -30,8 +30,8 @@ const CUISINE_OPTIONS = [
 ]
 
 const PLAN_OPTIONS = [
-  { value: 'starter', label: 'Starter — 9 000 FCFA/mois' },
-  { value: 'pro', label: 'Pro — 15 000 FCFA/mois' },
+  { value: 'starter', label: 'Starter — 9 900 FCFA/mois' },
+  { value: 'pro', label: 'Pro — 19 900 FCFA/mois' },
 ]
 
 export default function CreateAdminPage() {

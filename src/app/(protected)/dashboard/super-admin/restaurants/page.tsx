@@ -101,7 +101,12 @@ export default function RestaurantsPage() {
     setLoading(false)
   }, [supabase])
 
-  useEffect(() => { loadData() }, [loadData])
+  useEffect(() => {
+    loadData()
+    // Pas de cron sur ce projet : on recalcule l'éligibilité au badge Vérifié
+    // à chaque visite de cette page, puis on recharge pour refléter les changements.
+    fetch('/api/admin/refresh-verified-badges', { method: 'POST' }).then(() => loadData())
+  }, [loadData])
 
   function openDelete(r: Restaurant) {
     setToDelete(r)

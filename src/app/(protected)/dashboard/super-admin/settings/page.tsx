@@ -125,8 +125,8 @@ export default function SuperAdminSettingsPage() {
   const [allowSignup, setAllowSignup] = useState(false)
   const [demoActive, setDemoActive] = useState(true)
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true)
-  const [prixStarter, setPrixStarter] = useState('9000')
-  const [prixPro, setPrixPro] = useState('15000')
+  const [prixStarter, setPrixStarter] = useState('9900')
+  const [prixPro, setPrixPro] = useState('19900')
 
   const loadStats = useCallback(async () => {
     const [{ count: r }, { count: a }, { data: settingsData }] = await Promise.all([

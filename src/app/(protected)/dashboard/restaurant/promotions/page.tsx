@@ -212,8 +212,8 @@ export default function PromotionsPage() {
       <div className="p-6 max-w-3xl mx-auto">
         <div className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-8 text-center">
           <Crown className="w-10 h-10 text-yellow-400 mx-auto mb-3" />
-          <h2 className="text-gray-900 font-bold text-lg mb-2">Fonctionnalité Premium</h2>
-          <p className="text-gray-500 text-sm">Les codes promo sont disponibles avec le plan <strong className="text-gray-900">Premium</strong>.</p>
+          <h2 className="text-gray-900 font-bold text-lg mb-2">Fonctionnalité Pro</h2>
+          <p className="text-gray-500 text-sm">Les codes promo sont disponibles avec le plan <strong className="text-gray-900">Pro</strong>.</p>
         </div>
       </div>
     )

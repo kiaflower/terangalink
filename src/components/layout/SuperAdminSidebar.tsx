@@ -10,6 +10,7 @@ const navItems = [
   { label: "Vue d'ensemble", href: '/dashboard/super-admin', icon: LayoutDashboard, exact: true, badgeKey: null },
   { label: 'Restaurants', href: '/dashboard/super-admin/restaurants', icon: Store, badgeKey: null },
   { label: 'Inscriptions', href: '/dashboard/super-admin/inscriptions', icon: ClipboardList, badgeKey: 'pendingApplications' as const },
+  { label: 'Early Access', href: '/dashboard/super-admin/early-access', icon: Zap, badgeKey: null },
   { label: 'Annuaire', href: '/dashboard/super-admin/annuaire', icon: LayoutGrid, badgeKey: null },
   { label: 'Abonnements', href: '/dashboard/super-admin/subscriptions', icon: CreditCard, badgeKey: null },
   { label: 'Utilisateurs', href: '/dashboard/super-admin/users', icon: Users, badgeKey: null },

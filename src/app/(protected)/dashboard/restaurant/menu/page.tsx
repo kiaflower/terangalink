@@ -647,7 +647,7 @@ export default function MenuPage() {
           {!isPremium && (
             <div className="flex items-center gap-3 bg-purple-500/10 border border-purple-500/20 rounded-xl px-4 py-3">
               <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
-              <p className="text-xs text-purple-300">Les variantes, la gestion de stock et les précommandes sont disponibles avec le plan <strong>Premium</strong>.</p>
+              <p className="text-xs text-purple-300">Les variantes, la gestion de stock et les précommandes sont disponibles avec le plan <strong>Pro</strong>.</p>
             </div>
           )}
 

@@ -18,11 +18,12 @@ import { ProductModal } from '@/components/restaurant/ProductModal'
 import { PromoBanners } from '@/components/restaurant/PromoBanners'
 import { FullMenuDisplay } from '@/components/restaurant/FullMenuDisplay'
 import { ReviewsSection } from '@/components/restaurant/ReviewsSection'
+import { FounderBadge, VerifiedBadge } from '@/components/restaurant/StatusBadges'
 import {
   DEFAULT_BUTTON_COLOR, DEFAULT_DARK_BACKGROUND, DEFAULT_PRIMARY_COLOR,
   generateThemeTokens, themeToStyle, type RestaurantTheme
 } from '@/lib/theme'
-import { canUseFeature, normalizePlan, isPremiumPlan } from '@/lib/plans'
+import { canUseFeature, normalizePlan } from '@/lib/plans'
 import { BackToAnnuaire } from '@/components/restaurant/BackToAnnuaire'
 import type { RestaurantPageData, MenuItem } from '@/lib/types'
 import type { Banner } from '@/components/restaurant/PromoBanners'
@@ -127,7 +128,8 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
 
   const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'starter' : 'starter'))
   const isPro = plan === 'pro'
-  const isPremium = isPremiumPlan(plan)
+  // "premium" a fusionné dans "pro" — conservé comme alias pour les props enfants (ProductCard, CartDrawer, ...)
+  const isPremium = isPro
 
   const shouldShowTerangaBranding = !restaurant.is_demo && !canUseFeature(plan, 'suppressionBranding')
   const canCall = canUseFeature(plan, 'boutonAppel')
@@ -236,7 +238,11 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
                 </div>
               )}
             </div>
-            <span className="font-bold text-sm truncate hidden sm:block" style={{ color: tokens.textPrimary }}>{restaurant.name}</span>
+            <span className="font-bold text-sm truncate hidden sm:flex items-center gap-1.5" style={{ color: tokens.textPrimary }}>
+              {restaurant.name}
+              {restaurant.is_founder && <FounderBadge size={14} />}
+              {restaurant.is_verified && <VerifiedBadge size={14} />}
+            </span>
           </div>
 
           <BackToAnnuaire tokens={tokens} />
@@ -331,7 +337,11 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
               ))}
             </nav>
           )}
-          <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1">{restaurant.name}</h1>
+          <h1 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-1 flex items-center gap-2.5">
+            {restaurant.name}
+            {restaurant.is_founder && <FounderBadge size={24} />}
+            {restaurant.is_verified && <VerifiedBadge size={24} />}
+          </h1>
           {restaurant.description && (
             <p className="text-white/75 text-sm mb-4 max-w-lg line-clamp-2">{restaurant.description}</p>
           )}

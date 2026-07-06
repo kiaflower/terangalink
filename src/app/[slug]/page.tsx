@@ -19,6 +19,7 @@ import {
 } from '@/lib/seo'
 import { slugifyToken } from '@/lib/slug'
 import { getSimilarRestaurants, getRestaurantsInSameNeighborhood } from '@/lib/taxonomy'
+import { isProPlan } from '@/lib/plans'
 
 interface Props { params: { slug: string } }
 
@@ -60,6 +61,8 @@ interface RestaurantRow {
   cuisine_type: string | null
   full_menu_image_url: string | null
   show_full_menu: boolean
+  is_founder: boolean
+  is_verified: boolean
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -188,6 +191,22 @@ export default async function RestaurantPage({ params }: Props) {
     console.warn('Extended columns not yet available')
   }
 
+  // Colonnes badges isolées de la requête ci-dessus : tolère leur absence
+  // tant que la migration n'est pas appliquée, sans casser le thème/couleurs.
+  try {
+    const { data: badgeData } = await supabase
+      .from('restaurants')
+      .select('is_founder, is_verified')
+      .eq('id', base.id)
+      .single()
+    if (badgeData) {
+      extended.is_founder = (badgeData as { is_founder?: boolean }).is_founder ?? false
+      extended.is_verified = (badgeData as { is_verified?: boolean }).is_verified ?? false
+    }
+  } catch {
+    console.warn('is_founder/is_verified columns not yet available')
+  }
+
   // Colonne récente isolée : tolère son absence tant que la migration n'est pas appliquée,
   // sans faire échouer la requête groupée des colonnes étendues ci-dessus.
   let neighborhood: string | null = null
@@ -206,7 +225,7 @@ export default async function RestaurantPage({ params }: Props) {
   const subscription = subscriptionData as { plan: string; status: string } | null
   const isActiveSubscription = subscription?.status === 'active' || subscription?.status === 'trial'
   const plan = (subscription?.plan && isActiveSubscription) ? subscription.plan : 'starter'
-  const isPremium = plan === 'premium'
+  const isPremium = isProPlan(plan)
 
   console.log('[DEBUG plan resolved]', { plan, isPremium, isActiveSubscription })
 
@@ -269,6 +288,8 @@ export default async function RestaurantPage({ params }: Props) {
     longitude: extended.longitude ?? null,
     full_menu_image_url: extended.full_menu_image_url ?? null,
     show_full_menu: extended.show_full_menu ?? false,
+    is_founder: extended.is_founder ?? false,
+    is_verified: extended.is_verified ?? false,
   }
 
   const seoData = {

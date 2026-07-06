@@ -22,6 +22,8 @@ export interface RestaurantSummary {
   cover_url: string | null
   opening_hours: OpeningHoursMap | null
   is_boosted?: boolean
+  is_founder?: boolean
+  is_verified?: boolean
   created_at: string
 }
 
@@ -213,10 +215,26 @@ async function fetchAllActiveRestaurants(): Promise<RestaurantSummary[]> {
   const rows = (data ?? []) as unknown as (RestaurantSummary & Record<string, unknown>)[]
   const neighborhoodById = await fetchNeighborhoodMap(admin, rows.map(r => r.id))
 
+  // Colonnes récentes : tolère leur absence tant que la migration n'est pas appliquée.
+  const badgesById = new Map<string, { is_founder: boolean; is_verified: boolean }>()
+  try {
+    const { data: badgeRows } = await admin
+      .from('restaurants')
+      .select('id, is_founder, is_verified')
+      .in('id', rows.map(r => r.id))
+    for (const row of badgeRows ?? []) {
+      badgesById.set(row.id, { is_founder: row.is_founder === true, is_verified: row.is_verified === true })
+    }
+  } catch {
+    console.warn('is_founder/is_verified columns not yet available')
+  }
+
   return rows.map(r => ({
     ...r,
     neighborhood: neighborhoodById.get(r.id) ?? null,
     is_boosted: r.is_boosted === true,
+    is_founder: badgesById.get(r.id)?.is_founder ?? false,
+    is_verified: badgesById.get(r.id)?.is_verified ?? false,
   }))
 }
 
