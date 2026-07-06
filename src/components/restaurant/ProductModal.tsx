@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { X, Plus, Minus, ShoppingCart, Clock, AlertTriangle, PackageX, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useCart } from '@/lib/hooks/useCart'
 import { formatCurrency } from '@/lib/utils'
+import { FavoriteButton } from '@/components/restaurant/FavoriteButton'
 import type { MenuItem, MenuItemVariant } from '@/lib/types'
 import type { ThemeTokens } from '@/lib/theme'
 
@@ -15,8 +16,10 @@ interface ProductModalProps {
   restaurantSlug: string
   restaurantPhone: string
   restaurantName: string
+  restaurantLogoUrl?: string | null
   tokens: ThemeTokens
   isPremium: boolean
+  showFavorite?: boolean
 }
 
 // ─── Précommande helpers ──────────────────────────────────────────────────────
@@ -157,7 +160,7 @@ function PreorderBanner({ item, tokens }: { item: MenuItem; tokens: ThemeTokens 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ProductModal({
-  item, onClose, restaurantId, restaurantSlug, restaurantPhone, restaurantName, tokens, isPremium,
+  item, onClose, restaurantId, restaurantSlug, restaurantPhone, restaurantName, restaurantLogoUrl, tokens, isPremium, showFavorite = false,
 }: ProductModalProps) {
   const { addItem } = useCart()
   const [selectedVariant, setSelectedVariant] = useState<MenuItemVariant | null>(null)
@@ -262,6 +265,23 @@ export function ProductModal({
         className="relative w-full sm:w-[480px] sm:max-w-[95vw] max-h-[92vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-3xl shadow-2xl"
         style={{ backgroundColor: tokens.bgCard, border: `1px solid ${tokens.border}` }}
       >
+        {showFavorite && (
+          <div className="absolute top-4 right-14 z-10">
+            <FavoriteButton
+              item={{
+                type: 'product',
+                id: item.id,
+                restaurant_id: restaurantId,
+                restaurant_slug: restaurantSlug,
+                restaurant_name: restaurantName,
+                restaurant_logo_url: restaurantLogoUrl ?? null,
+                name: item.name,
+                price: item.price,
+                image_url: item.image_urls?.[0] || item.image_url || null,
+              }}
+            />
+          </div>
+        )}
         <button onClick={onClose}
           className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
           style={{ backgroundColor: 'rgba(0,0,0,0.4)', color: 'white' }}>

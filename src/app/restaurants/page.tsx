@@ -4,6 +4,8 @@ import RestaurantsClient from './RestaurantsClient'
 import { Footer } from '@/components/layout/Footer'
 import { getPlatformSettings } from '@/lib/settings'
 import { SITE_URL } from '@/lib/seo'
+import { groupStoriesByRestaurant } from '@/lib/stories-utils'
+import type { StoryWithRelations } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,7 +73,7 @@ export default async function RestaurantsPage() {
     .eq('is_demo', false)
 
   if (!restaurants || restaurants.length === 0) {
-    return <><RestaurantsClient restaurants={[]} menuItems={[]} /><Footer whatsapp={settings.whatsapp} email={settings.email} city={settings.city} /></>
+    return <><RestaurantsClient restaurants={[]} menuItems={[]} stories={[]} /><Footer whatsapp={settings.whatsapp} email={settings.email} city={settings.city} /></>
   }
 
   const restaurantIds = restaurants.map(r => r.id)
@@ -99,6 +101,33 @@ export default async function RestaurantsPage() {
       .in('restaurant_id', restaurantIds)
       .eq('is_available', true),
   ])
+
+  // Stories actives — table récente : tolère son absence tant que la migration n'est pas appliquée.
+  const restaurantById = new Map(restaurants.map(r => [r.id, r]))
+  let storyGroups: ReturnType<typeof groupStoriesByRestaurant> = []
+  try {
+    const { data: storyRows } = await admin
+      .from('stories')
+      .select('*, menu_item:menu_items(id, name, price, image_url)')
+      .in('restaurant_id', restaurantIds)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: true })
+
+    const storiesWithRestaurant: StoryWithRelations[] = (storyRows ?? [])
+      .map(row => {
+        const r = restaurantById.get(row.restaurant_id)
+        if (!r) return null
+        return {
+          ...row,
+          restaurant: { id: r.id, name: r.name, slug: r.slug, logo_url: r.logo_url },
+        } as StoryWithRelations
+      })
+      .filter((s): s is StoryWithRelations => s !== null)
+
+    storyGroups = groupStoriesByRestaurant(storiesWithRestaurant)
+  } catch {
+    console.warn('stories table not yet available')
+  }
 
   // Agrégations reviews
   const ratingMap: Record<string, { avg: number; count: number }> = {}
@@ -199,7 +228,7 @@ export default async function RestaurantsPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaItemList) }} />
-      <RestaurantsClient restaurants={enriched} menuItems={menuItemsForClient} />
+      <RestaurantsClient restaurants={enriched} menuItems={menuItemsForClient} stories={storyGroups} />
       <Footer whatsapp={settings.whatsapp} email={settings.email} city={settings.city} />
     </>
   )

@@ -42,6 +42,38 @@ export interface Database {
           updated_at?: string
         }
       }
+      stories: {
+        Row: {
+          id: string
+          restaurant_id: string
+          media_type: 'image' | 'video'
+          media_url: string
+          caption: string | null
+          menu_item_id: string | null
+          view_count: number
+          like_count: number
+          created_at: string
+          expires_at: string
+        }
+        Insert: {
+          id?: string
+          restaurant_id: string
+          media_type: 'image' | 'video'
+          media_url: string
+          caption?: string | null
+          menu_item_id?: string | null
+          view_count?: number
+          like_count?: number
+          created_at?: string
+          expires_at?: string
+        }
+        Update: {
+          caption?: string | null
+          menu_item_id?: string | null
+          view_count?: number
+          like_count?: number
+        }
+      }
       restaurants: {
         Row: {
           id: string
@@ -389,7 +421,14 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_story_view: {
+        Args: { p_story_id: string }
+        Returns: void
+      }
+      set_story_like: {
+        Args: { p_story_id: string; p_liked: boolean }
+        Returns: void
+      }
     }
     Enums: {
       user_role: 'super_admin' | 'restaurant_admin'

@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { Tag, Pin } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { FavoriteButton } from '@/components/restaurant/FavoriteButton'
 import type { MenuItem } from '@/lib/types'
 import type { ThemeTokens } from '@/lib/theme'
 
@@ -12,8 +13,10 @@ interface MenuCardProps {
   restaurantSlug: string
   restaurantPhone: string
   restaurantName: string
+  restaurantLogoUrl?: string | null
   tokens: ThemeTokens
   isPremium?: boolean
+  showFavorite?: boolean
   onOpenProduct: (item: MenuItem) => void
 }
 
@@ -27,8 +30,13 @@ const BADGE_STYLES: Record<string, { bg: string; text: string; emoji: string }> 
 
 export function MenuCard({
   item,
+  restaurantId,
+  restaurantSlug,
+  restaurantName,
+  restaurantLogoUrl,
   tokens,
   isPremium = false,
+  showFavorite = false,
   onOpenProduct,
 }: MenuCardProps) {
 
@@ -112,10 +120,29 @@ export function MenuCard({
         {/* Épinglé (Phase 6) */}
         {isPremium && item.is_pinned && (
           <div
-            className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
+            className="absolute bottom-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
           >
             <Pin className="w-3 h-3 text-white" />
+          </div>
+        )}
+
+        {/* Favori — visible uniquement quand on arrive depuis l'annuaire */}
+        {showFavorite && (
+          <div className="absolute top-2 right-2 z-10">
+            <FavoriteButton
+              item={{
+                type: 'product',
+                id: item.id,
+                restaurant_id: restaurantId,
+                restaurant_slug: restaurantSlug,
+                restaurant_name: restaurantName,
+                restaurant_logo_url: restaurantLogoUrl ?? null,
+                name: item.name,
+                price: item.price,
+                image_url: item.image_urls?.[0] || item.image_url || null,
+              }}
+            />
           </div>
         )}
 

@@ -20,6 +20,8 @@ import {
 import { slugifyToken } from '@/lib/slug'
 import { getSimilarRestaurants, getRestaurantsInSameNeighborhood } from '@/lib/taxonomy'
 import { isProPlan } from '@/lib/plans'
+import { groupStoriesByRestaurant } from '@/lib/stories-utils'
+import type { StoryWithRelations, RestaurantStoryGroup } from '@/lib/types'
 
 interface Props { params: { slug: string } }
 
@@ -263,6 +265,27 @@ export default async function RestaurantPage({ params }: Props) {
     } catch { console.warn('banners table not yet available') }
   }
 
+  // Stories actives de ce restaurant — table récente : tolère son absence
+  // tant que la migration n'est pas appliquée.
+  let storyGroups: RestaurantStoryGroup[] = []
+  try {
+    const { data: storyRows } = await adminClient
+      .from('stories')
+      .select('*, menu_item:menu_items(id, name, price, image_url)')
+      .eq('restaurant_id', base.id)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: true })
+
+    const storiesWithRestaurant: StoryWithRelations[] = (storyRows ?? []).map(row => ({
+      ...row,
+      restaurant: { id: base.id, name: base.name, slug: base.slug, logo_url: base.logo_url },
+    })) as StoryWithRelations[]
+
+    storyGroups = groupStoriesByRestaurant(storiesWithRestaurant)
+  } catch {
+    console.warn('stories table not yet available')
+  }
+
   const restaurant: RestaurantRow = {
     ...base,
     neighborhood,
@@ -389,6 +412,7 @@ export default async function RestaurantPage({ params }: Props) {
         similarRestaurants={similarRestaurants}
         neighborhoodRestaurants={neighborhoodRestaurants}
         seoContent={seoContent}
+        stories={storyGroups}
       />
     </>
   )

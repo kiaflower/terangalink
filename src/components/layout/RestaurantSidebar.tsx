@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, UtensilsCrossed, BarChart3,
-  QrCode, Settings, LogOut, User, ExternalLink, ShoppingBag, Tag, Megaphone, Zap,
+  QrCode, Settings, LogOut, User, ExternalLink, ShoppingBag, Tag, Megaphone, Zap, Sparkles,
 } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useEffect, useState } from 'react'
@@ -14,6 +14,7 @@ import { useSettings } from '@/lib/hooks/useSettings'
 const navItems = [
   { label: 'Tableau de bord', href: '/dashboard/restaurant', icon: LayoutDashboard, exact: true },
   { label: 'Menu', href: '/dashboard/restaurant/menu', icon: UtensilsCrossed },
+  { label: 'Stories', href: '/dashboard/restaurant/stories', icon: Sparkles },
   { label: 'Commandes', href: '/dashboard/restaurant/orders', icon: ShoppingBag },
   { label: 'Promotions', href: '/dashboard/restaurant/promotions', icon: Tag },
   { label: 'Bannières', href: '/dashboard/restaurant/banners', icon: Megaphone },

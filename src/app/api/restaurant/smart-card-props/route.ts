@@ -37,6 +37,19 @@ export async function GET() {
     admin.from('menu_items').select('id').eq('restaurant_id', restaurantId).eq('is_featured', true).limit(1),
   ])
 
+  // Table récente : tolère son absence tant que la migration n'est pas appliquée.
+  let hasActiveStories = false
+  try {
+    const { count: activeStoriesCount } = await admin
+      .from('stories')
+      .select('*', { count: 'exact', head: true })
+      .eq('restaurant_id', restaurantId)
+      .gt('expires_at', now.toISOString())
+    hasActiveStories = (activeStoriesCount ?? 0) > 0
+  } catch {
+    console.warn('stories table not yet available')
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const r = resto as any
 
@@ -54,5 +67,6 @@ export async function GET() {
     restaurantCreatedAt: r?.created_at ?? now.toISOString(),
     totalOrders: totalOrders ?? 0,
     todayOrders: todayOrders ?? 0,
+    hasActiveStories,
   })
 }

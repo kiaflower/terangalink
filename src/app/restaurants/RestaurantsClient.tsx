@@ -4,9 +4,15 @@ import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { Search, MapPin, Star, UtensilsCrossed, Zap, MessageCircle, ArrowRight } from 'lucide-react'
+import { Search, MapPin, Star, UtensilsCrossed, ArrowRight, Heart, X, ShoppingBag } from 'lucide-react'
 import { CUISINE_FILTER_OPTIONS } from '@/lib/cuisines'
 import { FounderBadge, VerifiedBadge } from '@/components/restaurant/StatusBadges'
+import { StoriesRow } from '@/components/stories/StoriesRow'
+import { useFavorites } from '@/lib/hooks/useFavorites'
+import { FavoriteButton } from '@/components/restaurant/FavoriteButton'
+import { formatCurrency } from '@/lib/utils'
+import { getViewedStorySet, isGroupFullySeen } from '@/lib/stories-utils'
+import type { RestaurantStoryGroup } from '@/lib/types'
 
 interface Restaurant {
   id: string
@@ -44,9 +50,10 @@ const CUISINES = CUISINE_FILTER_OPTIONS
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=1600&q=80'
 
-function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; onTrackClick: (id: string) => void }) {
+function RestaurantCard({ restaurant, onTrackClick, storyRing = 'none' }: { restaurant: Restaurant; onTrackClick: (id: string) => void; storyRing?: 'none' | 'active' | 'seen' }) {
   const isNew = restaurant.is_new ?? false
   const isBoosted = restaurant.is_boosted
+  const ringColor = storyRing === 'active' ? '#F97316' : storyRing === 'seen' ? '#D1D5DB' : null
 
   return (
     <Link
@@ -98,16 +105,30 @@ function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; 
               src={restaurant.logo_url}
               alt={`Logo ${restaurant.name}`}
               className="w-12 h-12 rounded-xl object-cover"
-              style={{ border: '2px solid #FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+              style={{
+                border: ringColor ? `2.5px solid ${ringColor}` : '2px solid #FFFFFF',
+                boxShadow: ringColor ? `0 0 6px ${ringColor}73, 0 2px 8px rgba(0,0,0,0.18)` : '0 2px 8px rgba(0,0,0,0.18)',
+              }}
             />
           ) : (
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg text-white"
-              style={{ backgroundColor: '#F97316', border: '2px solid #FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.18)' }}
+              style={{
+                backgroundColor: '#F97316',
+                border: ringColor ? `2.5px solid ${ringColor}` : '2px solid #FFFFFF',
+                boxShadow: ringColor ? `0 0 6px ${ringColor}73, 0 2px 8px rgba(0,0,0,0.18)` : '0 2px 8px rgba(0,0,0,0.18)',
+              }}
             >
               {restaurant.name.charAt(0).toUpperCase()}
             </div>
           )}
+        </div>
+
+        {/* Favori */}
+        <div className="absolute top-2 left-2 z-10">
+          <FavoriteButton
+            item={{ type: 'restaurant', id: restaurant.id, slug: restaurant.slug, name: restaurant.name, logo_url: restaurant.logo_url }}
+          />
         </div>
 
         {/* Badge note ou Nouveau */}
@@ -171,6 +192,98 @@ function RestaurantCard({ restaurant, onTrackClick }: { restaurant: Restaurant; 
   )
 }
 
+function FavoritesView() {
+  const { favorites, removeFavorite } = useFavorites()
+  const favRestaurants = favorites.filter((f): f is Extract<typeof favorites[number], { type: 'restaurant' }> => f.type === 'restaurant')
+  const favProducts = favorites.filter((f): f is Extract<typeof favorites[number], { type: 'product' }> => f.type === 'product')
+
+  if (favorites.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <Heart className="w-10 h-10 mx-auto mb-4" style={{ color: '#D1D5DB' }} />
+        <p className="font-semibold" style={{ color: '#374151' }}>Aucun favori pour l&apos;instant</p>
+        <p className="text-sm mt-1" style={{ color: '#9CA3AF' }}>Ajoutez des restaurants et des plats à vos favoris</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-10">
+      {favRestaurants.length > 0 && (
+        <div>
+          <h2 className="font-bold text-base mb-4" style={{ color: '#111111' }}>Restaurants favoris</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {favRestaurants.map(fav => (
+              <div key={fav.id} className="rounded-2xl overflow-hidden relative" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
+                <button
+                  onClick={() => removeFavorite('restaurant', fav.id)}
+                  className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+                  title="Retirer des favoris"
+                >
+                  <X className="w-3.5 h-3.5 text-white" />
+                </button>
+                <Link href={`/${fav.slug}?from=annuaire`} className="flex flex-col items-center text-center p-5 gap-2">
+                  <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: '#F3F4F6' }}>
+                    {fav.logo_url ? (
+                      <Image src={fav.logo_url} alt={fav.name} fill className="object-cover" sizes="64px" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-black text-white" style={{ backgroundColor: '#F97316' }}>
+                        {fav.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-sm truncate w-full" style={{ color: '#111111' }}>{fav.name}</h3>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {favProducts.length > 0 && (
+        <div>
+          <h2 className="font-bold text-base mb-4" style={{ color: '#111111' }}>Produits favoris</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {favProducts.map(fav => (
+              <div
+                key={fav.id}
+                className="rounded-2xl overflow-hidden relative"
+                style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}
+              >
+                <button
+                  onClick={() => removeFavorite('product', fav.id)}
+                  className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+                  title="Retirer des favoris"
+                >
+                  <X className="w-3.5 h-3.5 text-white" />
+                </button>
+                <Link href={`/${fav.restaurant_slug}?product=${fav.id}&from=annuaire`} className="block">
+                  <div className="relative w-full h-32" style={{ backgroundColor: '#F3F4F6' }}>
+                    {fav.image_url ? (
+                      <Image src={fav.image_url} alt={fav.name} fill className="object-cover" sizes="200px" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag className="w-6 h-6" style={{ color: '#D1D5DB' }} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-semibold text-sm truncate mb-1" style={{ color: '#111111' }}>{fav.name}</h3>
+                    <p className="text-xs mb-1.5 truncate" style={{ color: '#9CA3AF' }}>{fav.restaurant_name}</p>
+                    <span className="font-bold text-sm" style={{ color: '#F97316' }}>{formatCurrency(fav.price)}</span>
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function trackEvent(event_type: string, restaurant_id?: string) {
   fetch('/api/analytics/track', {
     method: 'POST',
@@ -179,11 +292,25 @@ function trackEvent(event_type: string, restaurant_id?: string) {
   }).catch(() => {})
 }
 
-export default function RestaurantsClient({ restaurants, menuItems }: { restaurants: Restaurant[]; menuItems: MenuItem[] }) {
+export default function RestaurantsClient({ restaurants, menuItems, stories }: { restaurants: Restaurant[]; menuItems: MenuItem[]; stories: RestaurantStoryGroup[] }) {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
+  const restaurantsWithActiveStory = useMemo(() => new Set(stories.map(g => g.restaurant.id)), [stories])
   const [city, setCity] = useState('Toutes les régions')
   const [cuisine, setCuisine] = useState('Tous les types')
+  const [view, setView] = useState<'restaurants' | 'favoris'>(() => searchParams.get('view') === 'favoris' ? 'favoris' : 'restaurants')
+  const { favorites } = useFavorites()
+
+  // Anneau gris "déjà vu" — dépend de localStorage, donc gaté au montage pour éviter tout mismatch d'hydratation.
+  const [mounted, setMounted] = useState(false)
+  const [seenTick, setSeenTick] = useState(0)
+  useEffect(() => { setMounted(true) }, [])
+  const seenRestaurantIds = useMemo(() => {
+    if (!mounted) return new Set<string>()
+    const viewedSet = getViewedStorySet()
+    return new Set(stories.filter(g => isGroupFullySeen(g, viewedSet)).map(g => g.restaurant.id))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stories, mounted, seenTick])
 
   // Permet au SearchAction du schema WebSite (/restaurants?q=...) de préremplir la recherche
   useEffect(() => {
@@ -228,6 +355,47 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F9FAFB' }}>
 
+      {/* ── Header blanc fixe — toujours visible, y compris sur mobile ── */}
+      <div className="fixed top-0 left-0 right-0 z-50 px-4 py-3" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
+            <span className="font-bold text-lg" style={{ color: '#111111' }}>Teranga<span style={{ color: '#F97316' }}>Link</span></span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setView(v => v === 'favoris' ? 'restaurants' : 'favoris')}
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
+              style={{ backgroundColor: view === 'favoris' ? 'rgba(249,115,22,0.1)' : '#F9FAFB' }}
+              title="Mes favoris"
+              aria-label="Mes favoris"
+            >
+              <Heart className="w-4.5 h-4.5" style={{ color: view === 'favoris' ? '#F97316' : '#6B7280', fill: view === 'favoris' ? '#F97316' : 'none' }} />
+              {favorites.length > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                  style={{ backgroundColor: '#F97316' }}
+                >
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+            <Link href="/pour-les-restaurants"
+              className="text-xs font-semibold px-4 py-2 rounded-xl transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#F97316', color: '#FFFFFF' }}>
+              Mon restaurant →
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {view === 'favoris' ? (
+        <div className="max-w-6xl mx-auto px-4 pt-24 pb-20">
+          <h1 className="font-black text-2xl mb-5" style={{ color: '#111111' }}>Mes favoris</h1>
+          <FavoritesView />
+        </div>
+      ) : (
+      <>
       {/* ── Hero avec image de fond ── */}
       <div className="relative flex flex-col items-center justify-end" style={{ minHeight: '60vh', paddingTop: '56px' }}>
 
@@ -244,21 +412,6 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
           {/* Overlay — image assombrie */}
           <div className="absolute inset-0"
             style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.45) 100%)' }} />
-        </div>
-
-        {/* Header blanc fixe */}
-        <div className="fixed top-0 left-0 right-0 z-50 px-4 py-3" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
-          <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <img src="/logo-terangalink.jpg" alt="TerangaLink" className="w-8 h-8 rounded-lg object-cover" />
-              <span className="font-bold text-lg" style={{ color: '#111111' }}>Teranga<span style={{ color: '#F97316' }}>Link</span></span>
-            </Link>
-            <Link href="/pour-les-restaurants"
-              className="text-xs font-semibold px-4 py-2 rounded-xl transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#F97316', color: '#FFFFFF' }}>
-              Mon restaurant →
-            </Link>
-          </div>
         </div>
 
         {/* Contenu centré dans le hero */}
@@ -338,8 +491,17 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
         </div>
       </div>
 
+      {/* ── Rangée de stories ── */}
+      {stories.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 pt-6">
+          <h2 className="font-black text-lg" style={{ color: '#111111' }}>Quoi de neuf aujourd&apos;hui ?</h2>
+        </div>
+      )}
+      <StoriesRow groups={stories} deepLinkStoryId={searchParams.get('story')} onSeenChange={() => setSeenTick(t => t + 1)} />
+
       {/* ── Grille des restaurants ── */}
       <div className="max-w-6xl mx-auto px-4 py-10 pb-20">
+        <h2 className="font-black text-lg mb-4" style={{ color: '#111111' }}>Restaurants</h2>
         {filtered.length === 0 ? (
           <div className="text-center py-20">
             <UtensilsCrossed className="w-10 h-10 mx-auto mb-4" style={{ color: '#D1D5DB' }} />
@@ -354,7 +516,12 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {filtered.map(r => (
-                <RestaurantCard key={r.id} restaurant={r} onTrackClick={id => trackEvent('directory_click', id)} />
+                <RestaurantCard
+                  key={r.id}
+                  restaurant={r}
+                  onTrackClick={id => trackEvent('directory_click', id)}
+                  storyRing={!restaurantsWithActiveStory.has(r.id) ? 'none' : seenRestaurantIds.has(r.id) ? 'seen' : 'active'}
+                />
               ))}
             </div>
           </>
@@ -383,6 +550,8 @@ export default function RestaurantsClient({ restaurants, menuItems }: { restaura
           </Link>
         </div>
       </div>
+      </>
+      )}
 
     </div>
   )

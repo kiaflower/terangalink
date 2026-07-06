@@ -57,6 +57,7 @@ interface RestaurantProps {
   restaurantCreatedAt: string
   totalOrders: number
   todayOrders: number
+  hasActiveStories: boolean
 }
 
 // ─── Onboarding steps ─────────────────────────────────────────────────────────
@@ -107,6 +108,13 @@ function getOnboardingSteps(plan: string, slug: string | null): OnboardingStep[]
       actionLabel: 'C\'est fait ✓',
       linkLabel: 'Gérer le menu',
       linkHref: '/dashboard/restaurant/menu',
+    },
+    {
+      title: 'Publiez une story',
+      body: 'Partagez une photo ou vidéo de vos plats, promos ou nouveautés. Vos stories apparaissent 24h dans l\'annuaire et donnent envie de commander.',
+      actionLabel: 'C\'est fait ✓',
+      linkLabel: 'Publier une story',
+      linkHref: '/dashboard/restaurant/stories',
     },
     {
       title: 'Partagez votre QR code',
@@ -229,6 +237,20 @@ function buildReminderCards(props: RestaurantProps, state: CardState): SmartCard
       title: 'Aucune commande aujourd\'hui',
       body: 'Partagez votre lien sur WhatsApp ou Instagram pour attirer des clients. Un message avec une belle photo peut faire la différence.',
       cta: { label: 'Voir mon profil public', href: '/dashboard/restaurant/profile' },
+    })
+  }
+
+  // Aucune story active (rappel tous les 2-3 jours)
+  if (!props.hasActiveStories && canShow(state, 'reminder_no_stories', 60)) {
+    cards.push({
+      id: 'reminder_no_stories',
+      type: 'reminder',
+      icon: <Sparkles className="w-4 h-4" />,
+      accentColor: '#F97316',
+      label: 'Rappel',
+      title: 'Aucune story active',
+      body: 'Publiez une photo ou une vidéo pour donner envie à vos clients de commander. Vos stories restent visibles dans l\'annuaire pendant 24h.',
+      cta: { label: 'Publier une story', href: '/dashboard/restaurant/stories' },
     })
   }
 

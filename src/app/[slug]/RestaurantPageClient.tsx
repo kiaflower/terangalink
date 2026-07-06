@@ -8,7 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   MapPin, Phone, Zap, Share2, PhoneCall, Truck, Home,
   Instagram, Facebook, Music2, UtensilsCrossed, LayoutGrid,
-  Info, Clock, ChevronDown, ChevronUp, ShoppingCart
+  Info, Clock, ChevronDown, ChevronUp, ShoppingCart, Heart
 } from 'lucide-react'
 import { MenuCard } from '@/components/restaurant/MenuCard'
 import { CartDrawer, CartButton } from '@/components/cart/CartDrawer'
@@ -25,6 +25,8 @@ import {
 } from '@/lib/theme'
 import { canUseFeature, normalizePlan } from '@/lib/plans'
 import { BackToAnnuaire } from '@/components/restaurant/BackToAnnuaire'
+import { StoryViewer } from '@/components/stories/StoryViewer'
+import { getViewedStorySet, isGroupFullySeen } from '@/lib/stories-utils'
 import type { RestaurantPageData, MenuItem } from '@/lib/types'
 import type { Banner } from '@/components/restaurant/PromoBanners'
 import { isOpenNow } from '@/lib/opening-hours'
@@ -60,6 +62,7 @@ interface Props {
   similarRestaurants?: import('@/lib/taxonomy').RestaurantSummary[]
   neighborhoodRestaurants?: import('@/lib/taxonomy').RestaurantSummary[]
   seoContent?: string
+  stories?: import('@/lib/types').RestaurantStoryGroup[]
 }
 
 const DAYS_FR: Record<string, string> = {
@@ -105,7 +108,7 @@ function NavCartButton({ tokens }: { tokens: ReturnType<typeof generateThemeToke
   )
 }
 
-function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborhoodRestaurants, seoContent }: Props) {
+function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborhoodRestaurants, seoContent, stories = [] }: Props) {
   const { restaurant, categories, items } = data
   const searchParams = useSearchParams()
   const fromAnnuaire = searchParams.get('from') === 'annuaire'
@@ -113,6 +116,15 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
   const [copied, setCopied] = useState(false)
   const [showAllMenu, setShowAllMenu] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null)
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false)
+  const hasActiveStory = stories.length > 0 && stories[0].stories.length > 0
+
+  // Anneau gris "déjà vu" — dépend de localStorage, gaté au montage pour éviter tout mismatch d'hydratation.
+  const [storySeen, setStorySeen] = useState(false)
+  useEffect(() => {
+    if (!hasActiveStory) return
+    setStorySeen(isGroupFullySeen(stories[0], getViewedStorySet()))
+  }, [hasActiveStory, stories])
 
   const MENU_PREVIEW = 8
 
@@ -125,6 +137,14 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
       body: JSON.stringify({ restaurant_id: restaurant.id, event_type: 'page_view' }),
     }).catch(() => {}) // silencieux, ne bloque pas le rendu
   }, [restaurant.id, restaurant.is_demo])
+
+  // ── Ouverture auto de la fiche produit (CTA "Commander" d'une story, ou lien favori) ──
+  useEffect(() => {
+    const productId = searchParams.get('story_product') ?? searchParams.get('product')
+    if (!productId) return
+    const item = items.find(i => i.id === productId)
+    if (item) setSelectedProduct(item)
+  }, [searchParams, items])
 
   const plan = normalizePlan(restaurant.plan || (restaurant.is_demo ? 'starter' : 'starter'))
   const isPro = plan === 'pro'
@@ -229,7 +249,17 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0" style={{ backgroundColor: tokens.bgCardHover }}>
+            <button
+              onClick={() => hasActiveStory && setStoryViewerOpen(true)}
+              className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0"
+              style={{
+                backgroundColor: tokens.bgCardHover,
+                cursor: hasActiveStory ? 'pointer' : 'default',
+                border: hasActiveStory ? `2px solid ${storySeen ? '#D1D5DB' : '#F97316'}` : 'none',
+                boxShadow: hasActiveStory ? `0 0 5px ${storySeen ? '#D1D5DB' : '#F97316'}66` : 'none',
+              }}
+              aria-label={hasActiveStory ? 'Voir la story' : undefined}
+            >
               {restaurant.logo_url ? (
                 <Image src={restaurant.logo_url} alt={restaurant.name} width={36} height={36} className="object-cover w-full h-full" />
               ) : (
@@ -237,7 +267,7 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
                   {restaurant.name.charAt(0)}
                 </div>
               )}
-            </div>
+            </button>
             <span className="font-bold text-sm truncate hidden sm:flex items-center gap-1.5" style={{ color: tokens.textPrimary }}>
               {restaurant.name}
               {restaurant.is_founder && <FounderBadge size={14} />}
@@ -267,6 +297,15 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/restaurants?view=favoris"
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: tokens.bgCardHover, color: tokens.textSecondary }}
+              aria-label="Mes favoris"
+              title="Mes favoris"
+            >
+              <Heart className="w-4 h-4" />
+            </Link>
             <QRCodeButton url={publicUrl} restaurantName={restaurant.name} tokens={tokens} />
             {canCall && restaurant.phone && (
               <button
@@ -454,8 +493,10 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
                           restaurantSlug={restaurant.slug}
                           restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
                           restaurantName={restaurant.name}
+                          restaurantLogoUrl={restaurant.logo_url}
                           tokens={tokens}
                           isPremium={isPremium}
+                          showFavorite={fromAnnuaire}
                           onOpenProduct={setSelectedProduct}
                         />
                       ))}
@@ -496,8 +537,10 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
                             restaurantSlug={restaurant.slug}
                             restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
                             restaurantName={restaurant.name}
+                            restaurantLogoUrl={restaurant.logo_url}
                             tokens={tokens}
                             isPremium={isPremium}
+                            showFavorite={fromAnnuaire}
                             onOpenProduct={setSelectedProduct}
                           />
                         ))}
@@ -776,8 +819,21 @@ function RestaurantInner({ data, breadcrumbItems, similarRestaurants, neighborho
           restaurantSlug={restaurant.slug}
           restaurantPhone={restaurant.whatsapp_number || restaurant.phone || ''}
           restaurantName={restaurant.name}
+          restaurantLogoUrl={restaurant.logo_url}
           tokens={tokens}
           isPremium={isPremium}
+          showFavorite={fromAnnuaire}
+        />
+      )}
+
+      {/* ── STORY DU RESTAURANT ── */}
+      {storyViewerOpen && hasActiveStory && (
+        <StoryViewer
+          groups={stories}
+          initialGroupIndex={0}
+          initialStoryIndex={0}
+          onClose={() => { setStoryViewerOpen(false); setStorySeen(isGroupFullySeen(stories[0], getViewedStorySet())) }}
+          onSeenChange={() => setStorySeen(isGroupFullySeen(stories[0], getViewedStorySet()))}
         />
       )}
 
