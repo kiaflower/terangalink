@@ -1,52 +1,67 @@
-import { createAdminClient } from '@/lib/supabase/admin'
-import { SITE_URL } from '@/lib/seo'
-import { getCityTaxonomy, getCityCategoryPairs } from '@/lib/taxonomy'
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next'
+import { createClient } from '@/lib/supabase/server'
+import { getCanonicalSiteUrl } from '@/lib/site-url'
+import { SHOP_CATEGORIES } from '@/lib/categories'
+
+export const dynamic = 'force-dynamic'
+
+const STATIC_PATHS = [
+  '', 'boutiques', 'pour-les-boutiques', 'inscription', 'early-access',
+  'rendez-vous', 'legal', 'favoris',
+]
+
+interface ProductSitemapRow {
+  slug: string
+  updated_at: string
+  boutiques: { slug: string } | { slug: string }[]
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const admin = createAdminClient()
-  const baseUrl = SITE_URL
+  const siteUrl = getCanonicalSiteUrl()
+  const supabase = createClient()
 
-  const { data: restaurants } = await admin
-    .from('restaurants')
+  const { data: boutiques } = await supabase
+    .from('boutiques')
     .select('slug, updated_at')
     .eq('is_active', true)
     .eq('is_demo', false)
 
-  const restaurantUrls: MetadataRoute.Sitemap = (restaurants ?? []).map(r => ({
-    url: `${baseUrl}/${r.slug}`,
-    lastModified: new Date(r.updated_at),
-    changeFrequency: 'weekly' as const,
+  const { data: products } = await supabase
+    .from('products')
+    .select('slug, updated_at, boutiques!inner(slug, is_active, is_demo)')
+    .eq('is_available', true)
+    .eq('boutiques.is_active', true)
+    .eq('boutiques.is_demo', false)
+    .limit(5000)
+
+  const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map(path => ({
+    url: `${siteUrl}/${path}`,
+    changeFrequency: path === '' || path === 'boutiques' ? 'daily' : 'weekly',
+    priority: path === '' ? 1 : 0.6,
+  }))
+
+  const boutiqueEntries: MetadataRoute.Sitemap = (boutiques ?? []).map(b => ({
+    url: `${siteUrl}/${b.slug}`,
+    lastModified: b.updated_at ?? undefined,
+    changeFrequency: 'daily',
     priority: 0.8,
   }))
 
-  // Pages villes / villes+spécialités — toujours dérivées dynamiquement des
-  // données réelles en base, jamais d'une liste codée en dur.
-  const [cities, cityCategoryPairs] = await Promise.all([
-    getCityTaxonomy(),
-    getCityCategoryPairs(),
-  ])
-
-  const cityUrls: MetadataRoute.Sitemap = cities.map(c => ({
-    url: `${baseUrl}/restaurants/${c.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: 0.8,
+  const categoryEntries: MetadataRoute.Sitemap = SHOP_CATEGORIES.map(category => ({
+    url: `${siteUrl}/boutiques?category=${encodeURIComponent(category)}`,
+    changeFrequency: 'weekly',
+    priority: 0.5,
   }))
 
-  const cityCategoryUrls: MetadataRoute.Sitemap = cityCategoryPairs.map(p => ({
-    url: `${baseUrl}/restaurants/${p.citySlug}/${p.categorySlug}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: 0.7,
-  }))
+  const productEntries: MetadataRoute.Sitemap = ((products ?? []) as unknown as ProductSitemapRow[]).map(p => {
+    const boutique = Array.isArray(p.boutiques) ? p.boutiques[0] : p.boutiques
+    return {
+      url: `${siteUrl}/${boutique.slug}/produit/${p.slug}`,
+      lastModified: p.updated_at ?? undefined,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }
+  })
 
-  return [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
-    { url: `${baseUrl}/restaurants`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/pour-les-restaurants`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
-    ...cityUrls,
-    ...cityCategoryUrls,
-    ...restaurantUrls,
-  ]
+  return [...staticEntries, ...boutiqueEntries, ...categoryEntries, ...productEntries]
 }

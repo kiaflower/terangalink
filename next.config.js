@@ -1,36 +1,26 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // sharp bundles native binaries — must stay external instead of going through
+  // webpack, or the serverless function bundle breaks in production (Vercel).
+  experimental: {
+    serverComponentsExternalPackages: ['sharp'],
+  },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'qeyopmecsgdbnznygvjz.supabase.co',
+        hostname: '**.supabase.co',
       },
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
       },
     ],
   },
-
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.teranga-link.com' }],
-        destination: 'https://teranga-link.com/:path*',
-        permanent: true,
-      },
-    ]
-  },
 }
 
-export default nextConfig
+module.exports = nextConfig

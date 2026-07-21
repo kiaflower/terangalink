@@ -1,18 +1,20 @@
 {
-  "framework": "nextjs",
-  "buildCommand": "next build",
-  "devCommand": "next dev",
-  "installCommand": "npm install",
-  "regions": ["cdg1"],
-  "headers": [
+  "crons": [
     {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
+      "path": "/api/cron/generate-invoices",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/process-newsletter-queue",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/push-daily",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/push-weekly",
+      "schedule": "0 8 * * 1"
     }
   ]
 }

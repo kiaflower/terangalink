@@ -1,824 +1,579 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { SHOP_CATEGORY_OPTIONS } from '@/lib/categories'
+import { PLANS, type PlanKey } from '@/lib/plans'
+import { slugify } from '@/lib/utils'
+import { fileToCompressedBase64 } from '@/lib/imageUtils'
+import { BoutiqueLivePreview } from '@/components/onboarding/BoutiqueLivePreview'
+import { Logo } from '@/components/ui/Logo'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { CUISINE_OPTIONS } from '@/lib/cuisines'
-import {
-  ArrowLeft, ArrowRight, Check, Upload, X,
-  Zap, Store, UtensilsCrossed,
-  MapPin, Camera, Share2, CreditCard, MessageSquare, ClipboardCheck,
-  Calendar, MessageCircle,
-} from 'lucide-react'
+import { Check, ArrowLeft, ArrowRight, Store, X, Eye } from 'lucide-react'
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+const TOTAL_STEPS = 5
 
-interface FormData {
-  ownerName: string; restaurantName: string; email: string
-  whatsapp: string
-  cuisineType: string; description: string
-  address: string; city: string; neighborhood: string; googleMapsUrl: string
-  openingHours: Record<string, { ouverture: string; fermeture: string; ferme: boolean }>
-  logoUrl: string | null; bannerUrl: string | null; menuImageUrl: string | null; productPhotos: string[]
-  facebookUrl: string; instagramUrl: string; tiktokUrl: string; snapchatUrl: string
-  selectedPlan: 'starter' | 'pro'
-  colorChoice: 'terangalink' | 'custom'
-  primaryColor: string; secondaryColor: string
-  allowSocialMedia: boolean; allowPhotos: boolean; allowPromoOffer: boolean
-  promoOfferType: string; promoOfferCustom: string
-}
-
-// ─── Composants UI stables (hors composant principal) ────────────────────────
-
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1.5" style={{ color: '#374151' }}>{label}</label>
-      {children}
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-    </div>
-  )
-}
-
-function TInput({
-  value, onChange, placeholder, type = 'text', error, disabled,
-}: {
-  value: string; onChange: (v: string) => void; placeholder?: string
-  type?: string; error?: string; disabled?: boolean
-}) {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 disabled:opacity-40"
-      style={{ border: `1px solid ${error ? '#EF4444' : '#E5E7EB'}`, backgroundColor: '#F9FAFB', color: '#111111' }}
-    />
-  )
-}
-
-// ─── Constantes ───────────────────────────────────────────────────────────────
-
-const JOURS = [
-  { key: 'lundi', label: 'Lundi' }, { key: 'mardi', label: 'Mardi' },
-  { key: 'mercredi', label: 'Mercredi' }, { key: 'jeudi', label: 'Jeudi' },
-  { key: 'vendredi', label: 'Vendredi' }, { key: 'samedi', label: 'Samedi' },
-  { key: 'dimanche', label: 'Dimanche' },
+const COLOR_PALETTE = [
+  '#7C3AED', '#2563EB', '#059669', '#DC2626',
+  '#D97706', '#DB2777', '#0891B2', '#111111',
 ]
 
-const PLANS = [
-  { id: 'starter' as const, name: 'Starter', price: '9 900', description: "L'essentiel pour démarrer", popular: false,
-    features: ["Listé dans l'annuaire TerangaLink", 'Site de commande', 'Menu illimité', 'Commandes WhatsApp', 'Dashboard administrateur', 'QR Code'] },
-  { id: 'pro' as const, name: 'Pro', price: '19 900', description: 'Personnalisation + e-commerce avancé', popular: true,
-    features: ['Tout Starter', "Mise en avant dans l'annuaire", 'Branding TerangaLink supprimé', 'Couleurs personnalisées', 'Réseaux sociaux affichés', 'Variantes de produits', 'Précommandes', 'Codes promo clients', 'Bannières promotionnelles', 'Support prioritaire'] },
+const THEMES = [
+  { value: 'light', label: 'Clair', bg: '#FFFFFF', text: '#111111' },
+  { value: 'dark', label: 'Sombre', bg: '#111111', text: '#FFFFFF' },
+  { value: 'vibrant', label: 'Coloré', bg: 'accent', text: '#FFFFFF' },
 ]
 
-const STEPS = [
-  { label: 'Compte', icon: Store },
-  { label: 'Restaurant', icon: UtensilsCrossed },
-  { label: 'Localisation', icon: MapPin },
-  { label: 'Visuels', icon: Camera },
-  { label: 'Réseaux', icon: Share2 },
-  { label: 'Abonnement', icon: CreditCard },
-  { label: 'Communication', icon: MessageSquare },
-  { label: 'Validation', icon: ClipboardCheck },
-]
+const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 bg-white transition-colors'
+const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'
 
-const COLOR_PALETTES = [
-  { name: 'Teranga Orange', primary: '#F97316', secondary: '#FED7AA' },
-  { name: 'Vert Savane', primary: '#16A34A', secondary: '#BBF7D0' },
-  { name: 'Bleu Océan', primary: '#2563EB', secondary: '#BFDBFE' },
-  { name: 'Violet Royal', primary: '#7C3AED', secondary: '#DDD6FE' },
-  { name: 'Rouge Passion', primary: '#DC2626', secondary: '#FECACA' },
-  { name: 'Or Sénégal', primary: '#D97706', secondary: '#FDE68A' },
-]
-
-const INITIAL: FormData = {
-  ownerName: '', restaurantName: '', email: '', whatsapp: '',
-  cuisineType: '', description: '',
-  address: '', city: '', neighborhood: '', googleMapsUrl: '',
-  openingHours: Object.fromEntries(JOURS.map(j => [j.key, { ouverture: '08:00', fermeture: '22:00', ferme: false }])),
-  logoUrl: null, bannerUrl: null, menuImageUrl: null, productPhotos: [],
-  facebookUrl: '', instagramUrl: '', tiktokUrl: '', snapchatUrl: '',
-  selectedPlan: 'starter',
-  colorChoice: 'terangalink',
-  primaryColor: '#F97316', secondaryColor: '#FED7AA',
-  allowSocialMedia: false, allowPhotos: false, allowPromoOffer: false,
-  promoOfferType: '', promoOfferCustom: '',
-}
-
-// ─── Upload helper ────────────────────────────────────────────────────────────
-
-async function uploadFile(supabase: ReturnType<typeof createClient>, file: File, path: string): Promise<string | null> {
-  const { data, error } = await supabase.storage.from('menu-images').upload(path, file, { upsert: true })
-  if (error) { console.error('Upload error:', error); return null }
-  const { data: { publicUrl } } = supabase.storage.from('menu-images').getPublicUrl(data.path)
-  return publicUrl
-}
-
-// ─── Composant principal ──────────────────────────────────────────────────────
+const STEP_LABELS = ['Boutique', 'Contact', 'Offre', 'Identité', 'Résumé']
 
 export default function InscriptionPage() {
   const router = useRouter()
-  const supabase = createClient()
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState<FormData>(INITIAL)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [uploading, setUploading] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const logoRef = useRef<HTMLInputElement>(null)
-  const bannerRef = useRef<HTMLInputElement>(null)
-  const menuRef = useRef<HTMLInputElement>(null)
-  const photosRef = useRef<HTMLInputElement>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState({
+    boutique_name: '',
+    slug: '',
+    shop_category: '',
+    city: 'Dakar',
+    description: '',
+    owner_name: '',
+    email: '',
+    password: '',
+    password_confirm: '',
+    phone: '',
+    whatsapp_number: '',
+    plan: 'starter' as PlanKey,
+    primary_color: '#7C3AED',
+    theme: 'light',
+    facebook_url: '',
+    instagram_url: '',
+    tiktok_url: '',
+    referral_code: '',
+    snapchat_url: '',
+    logo_base64: '',
+    cover_base64: '',
+    consent_images: false,
+    consent_annuaire: false,
+    consent_marketing: false,
+  })
+  const [slugTouched, setSlugTouched] = useState(false)
+  const [siteOrigin, setSiteOrigin] = useState('')
+  const [planPrices, setPlanPrices] = useState<Record<string, number>>({ starter: PLANS.starter.price, pro: PLANS.pro.price })
+  const [logoFileName, setLogoFileName] = useState('')
+  const [coverFileName, setCoverFileName] = useState('')
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false)
 
-  function set<K extends keyof FormData>(key: K, value: FormData[K]) {
-    setForm(f => ({ ...f, [key]: value }))
-    setErrors(e => { const n = { ...e }; delete n[key]; return n })
-  }
-
-  function validate(): boolean {
-    const e: Record<string, string> = {}
-    if (step === 1) {
-      if (!form.ownerName.trim()) e.ownerName = 'Requis'
-      if (!form.restaurantName.trim()) e.restaurantName = 'Requis'
-      if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) e.email = 'Email invalide'
-      if (!form.whatsapp.trim()) e.whatsapp = 'Requis'
+  useEffect(() => {
+    if (!slugTouched && form.boutique_name) {
+      setForm(f => ({ ...f, slug: slugify(f.boutique_name) }))
     }
-    if (step === 2 && !form.cuisineType) e.cuisineType = 'Requis'
-    setErrors(e)
-    return Object.keys(e).length === 0
-  }
+  }, [form.boutique_name, slugTouched])
 
-  function next() { if (validate()) setStep(s => Math.min(s + 1, 8)) }
-  function prev() { setStep(s => Math.max(s - 1, 1)) }
+  useEffect(() => {
+    setSiteOrigin(window.location.origin)
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    if (ref) setForm(f => ({ ...f, referral_code: ref.toUpperCase() }))
+  }, [])
 
-  async function handleUpload(field: 'logoUrl' | 'bannerUrl' | 'menuImageUrl', file: File) {
-    setUploading(field)
-    const path = `inscriptions/${Date.now()}-${file.name}`
-    const url = await uploadFile(supabase, file, path)
-    if (url) set(field, url)
-    setUploading(null)
-  }
+  useEffect(() => {
+    fetch('/api/platform-settings')
+      .then(r => r.json())
+      .then(data => setPlanPrices({ starter: data.plan_starter_price ?? PLANS.starter.price, pro: data.plan_pro_price ?? PLANS.pro.price }))
+      .catch(() => {})
+  }, [])
 
-  async function handlePhotosUpload(files: FileList) {
-    setUploading('photos')
-    const urls: string[] = []
-    for (const file of Array.from(files)) {
-      const url = await uploadFile(supabase, file, `inscriptions/${Date.now()}-${file.name}`)
-      if (url) urls.push(url)
+  function set(k: string, v: unknown) { setForm(f => ({ ...f, [k]: v })) }
+
+  function canGoNext(): boolean {
+    if (step === 1) return !!form.boutique_name && !!form.whatsapp_number
+    if (step === 2) {
+      return !!form.owner_name && !!form.email && !!form.phone
+        && form.password.length >= 8 && form.password === form.password_confirm
     }
-    set('productPhotos', [...form.productPhotos, ...urls])
-    setUploading(null)
+    if (step === 5) return form.consent_images && form.consent_annuaire
+    return true
   }
 
-  async function handleSubmit() {
-    setSubmitting(true)
-    const { data, error } = await supabase.from('restaurant_applications').insert({
-      owner_name: form.ownerName, restaurant_name: form.restaurantName,
-      email: form.email, whatsapp: form.whatsapp,
-      cuisine_type: form.cuisineType || null, description: form.description || null,
-      address: form.address || null, city: form.city || null, neighborhood: form.neighborhood || null,
-      google_maps_url: form.googleMapsUrl || null, opening_hours: form.openingHours,
-      logo_url: form.logoUrl, banner_url: form.bannerUrl,
-      menu_image_url: form.menuImageUrl, product_photos: form.productPhotos,
-      facebook_url: form.facebookUrl || null, instagram_url: form.instagramUrl || null,
-      tiktok_url: form.tiktokUrl || null, snapchat_url: form.snapchatUrl || null,
-      selected_plan: form.selectedPlan,
-      color_choice: form.selectedPlan === 'pro' ? form.colorChoice : null,
-      primary_color: form.selectedPlan === 'pro' && form.colorChoice === 'custom' ? form.primaryColor : null,
-      secondary_color: form.selectedPlan === 'pro' && form.colorChoice === 'custom' ? form.secondaryColor : null,
-      allow_social_media: form.allowSocialMedia, allow_photos: form.allowPhotos,
-      allow_promo_offer: form.allowPromoOffer,
-      promo_offer_type: form.allowPromoOffer ? form.promoOfferType : null,
-      promo_offer_custom: form.promoOfferType === 'custom' ? form.promoOfferCustom : null,
-      status: 'pending',
-    }).select('id').single()
-    setSubmitting(false)
-    if (error) { alert("Erreur lors de l'envoi. Réessayez."); console.error(error); return }
-    if (data?.id) sessionStorage.setItem('tl_application_id', data.id)
-    router.push('/inscription/merci')
-  }
-
-  // ─── Rendu étapes ─────────────────────────────────────────────────────────
-
-  function renderStep() {
-    switch (step) {
-
-      // ── Étape 1 : Compte ──────────────────────────────────────────────────
-      case 1: return (
-        <div className="space-y-4">
-          <Field label="Votre nom" error={errors.ownerName}>
-            <TInput value={form.ownerName} onChange={v => set('ownerName', v)} placeholder="Fatou Diallo" error={errors.ownerName} />
-          </Field>
-          <Field label="Nom du restaurant" error={errors.restaurantName}>
-            <TInput value={form.restaurantName} onChange={v => set('restaurantName', v)} placeholder="Chez Teranga" error={errors.restaurantName} />
-          </Field>
-          <Field label="Email" error={errors.email}>
-            <TInput value={form.email} onChange={v => set('email', v)} type="email" placeholder="contact@chezteranga.sn" error={errors.email} />
-          </Field>
-          <Field label="WhatsApp" error={errors.whatsapp}>
-            <TInput value={form.whatsapp} onChange={v => set('whatsapp', v)} placeholder="221771234567" error={errors.whatsapp} />
-          </Field>
-        </div>
-      )
-
-      // ── Étape 2 : Restaurant ──────────────────────────────────────────────
-      case 2: return (
-        <div className="space-y-4">
-          <Field label="Type de cuisine" error={errors.cuisineType}>
-            <select
-              value={form.cuisineType}
-              onChange={e => set('cuisineType', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 appearance-none"
-              style={{ border: `1px solid ${errors.cuisineType ? '#EF4444' : '#E5E7EB'}`, backgroundColor: '#F9FAFB', color: '#111111' }}
-            >
-              {CUISINE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </Field>
-          <Field label="Description (optionnel)">
-            <textarea
-              value={form.description}
-              onChange={e => set('description', e.target.value)}
-              rows={4}
-              placeholder="Décrivez votre restaurant, votre cuisine, votre ambiance..."
-              className="w-full px-4 py-3 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
-              style={{ border: '1px solid #E5E7EB', backgroundColor: '#F9FAFB', color: '#111111' }}
-            />
-          </Field>
-        </div>
-      )
-
-      // ── Étape 3 : Localisation & Horaires ─────────────────────────────────
-      case 3: return (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Ville (optionnel)">
-              <TInput value={form.city} onChange={v => set('city', v)} placeholder="Dakar" />
-            </Field>
-            <Field label="Quartier (optionnel)">
-              <TInput value={form.neighborhood} onChange={v => set('neighborhood', v)} placeholder="Castors" />
-            </Field>
-          </div>
-          <Field label="Adresse (optionnel)">
-            <TInput value={form.address} onChange={v => set('address', v)} placeholder="Rue 10, Plateau" />
-          </Field>
-          <Field label="Lien Google Maps (optionnel)">
-            <TInput value={form.googleMapsUrl} onChange={v => set('googleMapsUrl', v)} placeholder="https://maps.google.com/..." />
-          </Field>
-          <div>
-            <p className="text-sm font-medium mb-3" style={{ color: '#374151' }}>Horaires d&apos;ouverture</p>
-            <div className="space-y-2">
-              {JOURS.map(j => {
-                const h = form.openingHours[j.key] || { ouverture: '08:00', fermeture: '22:00', ferme: false }
-                return (
-                  <div key={j.key} className="grid grid-cols-12 gap-2 items-center rounded-xl p-2.5"
-                    style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-                    <div className="col-span-3 text-xs font-semibold" style={{ color: '#6B7280' }}>{j.label}</div>
-                    <div className="col-span-3">
-                      <input type="time" value={h.ouverture} disabled={h.ferme}
-                        onChange={e => set('openingHours', { ...form.openingHours, [j.key]: { ...h, ouverture: e.target.value } })}
-                        className="w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none disabled:opacity-40"
-                        style={{ border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF', color: '#111111' }} />
-                    </div>
-                    <div className="col-span-3">
-                      <input type="time" value={h.fermeture} disabled={h.ferme}
-                        onChange={e => set('openingHours', { ...form.openingHours, [j.key]: { ...h, fermeture: e.target.value } })}
-                        className="w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none disabled:opacity-40"
-                        style={{ border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF', color: '#111111' }} />
-                    </div>
-                    <div className="col-span-3 flex justify-end">
-                      <button
-                        onClick={() => set('openingHours', { ...form.openingHours, [j.key]: { ...h, ferme: !h.ferme } })}
-                        className={`text-xs px-2.5 py-1 rounded-lg border ${h.ferme ? 'border-red-300 text-red-500 bg-red-50' : 'border-green-300 text-green-600 bg-green-50'}`}
-                      >
-                        {h.ferme ? 'Fermé' : 'Ouvert'}
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )
-
-      // ── Étape 4 : Visuels ─────────────────────────────────────────────────
-      case 4: return (
-        <div className="space-y-5">
-          {([
-            { label: 'Logo (carré, JPG/PNG)', field: 'logoUrl' as const, ref: logoRef },
-            { label: 'Bannière (format paysage)', field: 'bannerUrl' as const, ref: bannerRef },
-            { label: 'Photo du menu complet (optionnel)', field: 'menuImageUrl' as const, ref: menuRef },
-          ]).map(({ label, field, ref }) => (
-            <div key={field}>
-              <p className="text-sm font-medium mb-2" style={{ color: '#374151' }}>{label}</p>
-              {form[field] ? (
-                <div className="relative inline-block">
-                  <img src={form[field]!} alt={label} className="h-24 w-auto rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />
-                  <button onClick={() => set(field, null)}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => ref.current?.click()} disabled={uploading === field}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium hover:bg-orange-50 transition-colors"
-                  style={{ border: '2px dashed #FED7AA', color: '#F97316' }}>
-                  <Upload className="w-4 h-4" />
-                  {uploading === field ? 'Upload en cours...' : 'Choisir un fichier'}
-                </button>
-              )}
-              <input ref={ref} type="file" accept="image/*" className="hidden"
-                onChange={e => { if (e.target.files?.[0]) handleUpload(field, e.target.files[0]) }} />
-            </div>
-          ))}
-          <div>
-            <p className="text-sm font-medium mb-2" style={{ color: '#374151' }}>Photos de produits (optionnel)</p>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {form.productPhotos.map((url, i) => (
-                <div key={i} className="relative">
-                  <img src={url} alt="" className="h-16 w-16 rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />
-                  <button onClick={() => set('productPhotos', form.productPhotos.filter((_, idx) => idx !== i))}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <button onClick={() => photosRef.current?.click()} disabled={uploading === 'photos'}
-              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium hover:bg-orange-50 transition-colors"
-              style={{ border: '2px dashed #FED7AA', color: '#F97316' }}>
-              <Upload className="w-4 h-4" />
-              {uploading === 'photos' ? 'Upload...' : 'Ajouter des photos'}
-            </button>
-            <input ref={photosRef} type="file" accept="image/*" multiple className="hidden"
-              onChange={e => { if (e.target.files) handlePhotosUpload(e.target.files) }} />
-          </div>
-        </div>
-      )
-
-      // ── Étape 5 : Réseaux sociaux ─────────────────────────────────────────
-      case 5: return (
-        <div className="space-y-4">
-          <Field label="Facebook (optionnel)">
-            <TInput value={form.facebookUrl} onChange={v => set('facebookUrl', v)} placeholder="https://facebook.com/votre-page" />
-          </Field>
-          <Field label="Instagram (optionnel)">
-            <TInput value={form.instagramUrl} onChange={v => set('instagramUrl', v)} placeholder="https://instagram.com/votre-compte" />
-          </Field>
-          <Field label="TikTok (optionnel)">
-            <TInput value={form.tiktokUrl} onChange={v => set('tiktokUrl', v)} placeholder="https://tiktok.com/@votre-compte" />
-          </Field>
-          <Field label="Snapchat (optionnel)">
-            <TInput value={form.snapchatUrl} onChange={v => set('snapchatUrl', v)} placeholder="https://snapchat.com/add/votre-snap" />
-          </Field>
-          <p className="text-xs" style={{ color: '#9CA3AF' }}>Ces informations ne seront affichées que sur le plan Pro.</p>
-        </div>
-      )
-
-      // ── Étape 6 : Abonnement ──────────────────────────────────────────────
-      case 6: return (
-        <div className="space-y-4">
-          {PLANS.map(plan => (
-            <button key={plan.id} onClick={() => set('selectedPlan', plan.id)}
-              className="w-full text-left rounded-2xl p-5 transition-all relative"
-              style={{
-                border: form.selectedPlan === plan.id ? '2px solid #F97316' : '1px solid #E5E7EB',
-                backgroundColor: form.selectedPlan === plan.id ? '#FFF7ED' : '#FFFFFF',
-              }}>
-              {plan.popular && (
-                <span className="absolute -top-3 left-4 text-xs font-bold text-white px-3 py-0.5 rounded-full" style={{ backgroundColor: '#F97316' }}>
-                  LE PLUS POPULAIRE
-                </span>
-              )}
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-bold" style={{ color: '#111111' }}>{plan.name}</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>{plan.description}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-black" style={{ color: form.selectedPlan === plan.id ? '#F97316' : '#111111' }}>{plan.price}</span>
-                  <span className="text-xs" style={{ color: '#9CA3AF' }}> FCFA/mois</span>
-                </div>
-              </div>
-              <ul className="space-y-1">
-                {plan.features.map(f => (
-                  <li key={f} className="flex items-center gap-2 text-xs" style={{ color: '#374151' }}>
-                    <Check className="w-3 h-3 flex-shrink-0" style={{ color: '#F97316' }} />{f}
-                  </li>
-                ))}
-              </ul>
-              {form.selectedPlan === plan.id && (
-                <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#F97316' }}>
-                  <Zap className="w-3 h-3 fill-orange-500" />Plan sélectionné
-                </div>
-              )}
-            </button>
-          ))}
-
-          {/* ── Personnalisation couleurs (Pro / Premium uniquement) ── */}
-          {form.selectedPlan === 'pro' && (
-            <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid #E5E7EB' }}>
-              <div className="px-5 py-3 flex items-center justify-between"
-                style={{ backgroundColor: '#FFF7ED', borderBottom: '1px solid #E5E7EB' }}>
-                <div>
-                  <p className="text-sm font-bold" style={{ color: '#111111' }}>🎨 Couleurs de votre page</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Inclus avec votre plan Pro</p>
-                </div>
-              </div>
-
-              <div className="p-5 space-y-4">
-                {/* Toggle TerangaLink vs custom */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => set('colorChoice', 'terangalink')}
-                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
-                    style={{
-                      backgroundColor: form.colorChoice === 'terangalink' ? '#F97316' : '#F3F4F6',
-                      color: form.colorChoice === 'terangalink' ? '#FFFFFF' : '#6B7280',
-                      border: form.colorChoice === 'terangalink' ? '2px solid #F97316' : '2px solid transparent',
-                    }}>
-                    Laisser TerangaLink choisir
-                  </button>
-                  <button
-                    onClick={() => set('colorChoice', 'custom')}
-                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
-                    style={{
-                      backgroundColor: form.colorChoice === 'custom' ? '#111111' : '#F3F4F6',
-                      color: form.colorChoice === 'custom' ? '#FFFFFF' : '#6B7280',
-                      border: form.colorChoice === 'custom' ? '2px solid #111111' : '2px solid transparent',
-                    }}>
-                    Choisir mes couleurs
-                  </button>
-                </div>
-
-                {form.colorChoice === 'terangalink' ? (
-                  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-                    <div className="w-8 h-8 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(135deg, #F97316, #FDBA74)' }} />
-                    <div>
-                      <p className="text-xs font-semibold" style={{ color: '#111111' }}>TerangaLink s&apos;en occupe</p>
-                      <p className="text-xs" style={{ color: '#6B7280' }}>Notre équipe sélectionnera les couleurs idéales pour votre identité.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Palettes prédéfinies */}
-                    <div>
-                      <p className="text-xs font-semibold mb-2.5" style={{ color: '#374151' }}>Palettes prédéfinies</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {COLOR_PALETTES.map(palette => {
-                          const isSelected = form.primaryColor === palette.primary
-                          return (
-                            <button key={palette.name}
-                              onClick={() => { set('primaryColor', palette.primary); set('secondaryColor', palette.secondary) }}
-                              className="p-2.5 rounded-xl text-left transition-all"
-                              style={{
-                                border: isSelected ? `2px solid ${palette.primary}` : '2px solid #E5E7EB',
-                                backgroundColor: isSelected ? palette.secondary + '40' : '#FFFFFF',
-                              }}>
-                              <div className="flex gap-1.5 mb-1.5">
-                                <div className="w-5 h-5 rounded-full" style={{ backgroundColor: palette.primary }} />
-                                <div className="w-5 h-5 rounded-full" style={{ backgroundColor: palette.secondary }} />
-                              </div>
-                              <p className="text-xs font-medium leading-tight" style={{ color: '#374151' }}>{palette.name}</p>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Couleurs personnalisées */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <p className="text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Couleur principale</p>
-                        <div className="flex items-center gap-2 p-2 rounded-xl" style={{ border: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
-                          <input type="color" value={form.primaryColor}
-                            onChange={e => set('primaryColor', e.target.value)}
-                            className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent" />
-                          <span className="text-xs font-mono" style={{ color: '#6B7280' }}>{form.primaryColor}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Couleur secondaire</p>
-                        <div className="flex items-center gap-2 p-2 rounded-xl" style={{ border: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
-                          <input type="color" value={form.secondaryColor}
-                            onChange={e => set('secondaryColor', e.target.value)}
-                            className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent" />
-                          <span className="text-xs font-mono" style={{ color: '#6B7280' }}>{form.secondaryColor}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Aperçu de la page restaurant */}
-                    <div>
-                      <p className="text-xs font-semibold mb-2" style={{ color: '#374151' }}>Aperçu de votre page</p>
-                      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E5E7EB', transform: 'scale(1)', transformOrigin: 'top left' }}>
-                        {/* Fausse bannière */}
-                        <div className="h-20 relative flex items-end"
-                          style={{ background: `linear-gradient(135deg, ${form.primaryColor}, ${form.secondaryColor})` }}>
-                          <div className="absolute bottom-0 left-0 right-0 h-8"
-                            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)' }} />
-                          <div className="relative px-3 pb-2 flex items-center gap-2">
-                            {form.logoUrl ? (
-                              <img src={form.logoUrl} alt="" className="w-9 h-9 rounded-full object-cover border-2 border-white" />
-                            ) : (
-                              <div className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center"
-                                style={{ backgroundColor: form.primaryColor }}>
-                                <span className="text-xs font-bold text-white">
-                                  {form.restaurantName ? form.restaurantName[0].toUpperCase() : 'R'}
-                                </span>
-                              </div>
-                            )}
-                            <p className="text-xs font-bold text-white drop-shadow">
-                              {form.restaurantName || 'Votre Restaurant'}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Corps de l'aperçu */}
-                        <div className="bg-white p-3 space-y-2">
-                          {/* Badge catégorie */}
-                          <div className="flex gap-1.5">
-                            <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                              style={{ backgroundColor: form.secondaryColor, color: form.primaryColor }}>
-                              {form.cuisineType || 'Cuisine africaine'}
-                            </span>
-                            {form.city && (
-                              <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                                style={{ backgroundColor: '#F3F4F6', color: '#6B7280' }}>
-                                📍 {form.city}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Fausse grille de plats */}
-                          <div className="grid grid-cols-2 gap-1.5">
-                            {[1, 2].map(i => (
-                              <div key={i} className="rounded-lg overflow-hidden"
-                                style={{ border: '1px solid #F3F4F6' }}>
-                                <div className="h-12" style={{ backgroundColor: form.secondaryColor + '60' }} />
-                                <div className="p-1.5">
-                                  <div className="h-2 rounded w-3/4 mb-1" style={{ backgroundColor: '#E5E7EB' }} />
-                                  <div className="flex items-center justify-between">
-                                    <div className="h-2 rounded w-1/2" style={{ backgroundColor: '#E5E7EB' }} />
-                                    <div className="w-4 h-4 rounded-full flex items-center justify-center"
-                                      style={{ backgroundColor: form.primaryColor }}>
-                                      <span className="text-white font-bold" style={{ fontSize: '8px' }}>+</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Bouton commander */}
-                          <div className="pt-1">
-                            <div className="w-full py-2 rounded-lg text-center text-xs font-bold text-white"
-                              style={{ backgroundColor: form.primaryColor }}>
-                              Commander via WhatsApp
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-xs mt-1.5 text-center" style={{ color: '#9CA3AF' }}>Aperçu simplifié — le rendu final peut varier</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      )
-
-      // ── Étape 7 : Communication ───────────────────────────────────────────
-      case 7: return (
-        <div className="space-y-5">
-          {/* Toggles réseaux & photos */}
-          {([
-            { key: 'allowSocialMedia' as const, label: 'Partage sur les réseaux sociaux', sub: 'Acceptez-vous que TerangaLink partage votre restaurant sur ses réseaux ?' },
-            { key: 'allowPhotos' as const, label: 'Utilisation de vos photos', sub: 'Acceptez-vous que TerangaLink utilise vos photos dans ses communications ?' },
-          ]).map(({ key, label, sub }) => (
-            <div key={key} className="flex items-start justify-between gap-4 p-4 rounded-xl"
-              style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: '#111111' }}>{label}</p>
-                <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>{sub}</p>
-              </div>
-              <button onClick={() => set(key, !form[key])}
-                className={`flex-shrink-0 w-12 h-6 rounded-full transition-all relative ${form[key] ? 'bg-orange-500' : 'bg-gray-300'}`}>
-                <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all shadow ${form[key] ? 'left-6' : 'left-0.5'}`} />
-              </button>
-            </div>
-          ))}
-
-          {/* Publicité sponsorisée */}
-          <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E5E7EB' }}>
-            <div className="px-4 py-3" style={{ backgroundColor: '#FFF7ED', borderBottom: '1px solid #FED7AA' }}>
-              <p className="text-sm font-bold" style={{ color: '#111111' }}>
-                Mise en avant sponsorisée — Facebook, Instagram & WhatsApp
-              </p>
-              <p className="text-xs mt-1 leading-relaxed" style={{ color: '#6B7280' }}>
-                TerangaLink peut promouvoir votre restaurant via des publicités sponsorisées sur Facebook, Instagram et WhatsApp
-                auprès de clients potentiels dans votre zone. Pour bénéficier d&apos;une mise en avant, vous devez proposer une offre exclusive à nos clients.
-              </p>
-            </div>
-
-            <div className="p-4 space-y-3">
-              <div className="flex items-start justify-between gap-4">
-                <p className="text-sm font-medium" style={{ color: '#374151' }}>
-                  Acceptez-vous de proposer une offre exclusive aux clients TerangaLink lors d&apos;une publicité sponsorisée ?
-                </p>
-                <button onClick={() => set('allowPromoOffer', !form.allowPromoOffer)}
-                  className={`flex-shrink-0 w-12 h-6 rounded-full transition-all relative ${form.allowPromoOffer ? 'bg-orange-500' : 'bg-gray-300'}`}>
-                  <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all shadow ${form.allowPromoOffer ? 'left-6' : 'left-0.5'}`} />
-                </button>
-              </div>
-
-              {!form.allowPromoOffer && (
-                <p className="text-xs px-3 py-2 rounded-lg" style={{ backgroundColor: '#F9FAFB', color: '#9CA3AF', border: '1px solid #E5E7EB' }}>
-                  Sans offre exclusive, votre restaurant ne pourra pas bénéficier des mises en avant sponsorisées TerangaLink.
-                </p>
-              )}
-
-              {form.allowPromoOffer && (
-                <div className="space-y-2 pt-1">
-                  {[
-                    { value: '10_percent', label: '-10% sur toute la carte' },
-                    { value: 'free_delivery', label: 'Livraison offerte' },
-                    { value: 'custom', label: 'Offre personnalisée' },
-                  ].map(opt => (
-                    <label key={opt.value} className="flex items-center gap-3 cursor-pointer p-2.5 rounded-xl transition-colors"
-                      style={{
-                        backgroundColor: form.promoOfferType === opt.value ? '#FFF7ED' : 'transparent',
-                        border: `1px solid ${form.promoOfferType === opt.value ? '#FED7AA' : 'transparent'}`,
-                      }}>
-                      <input type="radio" name="promoType" value={opt.value}
-                        checked={form.promoOfferType === opt.value}
-                        onChange={() => set('promoOfferType', opt.value)}
-                        className="accent-orange-500" />
-                      <span className="text-sm font-medium" style={{ color: '#374151' }}>{opt.label}</span>
-                    </label>
-                  ))}
-                  {form.promoOfferType === 'custom' && (
-                    <textarea value={form.promoOfferCustom} onChange={e => set('promoOfferCustom', e.target.value)}
-                      placeholder="Décrivez votre offre..." rows={2}
-                      className="w-full px-3 py-2 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
-                      style={{ border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF', color: '#111111' }} />
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )
-
-      // ── Étape 8 : Validation ──────────────────────────────────────────────
-      case 8: return (
-        <div className="space-y-4">
-          <p className="text-sm" style={{ color: '#6B7280' }}>Vérifiez vos informations avant d&apos;envoyer votre demande.</p>
-          {[
-            { title: 'Compte', items: [['Responsable', form.ownerName], ['Restaurant', form.restaurantName], ['Email', form.email], ['WhatsApp', form.whatsapp]] },
-            { title: 'Restaurant', items: [['Type de cuisine', form.cuisineType || '—'], ['Description', form.description ? form.description.slice(0, 60) + '...' : '—'], ['Ville', form.city || '—']] },
-            { title: 'Abonnement', items: [
-              ['Plan choisi', PLANS.find(p => p.id === form.selectedPlan)?.name + ' — ' + PLANS.find(p => p.id === form.selectedPlan)?.price + ' FCFA/mois'],
-              ...(form.selectedPlan === 'pro'
-                ? [['Couleurs', form.colorChoice === 'terangalink' ? 'Laissé à TerangaLink' : `${form.primaryColor} / ${form.secondaryColor}`]]
-                : [])
-            ] as [string, string][] },
-            { title: 'Communication', items: [['Réseaux sociaux', form.allowSocialMedia ? 'Oui' : 'Non'], ['Utilisation photos', form.allowPhotos ? 'Oui' : 'Non'], ['Offre promo', form.allowPromoOffer ? (form.promoOfferType === '10_percent' ? '-10%' : form.promoOfferType === 'free_delivery' ? 'Livraison offerte' : form.promoOfferCustom || 'Personnalisée') : 'Non']] },
-          ].map(section => (
-            <div key={section.title} className="rounded-2xl overflow-hidden" style={{ border: '1px solid #E5E7EB' }}>
-              <div className="px-4 py-2.5" style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                <p className="text-xs font-bold uppercase tracking-wide" style={{ color: '#6B7280' }}>{section.title}</p>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {section.items.map(([k, v]) => (
-                  <div key={k} className="flex justify-between px-4 py-2.5 gap-4">
-                    <span className="text-xs" style={{ color: '#9CA3AF' }}>{k}</span>
-                    <span className="text-xs font-medium text-right" style={{ color: '#111111' }}>{String(v)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-          {(form.logoUrl || form.bannerUrl) && (
-            <div className="flex gap-3">
-              {form.logoUrl && <img src={form.logoUrl} alt="Logo" className="h-16 w-16 rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />}
-              {form.bannerUrl && <img src={form.bannerUrl} alt="Bannière" className="h-16 w-auto rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />}
-            </div>
-          )}
-          {form.selectedPlan === 'pro' && form.colorChoice === 'custom' && (
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ border: '1px solid #E5E7EB', backgroundColor: '#F9FAFB' }}>
-              <div className="flex gap-2">
-                <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: form.primaryColor }} />
-                <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: form.secondaryColor }} />
-              </div>
-              <div>
-                <p className="text-xs font-semibold" style={{ color: '#111111' }}>Couleurs personnalisées</p>
-                <p className="text-xs" style={{ color: '#6B7280' }}>{form.primaryColor} · {form.secondaryColor}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )
-
-      default: return null
+  async function submit() {
+    if (!form.consent_images || !form.consent_annuaire) {
+      setError('Veuillez accepter les autorisations obligatoires.')
+      return
+    }
+    if (form.password.length < 8 || form.password !== form.password_confirm) {
+      setError('Mot de passe invalide — retournez à l\'étape 2.')
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/super-admin/inscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          boutique_name: form.boutique_name,
+          slug: form.slug || slugify(form.boutique_name),
+          owner_name: form.owner_name,
+          email: form.email,
+          password: form.password,
+          phone: form.phone,
+          whatsapp_number: form.whatsapp_number,
+          shop_category: form.shop_category,
+          city: form.city,
+          description: form.description,
+          plan: form.plan,
+          primary_color: form.plan === 'pro' ? form.primary_color : '#7C3AED',
+          theme: form.plan === 'pro' ? form.theme : 'light',
+          facebook_url: form.facebook_url || null,
+          instagram_url: form.instagram_url || null,
+          tiktok_url: form.tiktok_url || null,
+          snapchat_url: form.snapchat_url || null,
+          referral_code: form.referral_code || null,
+          logo_base64: form.logo_base64 || null,
+          cover_base64: form.cover_base64 || null,
+          consent_images: form.consent_images,
+          consent_annuaire: form.consent_annuaire,
+          consent_marketing: form.consent_marketing,
+        }),
+      })
+      if (res.ok) {
+        router.push('/inscription/merci')
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Une erreur est survenue.')
+        setLoading(false)
+      }
+    } catch {
+      setError('Erreur réseau. Veuillez réessayer.')
+      setLoading(false)
     }
   }
-
-  // ─── Rendu principal ──────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F9FAFB' }}>
-      <header className="px-4 py-4 flex items-center gap-3" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
-        <Link href="/" className="text-gray-400 hover:text-gray-600 transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <span className="font-bold text-lg" style={{ color: '#111111' }}>
-          <span style={{ color: '#F97316' }}>Teranga</span>Link
-        </span>
-        <span className="text-sm" style={{ color: '#9CA3AF' }}>— Inscription restaurant</span>
+    <div className="min-h-screen bg-gray-50">
+      <header className="px-6 py-5 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #F3F4F6' }}>
+        <Link href="/"><Logo textClassName="font-bold text-xl" textStyle={{ color: '#111111' }} /></Link>
+        <Link href="/pour-les-boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-violet transition-colors">← Retour</Link>
       </header>
 
-      <div className="max-w-xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Créez votre boutique</h1>
+          <p className="text-gray-500">8 jours d&apos;essai gratuit · Aucun paiement requis</p>
+        </div>
 
-        {/* Progression */}
+        <div className="lg:grid lg:grid-cols-[1fr,380px] lg:gap-8 lg:items-start">
+        <div className="max-w-2xl mx-auto lg:max-w-none w-full">
+
+        {/* Progress bar */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-semibold" style={{ color: '#111111' }}>
-              Étape {step}/{STEPS.length} — {STEPS[step - 1].label}
-            </p>
-            <p className="text-xs" style={{ color: '#9CA3AF' }}>{Math.round((step / STEPS.length) * 100)}%</p>
-          </div>
-          <div className="h-2 rounded-full" style={{ backgroundColor: '#E5E7EB' }}>
-            <div className="h-2 rounded-full transition-all duration-300" style={{ width: `${(step / STEPS.length) * 100}%`, backgroundColor: '#F97316' }} />
-          </div>
-          <div className="flex justify-between mt-3">
-            {STEPS.map((s, i) => {
-              const Icon = s.icon
-              const done = i + 1 < step
-              const active = i + 1 === step
+          <div className="flex items-center justify-between mb-2">
+            {STEP_LABELS.map((label, i) => {
+              const s = i + 1
               return (
-                <div key={i} className="flex flex-col items-center">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
-                    style={{ backgroundColor: done ? '#F97316' : active ? '#FFF7ED' : '#F3F4F6', border: active ? '2px solid #F97316' : 'none' }}>
-                    {done ? <Check className="w-3.5 h-3.5 text-white" /> : <Icon className="w-3.5 h-3.5" style={{ color: active ? '#F97316' : '#9CA3AF' }} />}
+                <div key={s} className="flex flex-col items-center gap-1.5">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                    s < step ? 'bg-brand-violet text-white' : s === step ? 'bg-brand-violet text-white' : 'bg-gray-200 text-gray-400'
+                  }`}>
+                    {s < step ? <Check className="w-4 h-4" /> : s}
                   </div>
+                  <span className={`text-[10px] font-medium hidden sm:block ${s === step ? 'text-brand-violet' : 'text-gray-400'}`}>{label}</span>
                 </div>
               )
             })}
           </div>
-        </div>
-
-        {/* Contenu */}
-        <div className="rounded-2xl p-6 mb-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-          <h2 className="text-xl font-bold mb-6" style={{ color: '#111111' }}>{STEPS[step - 1].label}</h2>
-          {renderStep()}
-        </div>
-
-        {/* Navigation */}
-        <div className="flex gap-3">
-          {step > 1 && (
-            <button onClick={prev} className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB', color: '#6B7280' }}>
-              <ArrowLeft className="w-4 h-4" />Précédent
-            </button>
-          )}
-          {step < 8 ? (
-            <button onClick={next} className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#F97316' }}>
-              Suivant<ArrowRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button onClick={handleSubmit} disabled={submitting}
-              className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              style={{ backgroundColor: '#F97316' }}>
-              {submitting ? 'Envoi en cours...' : <><Check className="w-4 h-4" />Envoyer ma demande</>}
-            </button>
-          )}
-        </div>
-
-        {/* Pied d'aide discret */}
-        <div className="mt-6 pt-5" style={{ borderTop: '1px solid #E5E7EB' }}>
-          <p className="text-xs text-center mb-3" style={{ color: '#9CA3AF' }}>
-            Besoin d&apos;aide ou d&apos;éclaircissements ?
-          </p>
-          <div className="flex gap-2 justify-center">
-            <a
-              href="https://wa.me/221774739266?text=Bonjour%2C%20j%27ai%20besoin%20d%27aide%20pour%20mon%20inscription%20sur%20TerangaLink."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium px-3.5 py-2 rounded-lg transition-colors hover:bg-gray-100"
-              style={{ color: '#6B7280', border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF' }}>
-              <MessageCircle className="w-3.5 h-3.5" style={{ color: '#25D366' }} />
-              WhatsApp
-            </a>
+          <div className="relative h-1 bg-gray-200 rounded-full mt-1">
+            <div className="absolute left-0 top-0 h-full bg-brand-violet rounded-full transition-all"
+              style={{ width: `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%` }} />
           </div>
+          <p className="text-xs text-gray-400 text-center mt-2">Étape {step} sur {TOTAL_STEPS}</p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 shadow-sm">
+
+          {/* Step 1 — Boutique */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-5">Informations de la boutique</h2>
+              <div>
+                <label className={labelClass}>Nom de la boutique *</label>
+                <input value={form.boutique_name} onChange={e => set('boutique_name', e.target.value)}
+                  className={inputClass} placeholder="Ex: Fatou Mode" />
+              </div>
+              <div>
+                <label className={labelClass}>Slug (URL) — optionnel</label>
+                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-violet">
+                  <span className="text-xs text-gray-400 pl-4 pr-1 shrink-0">{siteOrigin.replace(/^https?:\/\//, '')}/</span>
+                  <input value={form.slug} onChange={e => { setSlugTouched(true); set('slug', e.target.value) }}
+                    className="flex-1 py-3 pr-4 text-sm bg-white focus:outline-none" placeholder="votre-boutique" />
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Catégorie</label>
+                <select value={form.shop_category} onChange={e => set('shop_category', e.target.value)} className={inputClass}>
+                  {SHOP_CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>Ville</label>
+                <input value={form.city} onChange={e => set('city', e.target.value)} className={inputClass} placeholder="Dakar" />
+              </div>
+              <div>
+                <label className={labelClass}>Description courte (apparaîtra sur votre vitrine)</label>
+                <textarea value={form.description} onChange={e => set('description', e.target.value)}
+                  rows={3} className={inputClass + ' resize-none'} placeholder="Décrivez votre activité en quelques mots..." />
+              </div>
+              <div>
+                <label className={labelClass}>Numéro WhatsApp (pour recevoir les commandes) *</label>
+                <input type="tel" value={form.whatsapp_number} onChange={e => set('whatsapp_number', e.target.value)}
+                  className={inputClass} placeholder="+221 77 000 00 00" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                <div>
+                  <label className={labelClass}>Logo de la boutique (optionnel)</label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <span className="shrink-0 text-xs font-medium bg-violet-50 text-brand-violet px-3 py-2 rounded-lg hover:bg-violet-100 transition-colors">
+                      Choisir un fichier
+                    </span>
+                    <span className="text-sm text-gray-500 truncate">{logoFileName || 'Aucun fichier choisi'}</span>
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={async e => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        setLogoFileName(file.name)
+                        set('logo_base64', await fileToCompressedBase64(file, 500))
+                      }} />
+                  </label>
+                  {form.logo_base64 && (
+                    <div className="mt-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={form.logo_base64} alt="Logo preview" className="w-14 h-14 rounded-xl object-cover border border-gray-200" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className={labelClass}>Bannière / photo de couverture (optionnel)</label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <span className="shrink-0 text-xs font-medium bg-violet-50 text-brand-violet px-3 py-2 rounded-lg hover:bg-violet-100 transition-colors">
+                      Choisir un fichier
+                    </span>
+                    <span className="text-sm text-gray-500 truncate">{coverFileName || 'Aucun fichier choisi'}</span>
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={async e => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        setCoverFileName(file.name)
+                        set('cover_base64', await fileToCompressedBase64(file, 1200))
+                      }} />
+                  </label>
+                  {form.cover_base64 && (
+                    <div className="mt-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={form.cover_base64} alt="Bannière preview" className="w-full h-20 rounded-xl object-cover border border-gray-200" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 — Contact */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-5">Vos informations</h2>
+              <div>
+                <label className={labelClass}>Nom du responsable *</label>
+                <input value={form.owner_name} onChange={e => set('owner_name', e.target.value)}
+                  className={inputClass} placeholder="Aminata Diallo" />
+              </div>
+              <div>
+                <label className={labelClass}>Email *</label>
+                <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
+                  className={inputClass} placeholder="vous@email.com" />
+              </div>
+              <div>
+                <label className={labelClass}>Créez un mot de passe *</label>
+                <input type="password" value={form.password} onChange={e => set('password', e.target.value)}
+                  className={inputClass} placeholder="8 caractères minimum" minLength={8} />
+                <p className="text-xs text-gray-400 mt-1.5">Ce sera votre mot de passe de connexion au dashboard, envoyé par email dès l&apos;acceptation de votre boutique.</p>
+              </div>
+              <div>
+                <label className={labelClass}>Confirmer le mot de passe *</label>
+                <input type="password" value={form.password_confirm} onChange={e => set('password_confirm', e.target.value)}
+                  className={inputClass} placeholder="Répétez le mot de passe" />
+                {form.password_confirm && form.password !== form.password_confirm && (
+                  <p className="text-xs text-red-500 mt-1.5">Les mots de passe ne correspondent pas.</p>
+                )}
+              </div>
+              <div>
+                <label className={labelClass}>Téléphone *</label>
+                <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)}
+                  className={inputClass} placeholder="+221 77 000 00 00" />
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Plan + Options */}
+          {step === 3 && (
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-5">Choisissez votre offre</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {(Object.entries(PLANS) as [string, typeof PLANS.starter][]).map(([key, plan]) => (
+                  <button key={key} type="button"
+                    onClick={() => set('plan', key as PlanKey)}
+                    className={`text-left rounded-2xl p-5 border-2 transition-all ${form.plan === key ? 'border-brand-violet bg-violet-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-bold text-gray-900">{plan.name}</span>
+                      {form.plan === key && (
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-violet">
+                          <Check className="w-3 h-3 text-white" />
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-3">
+                      <span className="text-2xl font-bold text-gray-900">{new Intl.NumberFormat('fr-SN').format(planPrices[key] ?? plan.price)}</span>
+                      <span className="text-xs text-gray-400">FCFA/mois</span>
+                    </div>
+                    <ul className="space-y-1.5">
+                      {plan.features.slice(0, 5).map(f => (
+                        <li key={f} className="flex items-start gap-1.5 text-xs text-gray-600">
+                          <Check className="w-3 h-3 text-green-500 shrink-0 mt-0.5" />{f}
+                        </li>
+                      ))}
+                      {plan.features.length > 5 && (
+                        <li className="text-xs text-gray-400">+{plan.features.length - 5} autres avantages...</li>
+                      )}
+                    </ul>
+                  </button>
+                ))}
+              </div>
+              <p className="text-center text-xs text-gray-400 mt-4">
+                {form.plan === 'free' ? 'Gratuit, sans limite de durée · Aucun paiement requis' : '8 jours d’essai gratuit · Aucun paiement requis'}
+              </p>
+
+              {/* Color picker for Pro */}
+              {form.plan === 'pro' && (
+                <div className="mt-6 border-t border-gray-100 pt-6">
+                  <p className="text-sm font-semibold text-gray-900 mb-3">Couleur d&apos;accent de votre vitrine</p>
+                  <div className="flex flex-wrap gap-2.5 mb-3">
+                    {COLOR_PALETTE.map(c => (
+                      <button key={c} type="button"
+                        onClick={() => set('primary_color', c)}
+                        className={`w-8 h-8 rounded-full border-2 transition-all ${form.primary_color === c ? 'border-gray-900 scale-110' : 'border-transparent'}`}
+                        style={{ backgroundColor: c }} />
+                    ))}
+                    <input type="color" value={form.primary_color}
+                      onChange={e => set('primary_color', e.target.value)}
+                      className="w-8 h-8 rounded-full border-2 border-gray-200 cursor-pointer"
+                      title="Couleur personnalisée" />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900 mb-3 mt-5">Thème de votre vitrine</p>
+                  <div className="flex gap-2">
+                    {THEMES.map(t => (
+                      <button key={t.value} type="button" onClick={() => set('theme', t.value)}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all"
+                        style={{
+                          borderColor: form.theme === t.value ? '#7C3AED' : '#E5E7EB',
+                          backgroundColor: t.bg === 'accent' ? form.primary_color : t.bg,
+                          color: t.text,
+                        }}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {form.plan !== 'pro' && (
+                <p className="text-xs text-gray-400 text-center mt-4">La couleur violette TerangaSpot par défaut sera utilisée. Passez en Pro pour personnaliser.</p>
+              )}
+            </div>
+          )}
+
+          {/* Step 4 — Social media */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-2">Réseaux sociaux</h2>
+              <p className="text-sm text-gray-500 mb-5">Ces liens seront affichés sur votre vitrine. Tous les champs sont optionnels.</p>
+              <div>
+                <label className={labelClass}>Instagram</label>
+                <input value={form.instagram_url} onChange={e => set('instagram_url', e.target.value)}
+                  className={inputClass} placeholder="https://instagram.com/votre-boutique" />
+              </div>
+              <div>
+                <label className={labelClass}>Facebook</label>
+                <input value={form.facebook_url} onChange={e => set('facebook_url', e.target.value)}
+                  className={inputClass} placeholder="https://facebook.com/votre-boutique" />
+              </div>
+              <div>
+                <label className={labelClass}>TikTok</label>
+                <input value={form.tiktok_url} onChange={e => set('tiktok_url', e.target.value)}
+                  className={inputClass} placeholder="https://tiktok.com/@votre-boutique" />
+              </div>
+              <div>
+                <label className={labelClass}>Snapchat</label>
+                <input value={form.snapchat_url} onChange={e => set('snapchat_url', e.target.value)}
+                  className={inputClass} placeholder="https://snapchat.com/add/votre-boutique" />
+              </div>
+              <div className="pt-2 border-t border-gray-100">
+                <label className={labelClass}>Code de parrainage (optionnel)</label>
+                <input value={form.referral_code} onChange={e => set('referral_code', e.target.value.toUpperCase())}
+                  className={inputClass} placeholder="Ex: BOUTIQUEMODE25" maxLength={20} />
+                <p className="text-xs text-gray-400 mt-1.5">Si quelqu&apos;un vous a recommandé TerangaSpot, entrez son code pour bénéficier d&apos;une réduction de 25% chacun(e).</p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5 — Summary + Autorisations */}
+          {step === 5 && (
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-5">Récapitulatif</h2>
+              <div className="space-y-3 text-sm">
+                {[
+                  { label: 'Boutique', value: form.boutique_name },
+                  { label: 'Catégorie', value: form.shop_category },
+                  { label: 'Ville', value: form.city },
+                  { label: 'WhatsApp', value: form.whatsapp_number },
+                  { label: 'Responsable', value: form.owner_name },
+                  { label: 'Email', value: form.email },
+                  { label: 'Téléphone', value: form.phone },
+                  {
+                    label: 'Plan',
+                    value: `${PLANS[form.plan].name}${(planPrices[form.plan] ?? PLANS[form.plan].price) > 0 ? ` — ${new Intl.NumberFormat('fr-SN').format(planPrices[form.plan] ?? PLANS[form.plan].price)} FCFA/mois` : ' — Gratuit'}`,
+                  },
+                ].map(({ label, value }) => value && (
+                  <div key={label} className="flex items-start justify-between gap-4 py-2 border-b border-gray-50">
+                    <span className="text-gray-500 shrink-0">{label}</span>
+                    <span className="text-gray-900 font-medium text-right">{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Autorisations */}
+              <div className="mt-6 bg-gray-50 rounded-2xl p-5 space-y-4">
+                <p className="text-sm font-semibold text-gray-900">Autorisations & consentements</p>
+
+                {/* Obligatoire 1 */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={form.consent_images}
+                    onChange={e => set('consent_images', e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                  <span className="text-sm text-gray-700">
+                    <span className="font-medium text-red-500">*</span> J&apos;autorise TerangaSpot à utiliser les photos et visuels de ma boutique (logo, bannière, produits) pour des publications organiques et des publicités payantes sur les réseaux sociaux (Instagram, Facebook, TikTok) dans le cadre de la promotion de la plateforme.
+                  </span>
+                </label>
+
+                {/* Obligatoire 2 */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={form.consent_annuaire}
+                    onChange={e => set('consent_annuaire', e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                  <span className="text-sm text-gray-700">
+                    <span className="font-medium text-red-500">*</span> J&apos;accepte d&apos;être référencé(e) dans l&apos;annuaire public de TerangaSpot et que mes informations professionnelles (nom, catégorie, ville, contact) soient visibles par tous les utilisateurs.
+                  </span>
+                </label>
+
+                {/* Optionnel */}
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input type="checkbox" checked={form.consent_marketing}
+                    onChange={e => set('consent_marketing', e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                  <span className="text-sm text-gray-700">
+                    J&apos;accepte de recevoir des conseils, des offres partenaires et des actualités de TerangaSpot par email ou WhatsApp. <span className="text-gray-400">(optionnel)</span>
+                  </span>
+                </label>
+
+                <p className="text-xs text-gray-400">Les champs marqués <span className="text-red-500">*</span> sont obligatoires pour valider votre inscription.</p>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mt-5">
+                  {error}
+                </div>
+              )}
+              <button onClick={submit} disabled={loading || !form.consent_images || !form.consent_annuaire}
+                className="w-full mt-6 bg-brand-violet text-white py-3.5 rounded-xl font-bold transition-colors hover:bg-brand-violet-dark disabled:opacity-50 flex items-center justify-center gap-2">
+                <Store className="w-4 h-4" />
+                {loading ? 'Envoi en cours...' : 'Envoyer ma demande'}
+              </button>
+              <p className="text-center text-xs text-gray-400 mt-3">
+                En soumettant, vous acceptez nos{' '}
+                <Link href="/legal" className="underline hover:text-brand-violet">mentions légales</Link>.
+              </p>
+            </div>
+          )}
+
+          {/* Nav buttons */}
+          {step < 5 && (
+            <div className={`flex gap-3 mt-6 ${step === 1 ? 'justify-end' : ''}`}>
+              {step > 1 && (
+                <button onClick={() => setStep(s => s - 1)}
+                  className="flex items-center gap-1.5 px-5 py-3 border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">
+                  <ArrowLeft className="w-4 h-4" /> Précédent
+                </button>
+              )}
+              <button onClick={() => setStep(s => s + 1)} disabled={!canGoNext()}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-brand-violet text-white py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                {step === 4 ? 'Voir le résumé' : 'Suivant'}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {step === 5 && step > 1 && (
+            <button onClick={() => setStep(s => s - 1)}
+              className="w-full mt-3 flex items-center justify-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Modifier
+            </button>
+          )}
+        </div>
+
+        {/* Bouton preview mobile — flottant */}
+        <button type="button" onClick={() => setMobilePreviewOpen(true)}
+          className="lg:hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-white bg-black px-4 py-2.5 rounded-full shadow-lg">
+          <Eye className="w-3.5 h-3.5" />
+          Prévisualiser ma boutique
+        </button>
+        </div>
+
+        {/* Preview live desktop */}
+        <div className="hidden lg:block lg:sticky lg:top-8">
+          <BoutiqueLivePreview
+            name={form.boutique_name}
+            category={form.shop_category}
+            city={form.city}
+            logoUrl={form.logo_base64 || undefined}
+            coverUrl={form.cover_base64 || undefined}
+            primaryColor={form.plan === 'pro' ? form.primary_color : '#7C3AED'}
+            theme={form.plan === 'pro' ? form.theme : 'light'}
+          />
+        </div>
         </div>
       </div>
+
+      {/* Preview mobile en bottom sheet */}
+      {mobilePreviewOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setMobilePreviewOpen(false)}>
+          <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto p-4"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end mb-2">
+              <button onClick={() => setMobilePreviewOpen(false)} aria-label="Fermer"><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <BoutiqueLivePreview
+              name={form.boutique_name}
+              category={form.shop_category}
+              city={form.city}
+              logoUrl={form.logo_base64 || undefined}
+              coverUrl={form.cover_base64 || undefined}
+              primaryColor={form.plan === 'pro' ? form.primary_color : '#7C3AED'}
+              theme={form.plan === 'pro' ? form.theme : 'light'}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

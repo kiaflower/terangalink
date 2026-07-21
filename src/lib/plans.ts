@@ -1,183 +1,168 @@
-/**
- * TerangaLink Subscription System
- * Plans: starter | pro
- * (L'ancien palier "premium" a été fusionné dans "pro" — voir LEGACY_PLAN_MAP.)
- */
-
-export type PlanType = 'starter' | 'pro'
-export type LegacyPlanType = 'mensuel' | 'trimestriel' | 'annuel' | 'enterprise' | 'free' | 'demo' | 'gratuit' | 'trial' | 'premium'
-
-export const PLAN_LABELS: Record<PlanType, string> = {
-  starter: 'Starter',
-  pro: 'Pro',
-}
-
-export const PLAN_PRICES: Record<PlanType, number> = {
-  starter: 9900,
-  pro: 19900,
-}
-
-export const PLAN_PERIODS: Record<PlanType, string> = {
-  starter: '/mois',
-  pro: '/mois',
-}
-
-export const PLAN_OPTIONS: { value: PlanType; label: string }[] = [
-  { value: 'starter', label: 'Starter — 9 900 FCFA/mois' },
-  { value: 'pro', label: 'Pro — 19 900 FCFA/mois' },
-]
-
-export interface PlanFeatures {
-  siteCommande: boolean
-  menuIllimite: boolean
-  commandesWhatsapp: boolean
-  dashboardAdministrateur: boolean
-  suiviCommandes: boolean
-  revenusMensuels: boolean
-  produitsPlusCommandes: boolean
-  statistiquesAnalytiques: boolean
-  qrCode: boolean
-  supportWhatsapp: boolean
-  formationIncluse: boolean
-  brandingTerangaVisible: boolean
-  couleursTerangaParDefaut: boolean
-  modeClairSombre: boolean
-  couleursPersonnalisees: boolean
-  couleurBoutonsPersonnalisee: boolean
-  elementsVisuelsPersonnalises: boolean
-  reseauxSociaux: boolean
-  suppressionBranding: boolean
-  supportPrioritaire: boolean
-  accompagnementPersonnalise: boolean
-  // Anciennement réservé à Premium — fait désormais partie de Pro
-  variantesProduits: boolean
-  gestionStock: boolean
-  precommandes: boolean
-  codePromo: boolean
-  // Compatibilité feature gates existants
-  maxPlats: number | 'illimité'
-  maxAdmins: number
-  brandingPersonnalise: boolean
-  analyticsAvances: boolean
-  qrCodePremium: boolean
-  boutonAppel: boolean
-  boutonPartage: boolean
-  managerDedie: boolean
-}
-
-export const PLAN_FEATURES: Record<PlanType, PlanFeatures> = {
+export const PLANS = {
+  free: {
+    name: 'Free',
+    price: 0,
+    currency: 'FCFA',
+    period: 'mois',
+    features: [
+      "Listée dans l'annuaire TerangaSpot",
+      'Vitrine publique avec lien unique',
+      "Jusqu'à 10 produits",
+      'Commandes WhatsApp illimitées',
+      'Tableau de bord simple',
+      'Statistiques de base',
+      'Badge TerangaSpot visible sur la vitrine',
+    ],
+    limits: { products: 10, categories: 3, images_per_product: 1 },
+    brandingVisible: true,
+  },
   starter: {
-    siteCommande: true,
-    menuIllimite: true,
-    commandesWhatsapp: true,
-    dashboardAdministrateur: true,
-    suiviCommandes: true,
-    revenusMensuels: true,
-    produitsPlusCommandes: true,
-    statistiquesAnalytiques: true,
-    qrCode: true,
-    supportWhatsapp: true,
-    formationIncluse: true,
-    brandingTerangaVisible: true,
-    couleursTerangaParDefaut: true,
-    modeClairSombre: false,
-    couleursPersonnalisees: false,
-    couleurBoutonsPersonnalisee: false,
-    elementsVisuelsPersonnalises: false,
-    reseauxSociaux: false,
-    suppressionBranding: false,
-    supportPrioritaire: false,
-    accompagnementPersonnalise: false,
-    variantesProduits: false,
-    gestionStock: false,
-    precommandes: false,
-    codePromo: false,
-    maxPlats: 'illimité',
-    maxAdmins: 1,
-    brandingPersonnalise: false,
-    analyticsAvances: true,
-    qrCodePremium: true,
-    boutonAppel: false,
-    boutonPartage: false,
-    managerDedie: false,
+    name: 'Starter',
+    price: 9900,
+    currency: 'FCFA',
+    period: 'mois',
+    features: [
+      "Listée dans l'annuaire TerangaSpot",
+      'Vitrine publique avec lien unique',
+      "Catalogue jusqu'à 30 produits",
+      'Commandes WhatsApp illimitées',
+      'QR Code téléchargeable',
+      'Avis clients visibles',
+      'Suivi de commande client',
+      "Bannière d'annonce sur la vitrine",
+      'Bannières promotionnelles',
+      'Stories (photo/vidéo, 24h)',
+      'Tableau de bord',
+      "Parcours d'achat & produits populaires",
+      'Badge TerangaSpot visible sur la vitrine',
+    ],
+    limits: { products: 30, categories: 5, images_per_product: 1 },
+    brandingVisible: true,
   },
   pro: {
-    siteCommande: true,
-    menuIllimite: true,
-    commandesWhatsapp: true,
-    dashboardAdministrateur: true,
-    suiviCommandes: true,
-    revenusMensuels: true,
-    produitsPlusCommandes: true,
-    statistiquesAnalytiques: true,
+    name: 'Pro',
+    price: 19900,
+    currency: 'FCFA',
+    period: 'mois',
+    features: [
+      'Tout Starter +',
+      'Catalogue illimité',
+      "Jusqu'à 5 images par produit",
+      'Variantes produit (taille, couleur...)',
+      'Épingler 2 produits en tête de vitrine',
+      'Gestion de stock',
+      'Codes promo clients',
+      'Précommandes',
+      'Génération de reçus de commande',
+      'Analytiques complètes (abandon de panier, produits à surveiller, recommandations)',
+      'Couleurs personnalisées sur la vitrine',
+      'Suppression du badge TerangaSpot',
+    ],
+    limits: { products: -1, categories: -1, images_per_product: 5 },
+    brandingVisible: false,
+  },
+} as const
+
+export type PlanKey = keyof typeof PLANS
+
+// Plans facturables réellement en base sur `subscriptions.plan` — n'inclut pas `free`,
+// qui n'a pas de prix et ne génère jamais de facture. À utiliser (au lieu de `PlanKey`)
+// partout où le code lit/écrit le plan d'une vraie souscription (facturation, invoices).
+export type BillablePlanKey = Exclude<PlanKey, 'free'>
+
+// Feature flags par plan — source de vérité pour le gating (FeatureGate / canUseFeature).
+// NB: `free` n'est pour l'instant qu'une carte marketing (aucune boutique réelle n'a ce plan
+// en base — l'inscription en libre-service qui le créerait n'existe pas encore). Ces valeurs
+// documentent l'intention pour quand l'application réelle des limites sera construite.
+export const PLAN_FEATURES = {
+  free: {
+    maxProduits: 10,
+    maxCategories: 3,
+    imagesParProduit: 1,
+    variantesProduits: false,
+    gestionStock: false,
+    codePromo: false,
+    bannieres: false,
+    precommandes: false,
+    generationRecus: false,
+    analyticsAvances: false,
+    couleursPersonnalisees: false,
+    suppressionBranding: false,
+    badgeVerifie: false,
+    epinglageProduits: false,
+    qrCode: false,
+    avisClients: false,
+    suiviCommande: false,
+    annonce: false,
+    analyticsParcours: false,
+    stories: false,
+  },
+  starter: {
+    maxProduits: 30,
+    maxCategories: 5,
+    imagesParProduit: 1,
+    variantesProduits: false,
+    gestionStock: false,
+    codePromo: false,
+    bannieres: true,
+    precommandes: false,
+    generationRecus: false,
+    analyticsAvances: false,
+    couleursPersonnalisees: false,
+    suppressionBranding: false,
+    badgeVerifie: true, // option payante séparée, disponible sur les deux plans
+    epinglageProduits: false,
     qrCode: true,
-    supportWhatsapp: true,
-    formationIncluse: true,
-    brandingTerangaVisible: false,
-    couleursTerangaParDefaut: false,
-    modeClairSombre: true,
-    couleursPersonnalisees: true,
-    couleurBoutonsPersonnalisee: true,
-    elementsVisuelsPersonnalises: true,
-    reseauxSociaux: true,
-    suppressionBranding: true,
-    supportPrioritaire: true,
-    accompagnementPersonnalise: true,
+    avisClients: true,
+    suiviCommande: true,
+    annonce: true,
+    analyticsParcours: true,
+    stories: true,
+  },
+  pro: {
+    maxProduits: -1,
+    maxCategories: -1,
+    imagesParProduit: 5,
     variantesProduits: true,
     gestionStock: true,
-    precommandes: true,
     codePromo: true,
-    maxPlats: 'illimité',
-    maxAdmins: 10,
-    brandingPersonnalise: true,
+    bannieres: true,
+    precommandes: true,
+    generationRecus: true,
     analyticsAvances: true,
-    qrCodePremium: true,
-    boutonAppel: true,
-    boutonPartage: true,
-    managerDedie: true,
+    couleursPersonnalisees: true,
+    suppressionBranding: true,
+    badgeVerifie: true,
+    epinglageProduits: true,
+    qrCode: true,
+    avisClients: true,
+    suiviCommande: true,
+    annonce: true,
+    analyticsParcours: true,
+    stories: true,
   },
+} as const satisfies Record<PlanKey, Record<string, boolean | number>>
+
+export type FeatureKey = keyof typeof PLAN_FEATURES.starter
+
+export function canUseFeature(plan: PlanKey, feature: FeatureKey): boolean {
+  const value: number | boolean = PLAN_FEATURES[plan][feature]
+  return typeof value === 'number' ? value !== 0 : value
 }
 
-const LEGACY_PLAN_MAP: Record<string, PlanType> = {
-  starter: 'starter',
-  mensuel: 'starter',
-  trimestriel: 'starter',
-  free: 'starter',
-  demo: 'starter',
-  gratuit: 'starter',
-  trial: 'starter',
-  pro: 'pro',
-  annuel: 'pro',
-  enterprise: 'pro',
-  premium: 'pro',
+// -1 = illimité (Pro). Utilisé par Free (10) et Starter (30) pour bloquer
+// réellement l'ajout de produit une fois la limite atteinte.
+export function getProductLimit(plan: PlanKey): number {
+  return PLAN_FEATURES[plan].maxProduits
 }
 
-export function getPlanFeatures(plan: string): PlanFeatures {
-  return PLAN_FEATURES[normalizePlan(plan)]
+export function hasReachedProductLimit(plan: PlanKey, currentProductCount: number): boolean {
+  const limit = getProductLimit(plan)
+  return limit !== -1 && currentProductCount >= limit
 }
 
-export function normalizePlan(plan: string): PlanType {
-  const normalized = (plan || '').trim().toLowerCase()
-  return LEGACY_PLAN_MAP[normalized] ?? 'starter'
-}
-
-export function isProPlan(plan: string): boolean {
-  return normalizePlan(plan) === 'pro'
-}
-
-export function canUseFeature(plan: string, feature: keyof PlanFeatures): boolean {
-  const features = getPlanFeatures(plan)
-  return !!features[feature]
-}
-
-export function getUpgradeRequired(feature: keyof PlanFeatures): PlanType | null {
-  if (PLAN_FEATURES.starter[feature]) return null
-  if (PLAN_FEATURES.pro[feature]) return 'pro'
-  return null
-}
-
-export function getUpgradeLabel(feature: keyof PlanFeatures): string {
-  const required = getUpgradeRequired(feature)
-  if (!required) return ''
-  return `Disponible avec le plan ${PLAN_LABELS[required]}`
+export function productLimitMessage(plan: PlanKey): string {
+  const limit = getProductLimit(plan)
+  const upgradeTarget = plan === 'free' ? 'Starter ou Pro' : 'Pro'
+  return `Vous avez atteint votre limite de ${limit} produits. Passez à ${upgradeTarget} pour continuer à développer votre catalogue.`
 }

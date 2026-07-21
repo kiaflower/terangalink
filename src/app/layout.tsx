@@ -1,17 +1,29 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
-import { buildOrganizationSchema, buildWebsiteSchema } from '@/lib/seo'
-import { FavoritesProvider } from '@/lib/hooks/useFavorites'
 import './globals.css'
+import { DEFAULT_SEO } from '@/lib/seo'
 
-const inter = Inter({
-  subsets: ['latin'],
+const geistSans = Inter({
   variable: '--font-geist-sans',
-  display: 'swap',
-  weight: ['400', '500', '600', '700', '800', '900'],
+  subsets: ['latin'],
 })
 
-
+export const metadata: Metadata = {
+  metadataBase: new URL(DEFAULT_SEO.url),
+  title: DEFAULT_SEO.title,
+  description: DEFAULT_SEO.description,
+  keywords: DEFAULT_SEO.keywords,
+  openGraph: {
+    siteName: DEFAULT_SEO.siteName,
+    locale: DEFAULT_SEO.locale,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: DEFAULT_SEO.title,
+    description: DEFAULT_SEO.description,
+  },
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -20,40 +32,10 @@ export const viewport: Viewport = {
   userScalable: false,
 }
 
-export const metadata: Metadata = {
-  title: {
-    default: 'TerangaLink — La plateforme de commande pour restaurants',
-    template: '%s | TerangaLink',
-  },
-
-  description: 'TerangaLink donne à chaque restaurant son propre site ...',
-
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/icon.png',
-  },
-  verification: {
-    google: '2Rm5HUVUcyejAAKhDLRqJho7Rct7jyL3H7N1brwuYEQ',
-  },
-}
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className="dark">
-      <body className={`${inter.variable} font-sans bg-surface text-white antialiased`}>
-        <script
-          id="schema-organization"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationSchema()) }}
-        />
-        <script
-          id="schema-website"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteSchema()) }}
-        />
-        <FavoritesProvider>{children}</FavoritesProvider>
-      </body>
+    <html lang="fr">
+      <body className={`${geistSans.variable} font-sans antialiased`}>{children}</body>
     </html>
   )
 }

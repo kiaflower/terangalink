@@ -1,0 +1,135 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import { ZoomIn, Package, Play } from 'lucide-react'
+import { ImageLightbox } from '@/components/ui/ImageLightbox'
+
+const VIDEO_SLIDE = '__video__'
+
+interface ProductGalleryProps {
+  images: string[]
+  videoUrl?: string | null
+  // Photo de la variante actuellement sélectionnée (optionnelle) — passe
+  // devant les autres photos tant qu'elle est définie.
+  variantImage?: string | null
+  productName: string
+  cardBg: string
+  // 'page' = page produit dédiée (grande zone + vignettes en grille).
+  // 'modal' = aperçu rapide vitrine (bande défilante compacte, existant).
+  variant?: 'page' | 'modal'
+}
+
+export function ProductGallery({ images, videoUrl, variantImage, productName, cardBg, variant = 'page' }: ProductGalleryProps) {
+  const photos = variantImage ? [variantImage, ...images.filter(url => url !== variantImage)] : images
+  const slides = videoUrl ? [...photos, VIDEO_SLIDE] : photos
+  const [index, setIndex] = useState(0)
+  const [zoomOpen, setZoomOpen] = useState(false)
+
+  // La photo de la variante sélectionnée doit toujours revenir au premier
+  // plan, même si le client avait navigué ailleurs dans la galerie.
+  useEffect(() => { setIndex(0) }, [variantImage])
+
+  if (slides.length === 0) {
+    return (
+      <div className="aspect-square rounded-2xl flex items-center justify-center" style={{ backgroundColor: cardBg }}>
+        <Package className="w-12 h-12 text-gray-300" />
+      </div>
+    )
+  }
+
+  const isVideoSlide = slides[index] === VIDEO_SLIDE
+  const zoomIndex = Math.min(index, photos.length - 1)
+
+  if (variant === 'modal') {
+    return (
+      <div className="relative">
+        <div
+          className="flex overflow-x-auto snap-x snap-mandatory rounded-t-2xl aspect-square"
+          style={{ scrollbarWidth: 'none' }}
+          onScroll={e => {
+            const el = e.currentTarget
+            const i = Math.round(el.scrollLeft / el.clientWidth)
+            if (i !== index) setIndex(i)
+          }}
+        >
+          {photos.map((url, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={url + i} src={url} alt={productName}
+              onClick={() => setZoomOpen(true)}
+              className="w-full h-full object-cover flex-shrink-0 snap-center cursor-zoom-in" />
+          ))}
+          {videoUrl && (
+            <video src={videoUrl} controls preload="none" playsInline
+              className="w-full h-full object-cover flex-shrink-0 snap-center bg-black" />
+          )}
+        </div>
+        {slides.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {slides.map((_, i) => (
+              <span key={i} className="w-1.5 h-1.5 rounded-full transition-colors"
+                style={{ backgroundColor: i === index ? '#fff' : 'rgba(255,255,255,0.5)' }} />
+            ))}
+          </div>
+        )}
+        {!isVideoSlide && (
+          <button type="button" onClick={() => setZoomOpen(true)}
+            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+            aria-label="Zoomer sur l'image">
+            <ZoomIn className="w-4 h-4" />
+          </button>
+        )}
+        {zoomOpen && photos.length > 0 && (
+          <ImageLightbox images={photos} index={zoomIndex} alt={productName} onClose={() => setZoomOpen(false)} onIndexChange={setIndex} />
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div className="relative aspect-[4/5] sm:aspect-square rounded-2xl overflow-hidden group" style={{ backgroundColor: cardBg }}>
+        {isVideoSlide ? (
+          <video src={videoUrl!} controls preload="none" playsInline className="w-full h-full object-cover bg-black" />
+        ) : (
+          <>
+            <Image
+              src={photos[index]}
+              alt={productName}
+              fill
+              sizes="(max-width: 768px) 100vw, 60vw"
+              priority
+              className="object-cover object-top"
+            />
+            <button type="button" onClick={() => setZoomOpen(true)}
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+              aria-label="Zoomer sur l'image">
+              <ZoomIn className="w-4 h-4" />
+            </button>
+          </>
+        )}
+      </div>
+      {slides.length > 1 && (
+        <div className="grid grid-cols-5 gap-2 mt-2">
+          {slides.map((url, i) => (
+            <button key={url + i} type="button" onClick={() => setIndex(i)}
+              className="relative aspect-square rounded-lg overflow-hidden transition-opacity"
+              style={{ backgroundColor: cardBg, opacity: i === index ? 1 : 0.6 }}
+            >
+              {url === VIDEO_SLIDE ? (
+                <div className="w-full h-full flex items-center justify-center bg-black/80">
+                  <Play className="w-4 h-4 text-white" fill="white" />
+                </div>
+              ) : (
+                <Image src={url} alt={`${productName} — image ${i + 1}`} fill sizes="120px" className="object-cover object-top" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+      {zoomOpen && !isVideoSlide && photos.length > 0 && (
+        <ImageLightbox images={photos} index={zoomIndex} alt={productName} onClose={() => setZoomOpen(false)} onIndexChange={setIndex} />
+      )}
+    </div>
+  )
+}

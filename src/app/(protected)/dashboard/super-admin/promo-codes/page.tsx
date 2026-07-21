@@ -1,357 +1,379 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Modal } from '@/components/ui/Modal'
-import { Badge } from '@/components/ui/Badge'
-import { formatCurrency, formatDate } from '@/lib/utils'
-import { PlusCircle, Tag, Trash2, Loader2, Percent, DollarSign, ToggleLeft, ToggleRight, BarChart3 } from 'lucide-react'
+import { Plus, RefreshCw, Tag, Lock, Trash2, Pencil } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
 
 interface PromoCode {
   id: string
-  restaurant_id: string | null
+  boutique_id: string
   code: string
-  discount_type: 'fixed' | 'percent'
-  value: number
-  min_order_amount: number | null
-  expires_at: string | null
+  discount_type: 'percent' | 'fixed'
+  discount_value: number
+  min_order_amount: number
   max_uses: number | null
-  current_uses: number
+  uses_count: number
   is_active: boolean
+  expires_at: string | null
+  is_featured: boolean
   created_at: string
+  boutique: { id: string; name: string } | null
 }
 
-interface Restaurant {
-  id: string
-  name: string
-}
+interface Boutique { id: string; name: string }
 
-interface PromoForm {
-  code: string
-  discount_type: 'fixed' | 'percent'
-  value: string
-  min_order_amount: string
-  expires_at: string
-  max_uses: string
-  restaurant_id: string
-  is_active: boolean
-}
-
-const EMPTY_FORM: PromoForm = {
-  code: '',
-  discount_type: 'percent',
-  value: '',
-  min_order_amount: '',
-  expires_at: '',
-  max_uses: '',
-  restaurant_id: '',
-  is_active: true,
-}
+const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors'
 
 export default function SuperAdminPromoCodesPage() {
   const supabase = createClient()
   const [codes, setCodes] = useState<PromoCode[]>([])
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+  const [boutiques, setBoutiques] = useState<Boutique[]>([])
   const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [form, setForm] = useState<PromoForm>(EMPTY_FORM)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [togglingId, setTogglingId] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [statsCode, setStatsCode] = useState<PromoCode | null>(null)
-  const [stats, setStats] = useState<{ count: number; totalDiscount: number } | null>(null)
-  const [statsLoading, setStatsLoading] = useState(false)
+  const [search, setSearch] = useState('')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
-  const loadData = useCallback(async () => {
-    const [{ data: promos }, { data: restos }] = await Promise.all([
-      supabase.from('promo_codes').select('*').order('created_at', { ascending: false }),
-      supabase.from('restaurants').select('id, name').eq('is_active', true).order('name'),
-    ])
-    setCodes(promos ?? [])
-    setRestaurants(restos ?? [])
+  const [form, setForm] = useState({
+    boutique_id: '', code: '', discount_type: 'percent' as 'percent' | 'fixed',
+    discount_value: '', min_order_amount: '', max_uses: '', expires_at: '', is_featured: false,
+  })
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+
+  // Edit modal
+  const [editCode, setEditCode] = useState<PromoCode | null>(null)
+  const [editForm, setEditForm] = useState({
+    code: '', discount_type: 'percent' as 'percent' | 'fixed',
+    discount_value: '', min_order_amount: '', max_uses: '', expires_at: '', is_featured: false, is_active: true,
+  })
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState('')
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('promo_codes')
+      .select('*, boutique:boutiques(id, name)')
+      .order('created_at', { ascending: false })
+      .limit(200)
+    setCodes((data ?? []) as unknown as PromoCode[])
+    const { data: b } = await supabase.from('boutiques').select('id, name').order('name')
+    setBoutiques(b ?? [])
     setLoading(false)
   }, [supabase])
 
-  useEffect(() => { loadData() }, [loadData])
+  useEffect(() => { load() }, [load])
 
-  async function openStats(code: PromoCode) {
-    setStatsCode(code)
-    setStats(null)
-    setStatsLoading(true)
-    const { data } = await supabase
-      .from('orders')
-      .select('promo_discount')
-      .eq('promo_code_id', code.id)
-    if (data) {
-      const count = data.length
-      const totalDiscount = data.reduce((sum, o) => sum + (o.promo_discount ?? 0), 0)
-      setStats({ count, totalDiscount })
+  async function createCode() {
+    setSaveError('')
+    if (!form.boutique_id || !form.code || !form.discount_value) {
+      setSaveError('Boutique, code et réduction sont requis.'); return
     }
-    setStatsLoading(false)
-  }
-
-  async function toggleActive(code: PromoCode) {
-    setTogglingId(code.id)
-    await supabase.from('promo_codes').update({ is_active: !code.is_active }).eq('id', code.id)
-    setCodes(prev => prev.map(c => c.id === code.id ? { ...c, is_active: !c.is_active } : c))
-    setTogglingId(null)
-  }
-
-  async function deleteCode(id: string) {
-    if (!confirm('Supprimer ce code promo ?')) return
-    setDeletingId(id)
-    await supabase.from('promo_codes').delete().eq('id', id)
-    setCodes(prev => prev.filter(c => c.id !== id))
-    setDeletingId(null)
-  }
-
-  async function handleSave() {
-    if (!form.code || !form.value) { setError('Code et valeur requis'); return }
     setSaving(true)
-    setError(null)
-    const payload = {
+    const { error } = await supabase.from('promo_codes').insert({
+      boutique_id: form.boutique_id,
       code: form.code.toUpperCase().trim(),
       discount_type: form.discount_type,
-      value: parseFloat(form.value),
-      min_order_amount: form.min_order_amount ? parseFloat(form.min_order_amount) : null,
-      expires_at: form.expires_at || null,
+      discount_value: parseFloat(form.discount_value),
+      min_order_amount: parseFloat(form.min_order_amount) || 0,
       max_uses: form.max_uses ? parseInt(form.max_uses) : null,
-      restaurant_id: form.restaurant_id || null,
-      is_active: form.is_active,
-    }
-    const { error: err } = await supabase.from('promo_codes').insert(payload)
+      expires_at: form.expires_at || null,
+      is_active: true,
+      is_featured: form.is_featured,
+    } as unknown as object)
+    if (error) { setSaveError(error.message); setSaving(false); return }
     setSaving(false)
-    if (err) { setError(err.message); return }
-    setModalOpen(false)
-    setForm(EMPTY_FORM)
-    loadData()
+    setCreateOpen(false)
+    setForm({ boutique_id: '', code: '', discount_type: 'percent', discount_value: '', min_order_amount: '', max_uses: '', expires_at: '', is_featured: false })
+    await load()
   }
 
-  const restaurantMap = Object.fromEntries(restaurants.map(r => [r.id, r.name]))
+  async function toggleActive(id: string, current: boolean) {
+    await supabase.from('promo_codes').update({ is_active: !current }).eq('id', id)
+    await load()
+  }
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-64">
-      <Loader2 className="w-8 h-8 animate-spin text-brand-orange" />
-    </div>
+  async function toggleFeatured(id: string, current: boolean) {
+    await supabase.from('promo_codes').update({ is_featured: !current } as unknown as object).eq('id', id)
+    await load()
+  }
+
+  function openEdit(c: PromoCode) {
+    setEditCode(c)
+    setEditError('')
+    setEditForm({
+      code: c.code,
+      discount_type: c.discount_type,
+      discount_value: String(c.discount_value),
+      min_order_amount: c.min_order_amount > 0 ? String(c.min_order_amount) : '',
+      max_uses: c.max_uses ? String(c.max_uses) : '',
+      expires_at: c.expires_at ? c.expires_at.split('T')[0] : '',
+      is_featured: c.is_featured,
+      is_active: c.is_active,
+    })
+  }
+
+  async function saveEdit() {
+    if (!editCode) return
+    setEditError('')
+    if (!editForm.code || !editForm.discount_value) { setEditError('Code et réduction sont requis.'); return }
+    setEditSaving(true)
+    const { error } = await supabase.from('promo_codes').update({
+      code: editForm.code.toUpperCase().trim(),
+      discount_type: editForm.discount_type,
+      discount_value: parseFloat(editForm.discount_value),
+      min_order_amount: parseFloat(editForm.min_order_amount) || 0,
+      max_uses: editForm.max_uses ? parseInt(editForm.max_uses) : null,
+      expires_at: editForm.expires_at || null,
+      is_featured: editForm.is_featured,
+      is_active: editForm.is_active,
+    } as unknown as object).eq('id', editCode.id)
+    if (error) { setEditError(error.message); setEditSaving(false); return }
+    setEditSaving(false)
+    setEditCode(null)
+    await load()
+  }
+
+  async function deleteCode(id: string, code: string) {
+    if (!confirm(`Supprimer le code "${code}" ?`)) return
+    setDeleting(id)
+    await supabase.from('promo_codes').delete().eq('id', id)
+    await load()
+    setDeleting(null)
+  }
+
+  const filtered = codes.filter(c =>
+    !search ||
+    c.code.toLowerCase().includes(search.toLowerCase()) ||
+    (c.boutique as { name: string } | null)?.name.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
-    <div className="p-6 sm:p-8 max-w-5xl">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <div>
+      <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Codes promo</h1>
-          <p className="text-gray-500 text-sm mt-1">{codes.length} code(s) — globaux et par restaurant</p>
+          <p className="text-gray-500 text-sm mt-1">{codes.length} code(s) au total</p>
         </div>
-        <button
-          onClick={() => { setForm(EMPTY_FORM); setError(null); setModalOpen(true) }}
-          className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
-        >
-          <PlusCircle className="w-4 h-4" />Nouveau code
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={load} className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+            <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button onClick={() => { setCreateOpen(true); setSaveError('') }}
+            className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors">
+            <Plus className="w-4 h-4" /> Créer un code promo
+          </button>
+        </div>
       </div>
 
-      {codes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <Tag className="w-10 h-10 text-gray-500 mb-3" />
-          <p className="text-gray-900 font-semibold">Aucun code promo</p>
-          <p className="text-gray-500 text-sm mt-1">Créez votre premier code ci-dessus</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {codes.map(code => (
-            <div key={code.id} className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
-              {/* Ligne 1 : icône + code + badge + actions */}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 bg-brand-orange/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  {code.discount_type === 'percent' ? <Percent className="w-4 h-4 text-brand-orange" /> : <DollarSign className="w-4 h-4 text-brand-orange" />}
-                </div>
-                <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-gray-900 font-mono tracking-wider text-base">{code.code}</span>
-                  <Badge variant={code.is_active ? 'success' : 'warning'}>
-                    {code.is_active ? 'Actif' : 'Inactif'}
-                  </Badge>
-                  {!code.restaurant_id && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">Global</span>
-                  )}
-                  {code.restaurant_id && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 border border-gray-300 truncate max-w-[120px]">
-                      {restaurantMap[code.restaurant_id] ?? code.restaurant_id}
-                    </span>
-                  )}
-                </div>
-                {/* Actions : toggle + stats + supprimer */}
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {/* Toggle switch */}
-                  <button
-                    onClick={() => toggleActive(code)}
-                    disabled={togglingId === code.id}
-                    title={code.is_active ? 'Désactiver' : 'Activer'}
-                    className="relative w-10 h-6 rounded-full transition-colors disabled:opacity-50 focus:outline-none flex-shrink-0"
-                    style={{ backgroundColor: code.is_active ? '#22c55e' : '#d1d5db' }}
-                  >
-                    {togglingId === code.id
-                      ? <Loader2 className="w-3 h-3 animate-spin absolute inset-0 m-auto text-white" />
-                      : <span
-                          className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
-                          style={{ transform: code.is_active ? 'translateX(16px)' : 'translateX(0)' }}
-                        />
-                    }
-                  </button>
-                  {/* Stats */}
-                  <button
-                    onClick={() => openStats(code)}
-                    title="Voir les statistiques"
-                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-gray-900 transition-colors"
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                  </button>
-                  {/* Supprimer */}
-                  <button
-                    onClick={() => deleteCode(code.id)}
-                    disabled={deletingId === code.id}
-                    title="Supprimer"
-                    className="w-8 h-8 flex items-center justify-center rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors border border-red-500/20 disabled:opacity-50"
-                  >
-                    {deletingId === code.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
+      <div className="mb-4">
+        <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Rechercher par code ou boutique…"
+          className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors" />
+      </div>
 
-              {/* Ligne 2 : détails en grille 2 colonnes */}
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 pl-12">
-                <span>
-                  {code.discount_type === 'percent' ? `−${code.value}%` : `−${formatCurrency(code.value)}`}
-                </span>
-                <span>{code.current_uses}{code.max_uses ? `/${code.max_uses}` : ''} utilisations</span>
-                {code.min_order_amount ? <span>Min : {formatCurrency(code.min_order_amount)}</span> : <span />}
-                {code.expires_at ? <span>Expire : {formatDate(code.expires_at)}</span> : <span>Pas d&apos;expiration</span>}
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        {loading ? (
+          <p className="text-center text-gray-400 text-sm py-12">Chargement…</p>
+        ) : filtered.length === 0 ? (
+          <div className="py-16 text-center">
+            <Tag className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+            <p className="text-gray-400 text-sm">{search ? 'Aucun résultat' : 'Aucun code promo'}</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {filtered.map(c => (
+              <div key={c.id} className="px-5 py-4 flex items-center gap-4 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className="font-mono font-bold text-gray-900">{c.code}</span>
+                    {c.is_featured && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                        <Lock className="w-2.5 h-2.5" /> Mise en avant
+                      </span>
+                    )}
+                    {!c.is_active && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Inactif</span>}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {(c.boutique as { name: string } | null)?.name ?? '—'} ·{' '}
+                    <span className="text-brand-violet font-semibold">
+                      {c.discount_type === 'percent' ? `${c.discount_value}%` : formatPrice(c.discount_value)}
+                    </span>
+                    {c.min_order_amount > 0 && ` · min ${formatPrice(c.min_order_amount)}`} · {c.uses_count}{c.max_uses ? `/${c.max_uses}` : ''} util.
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                  <button onClick={() => openEdit(c)}
+                    className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => toggleActive(c.id, c.is_active)}
+                    className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-brand-violet/30 hover:text-brand-violet transition-colors text-gray-500">
+                    {c.is_active ? 'Désactiver' : 'Activer'}
+                  </button>
+                  <button onClick={() => toggleFeatured(c.id, c.is_featured)}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${c.is_featured ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100' : 'border-gray-200 text-gray-500 hover:border-amber-300 hover:text-amber-600'}`}>
+                    {c.is_featured ? '🔒 Verrouillé' : '📌 Mettre en avant'}
+                  </button>
+                  <button onClick={() => deleteCode(c.id, c.code)} disabled={deleting === c.id}
+                    className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-40">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Edit modal */}
+      {editCode && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <h3 className="font-bold text-gray-900">Modifier <span className="font-mono text-brand-violet">{editCode.code}</span></h3>
+              <button onClick={() => setEditCode(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
             </div>
-          ))}
+            <div className="p-6 space-y-3">
+              {editError && <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{editError}</p>}
+              <p className="text-xs text-gray-400">Boutique : <span className="font-medium text-gray-700">{(editCode.boutique as { name: string } | null)?.name ?? '—'}</span></p>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Code promo *</label>
+                <input type="text" value={editForm.code}
+                  onChange={e => setEditForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+                  className={`${iCls} font-mono uppercase`} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Type *</label>
+                  <select value={editForm.discount_type} onChange={e => setEditForm(f => ({ ...f, discount_type: e.target.value as 'percent' | 'fixed' }))} className={iCls}>
+                    <option value="percent">Pourcentage (%)</option>
+                    <option value="fixed">Montant fixe (FCFA)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Valeur *</label>
+                  <input type="number" value={editForm.discount_value}
+                    onChange={e => setEditForm(f => ({ ...f, discount_value: e.target.value }))}
+                    placeholder={editForm.discount_type === 'percent' ? '20' : '1000'} className={iCls} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Commande min (FCFA)</label>
+                  <input type="number" value={editForm.min_order_amount}
+                    onChange={e => setEditForm(f => ({ ...f, min_order_amount: e.target.value }))}
+                    placeholder="0" className={iCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Utilisations max</label>
+                  <input type="number" value={editForm.max_uses}
+                    onChange={e => setEditForm(f => ({ ...f, max_uses: e.target.value }))}
+                    placeholder="Illimité" className={iCls} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Date d&apos;expiration</label>
+                <input type="date" value={editForm.expires_at}
+                  onChange={e => setEditForm(f => ({ ...f, expires_at: e.target.value }))} className={iCls} />
+              </div>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={editForm.is_active}
+                    onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
+                    className="w-4 h-4 accent-brand-violet" />
+                  <span className="text-sm text-gray-700">Actif</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={editForm.is_featured}
+                    onChange={e => setEditForm(f => ({ ...f, is_featured: e.target.checked }))}
+                    className="w-4 h-4 accent-amber-500" />
+                  <span className="text-sm text-gray-700">Mise en avant 🔒</span>
+                </label>
+              </div>
+              <button onClick={saveEdit} disabled={editSaving}
+                className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                {editSaving ? 'Enregistrement…' : 'Enregistrer'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Modal création */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nouveau code promo" size="sm">
-        <div className="space-y-4">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-xl px-4 py-3">{error}</div>
-          )}
-
-          <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Code promo *</label>
-            <input
-              value={form.code}
-              onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-              placeholder="Ex: SUMMER20"
-              className="w-full bg-gray-100 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm font-mono tracking-wider focus:outline-none focus:border-brand-orange"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1.5">Type</label>
-              <select
-                value={form.discount_type}
-                onChange={e => setForm(f => ({ ...f, discount_type: e.target.value as 'fixed' | 'percent' }))}
-                className="w-full bg-gray-100 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
-              >
-                <option value="percent">Pourcentage (%)</option>
-                <option value="fixed">Montant fixe (FCFA)</option>
-              </select>
+      {createOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <h3 className="font-bold text-gray-900">Créer un code promo</h3>
+              <button onClick={() => setCreateOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
             </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1.5">Valeur *</label>
-              <input
-                type="number"
-                value={form.value}
-                onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
-                placeholder={form.discount_type === 'percent' ? '10' : '1000'}
-                className="w-full bg-gray-100 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
-              />
+            <div className="p-6 space-y-3">
+              {saveError && <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{saveError}</p>}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Boutique *</label>
+                <select value={form.boutique_id} onChange={e => setForm(f => ({ ...f, boutique_id: e.target.value }))} className={iCls}>
+                  <option value="">Sélectionner une boutique…</option>
+                  {boutiques.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Code promo *</label>
+                <input type="text" value={form.code}
+                  onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+                  placeholder="PROMO20" className={`${iCls} font-mono uppercase`} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Type *</label>
+                  <select value={form.discount_type} onChange={e => setForm(f => ({ ...f, discount_type: e.target.value as 'percent' | 'fixed' }))} className={iCls}>
+                    <option value="percent">Pourcentage (%)</option>
+                    <option value="fixed">Montant fixe (FCFA)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Valeur *</label>
+                  <input type="number" value={form.discount_value}
+                    onChange={e => setForm(f => ({ ...f, discount_value: e.target.value }))}
+                    placeholder={form.discount_type === 'percent' ? '20' : '1000'} className={iCls} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Commande min (FCFA)</label>
+                  <input type="number" value={form.min_order_amount}
+                    onChange={e => setForm(f => ({ ...f, min_order_amount: e.target.value }))}
+                    placeholder="0" className={iCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">Utilisations max</label>
+                  <input type="number" value={form.max_uses}
+                    onChange={e => setForm(f => ({ ...f, max_uses: e.target.value }))}
+                    placeholder="Illimité" className={iCls} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Date d&apos;expiration</label>
+                <input type="date" value={form.expires_at}
+                  onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))} className={iCls} />
+              </div>
+              <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-amber-300 cursor-pointer transition-colors">
+                <input type="checkbox" checked={form.is_featured}
+                  onChange={e => setForm(f => ({ ...f, is_featured: e.target.checked }))}
+                  className="w-4 h-4 accent-amber-500" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Mise en avant 🔒</p>
+                  <p className="text-xs text-gray-400">La boutique ne pourra pas modifier ni supprimer ce code</p>
+                </div>
+              </label>
+              <button onClick={createCode} disabled={saving}
+                className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                {saving ? 'Création…' : 'Créer le code promo'}
+              </button>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1.5">Commande min (FCFA)</label>
-              <input
-                type="number"
-                value={form.min_order_amount}
-                onChange={e => setForm(f => ({ ...f, min_order_amount: e.target.value }))}
-                placeholder="0"
-                className="w-full bg-gray-100 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1.5">Utilisations max</label>
-              <input
-                type="number"
-                value={form.max_uses}
-                onChange={e => setForm(f => ({ ...f, max_uses: e.target.value }))}
-                placeholder="Illimité"
-                className="w-full bg-gray-100 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Restaurant (laisser vide = global)</label>
-            <select
-              value={form.restaurant_id}
-              onChange={e => setForm(f => ({ ...f, restaurant_id: e.target.value }))}
-              className="w-full bg-gray-100 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
-            >
-              <option value="">Code global (tous les restaurants)</option>
-              {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs text-gray-500 mb-1.5">Date d&apos;expiration</label>
-            <input
-              type="date"
-              value={form.expires_at}
-              onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))}
-              className="w-full bg-gray-100 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
-            />
-          </div>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} className="w-4 h-4 accent-brand-orange" />
-            <span className="text-gray-500 text-sm">Activer immédiatement</span>
-          </label>
-
-          <div className="flex gap-3 pt-2">
-            <button onClick={() => setModalOpen(false)} className="flex-1 bg-gray-100 hover:bg-gray-100 text-gray-900 py-2.5 rounded-xl text-sm font-semibold transition-colors">Annuler</button>
-            <button onClick={handleSave} disabled={saving} className="flex-1 bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
-              {saving ? 'Création...' : 'Créer'}
-            </button>
           </div>
         </div>
-      </Modal>
-
-      {/* Modal stats */}
-      <Modal open={!!statsCode} onClose={() => setStatsCode(null)} title={`Stats — ${statsCode?.code}`} size="sm">
-        {statsLoading ? (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin text-brand-orange" />
-          </div>
-        ) : stats ? (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-100 rounded-2xl p-5 text-center">
-              <p className="text-3xl font-black text-gray-900">{stats.count}</p>
-              <p className="text-xs text-gray-500 mt-1">Commandes avec ce code</p>
-            </div>
-            <div className="bg-gray-100 rounded-2xl p-5 text-center">
-              <p className="text-2xl font-black text-brand-orange">{formatCurrency(stats.totalDiscount)}</p>
-              <p className="text-xs text-gray-500 mt-1">Total réductions accordées</p>
-            </div>
-          </div>
-        ) : null}
-      </Modal>
+      )}
     </div>
   )
 }

@@ -1,15 +1,9 @@
-import { MetadataRoute } from 'next'
-import { SITE_URL } from '@/lib/seo'
+import type { MetadataRoute } from 'next'
+import { getCanonicalSiteUrl } from '@/lib/site-url'
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-        disallow: ['/dashboard/', '/api/', '/login'],
-      },
-    ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    rules: { userAgent: '*', allow: '/' },
+    sitemap: `${getCanonicalSiteUrl()}/sitemap.xml`,
   }
 }

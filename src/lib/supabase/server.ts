@@ -1,11 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import type { Database } from '@/lib/types/database'
 
-export async function createClient() {
-  const cookieStore = await cookies()
-
-  return createServerClient<Database>(
+// Using untyped client to avoid Supabase generic inference issues with partial updates
+export function createClient() {
+  const cookieStore = cookies()
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -13,14 +12,12 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch {
-            // Server component — cookies will be set by middleware
-          }
+          } catch {}
         },
       },
     }

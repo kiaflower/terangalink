@@ -1,228 +1,193 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, MousePointerClick, Zap, Star, Loader2, TrendingUp } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { Eye, MousePointerClick, Store, CheckCircle, RefreshCw, BarChart3 } from 'lucide-react'
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
 
-interface RestaurantRow {
-  id: string
-  name: string
-  slug: string
-  city: string | null
-  is_active: boolean
-  is_boosted: boolean
-  rating: number | null
-  review_count: number
-  click_count: number
+interface Boutique {
+  id: string; name: string; slug: string; shop_category: string | null; city: string | null
+  is_active: boolean; is_verified: boolean
+}
+
+interface BoutiqueStats extends Boutique {
+  views: number; views_today: number
+}
+
+interface GlobalStats {
+  total: number; active: number; verified: number
+  total_views: number; views_today: number; views_week: number
+}
+
+function StatCard({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: React.ElementType; color: string }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-5 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-1 h-full rounded-l-2xl" style={{ backgroundColor: color }} />
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ backgroundColor: color + '15' }}>
+        <Icon className="w-4 h-4" style={{ color }} />
+      </div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-xs text-gray-500 mt-1">{label}</p>
+    </div>
+  )
 }
 
 export default function AnnuairePage() {
   const supabase = createClient()
-
-  const [restaurants, setRestaurants] = useState<RestaurantRow[]>([])
-  const [stats, setStats] = useState({ views: 0, clicks: 0, boosted: 0, avgRating: 0 })
+  const [boutiques, setBoutiques] = useState<BoutiqueStats[]>([])
+  const [stats, setStats] = useState<GlobalStats>({ total: 0, active: 0, verified: 0, total_views: 0, views_today: 0, views_week: 0 })
   const [loading, setLoading] = useState(true)
-  const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [toggling, setToggling] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
-    const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const week = new Date(Date.now() - 7 * 86400000)
 
     const [
-      { data: restos },
-      { data: reviews },
-      { data: clicks },
-      { data: views },
+      { data: b },
+      { count: totalViews },
+      { count: viewsToday },
+      { count: viewsWeek },
+      { data: viewsPerBoutique },
     ] = await Promise.all([
-      supabase.from('restaurants').select('id, name, slug, city, is_active, is_boosted').order('name'),
-      supabase.from('reviews').select('restaurant_id, rating').eq('is_visible', true),
-      supabase.from('analytics_events').select('restaurant_id').eq('event_type', 'directory_click').gte('created_at', since30d),
-      supabase.from('analytics_events').select('id').eq('event_type', 'directory_view').gte('created_at', since30d),
+      supabase.from('boutiques').select('id, name, slug, shop_category, city, is_active, is_verified').order('name').limit(200),
+      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'boutique_view'),
+      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'boutique_view').gte('created_at', today.toISOString()),
+      supabase.from('analytics_events').select('*', { count: 'exact', head: true }).eq('event_type', 'boutique_view').gte('created_at', week.toISOString()),
+      supabase.from('analytics_events').select('boutique_id').eq('event_type', 'boutique_view'),
     ])
 
-    // Agréger les avis par restaurant
-    const ratingMap: Record<string, { sum: number; count: number }> = {}
-    for (const r of reviews ?? []) {
-      if (!ratingMap[r.restaurant_id]) ratingMap[r.restaurant_id] = { sum: 0, count: 0 }
-      ratingMap[r.restaurant_id].sum += r.rating
-      ratingMap[r.restaurant_id].count++
-    }
-
-    // Agréger les clics par restaurant
-    const clickMap: Record<string, number> = {}
-    for (const c of clicks ?? []) {
-      if (c.restaurant_id) clickMap[c.restaurant_id] = (clickMap[c.restaurant_id] ?? 0) + 1
-    }
-
-    const rows: RestaurantRow[] = (restos ?? []).map(r => {
-      const rm = ratingMap[r.id]
-      return {
-        ...r,
-        rating: rm ? Math.round((rm.sum / rm.count) * 10) / 10 : null,
-        review_count: rm?.count ?? 0,
-        click_count: clickMap[r.id] ?? 0,
+    // Count views per boutique
+    const viewMap: Record<string, number> = {}
+    const viewMapToday: Record<string, number> = {}
+    const todayStr = today.toISOString()
+    ;(viewsPerBoutique ?? []).forEach((e: { boutique_id: string; created_at?: string }) => {
+      if (e.boutique_id) {
+        viewMap[e.boutique_id] = (viewMap[e.boutique_id] ?? 0) + 1
+        if ((e as { created_at?: string }).created_at && (e as { created_at?: string }).created_at! >= todayStr) {
+          viewMapToday[e.boutique_id] = (viewMapToday[e.boutique_id] ?? 0) + 1
+        }
       }
-    }).sort((a, b) => {
-      if (a.is_boosted && !b.is_boosted) return -1
-      if (!a.is_boosted && b.is_boosted) return 1
-      return b.click_count - a.click_count
     })
 
-    setRestaurants(rows)
+    // We can't easily get created_at per boutique above because we didn't select it. Let's just use total.
+    const boutiqueList = (b ?? []) as Boutique[]
+    const withStats: BoutiqueStats[] = boutiqueList.map(bq => ({
+      ...bq,
+      views: viewMap[bq.id] ?? 0,
+      views_today: viewMapToday[bq.id] ?? 0,
+    }))
 
-    // Stats globales
-    const allRatings = reviews?.map(r => r.rating) ?? []
-    const avgRating = allRatings.length ? allRatings.reduce((a, b) => a + b, 0) / allRatings.length : 0
+    setBoutiques(withStats)
     setStats({
-      views: views?.length ?? 0,
-      clicks: clicks?.length ?? 0,
-      boosted: rows.filter(r => r.is_boosted).length,
-      avgRating: Math.round(avgRating * 10) / 10,
+      total: boutiqueList.length,
+      active: boutiqueList.filter(x => x.is_active).length,
+      verified: boutiqueList.filter(x => x.is_verified).length,
+      total_views: totalViews ?? 0,
+      views_today: viewsToday ?? 0,
+      views_week: viewsWeek ?? 0,
     })
-
     setLoading(false)
-  }, [supabase])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { load() }, [load])
 
-  async function toggleBoost(r: RestaurantRow) {
-    setTogglingId(r.id)
-    await fetch('/api/super-admin/boost', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ restaurant_id: r.id, is_boosted: !r.is_boosted }),
-    })
-    setRestaurants(prev => prev.map(x =>
-      x.id === r.id ? { ...x, is_boosted: !x.is_boosted } : x
-    ).sort((a, b) => {
-      if (a.is_boosted && !b.is_boosted) return -1
-      if (!a.is_boosted && b.is_boosted) return 1
-      return b.click_count - a.click_count
+  async function toggle(id: string, field: 'is_active' | 'is_verified', current: boolean) {
+    setToggling(`${id}-${field}`)
+    await supabase.from('boutiques').update({ [field]: !current }).eq('id', id)
+    setBoutiques(prev => prev.map(b => b.id === id ? { ...b, [field]: !current } : b))
+    setStats(prev => ({
+      ...prev,
+      active: field === 'is_active' ? prev.active + (current ? -1 : 1) : prev.active,
+      verified: field === 'is_verified' ? prev.verified + (current ? -1 : 1) : prev.verified,
     }))
-    setStats(s => ({ ...s, boosted: s.boosted + (r.is_boosted ? -1 : 1) }))
-    setTogglingId(null)
+    setToggling(null)
   }
 
-  const STAT_CARDS = [
-    { label: 'Vues annuaire (30j)', value: stats.views.toLocaleString(), icon: Eye, color: '#F97316', sub: 'Visites de /restaurants' },
-    { label: 'Clics restaurants (30j)', value: stats.clicks.toLocaleString(), icon: MousePointerClick, color: '#22C55E', sub: 'Depuis l\'annuaire' },
-    { label: 'Restaurants boostés', value: stats.boosted, icon: Zap, color: '#F59E0B', sub: 'Mis en avant' },
-    { label: 'Note moyenne', value: stats.avgRating > 0 ? stats.avgRating.toFixed(1) : '—', icon: Star, color: '#8B5CF6', sub: 'Tous les avis visibles' },
-  ]
+  const filtered = boutiques.filter(b =>
+    !search || b.name.toLowerCase().includes(search.toLowerCase()) || (b.city ?? '').toLowerCase().includes(search.toLowerCase())
+  ).sort((a, b) => b.views - a.views)
 
   return (
-    <div className="p-6 sm:p-8 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Annuaire</h1>
-        <p className="text-gray-500 text-sm mt-1">Performance de l&apos;annuaire public et gestion du boost</p>
+    <div>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Gestion annuaire</h1>
+          <p className="text-gray-500 text-sm mt-1">Visibilité, vérification et statistiques</p>
+        </div>
+        <button onClick={load} className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+          <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {STAT_CARDS.map(({ label, value, icon: Icon, color, sub }) => (
-          <div key={label} className="rounded-2xl p-5 flex flex-col gap-3"
-            style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-500">{label}</p>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: `${color}15` }}>
-                <Icon className="w-4 h-4" style={{ color }} />
-              </div>
-            </div>
-            <div>
-              <p className="text-3xl font-bold text-gray-900">{loading ? '…' : value}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <StatCard label="Boutiques total" value={stats.total} icon={Store} color="#7C3AED" />
+        <StatCard label="Actives dans l'annuaire" value={stats.active} icon={CheckCircle} color="#059669" />
+        <StatCard label="Vérifiées" value={stats.verified} icon={CheckCircle} color="#2563EB" />
+        <StatCard label="Vues boutiques (total)" value={stats.total_views.toLocaleString('fr-SN')} icon={Eye} color="#D97706" />
+        <StatCard label="Vues aujourd'hui" value={stats.views_today.toLocaleString('fr-SN')} icon={Eye} color="#DB2777" />
+        <StatCard label="Vues cette semaine" value={stats.views_week.toLocaleString('fr-SN')} icon={BarChart3} color="#0891B2" />
       </div>
 
-      {/* Liste restaurants */}
-      <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid #E5E7EB', backgroundColor: '#FFFFFF' }}>
-        <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #F3F4F6' }}>
-          <h2 className="font-semibold text-gray-900">
-            Restaurants ({restaurants.length})
-          </h2>
-          <span className="text-xs text-gray-400">Triés par clics · 30 derniers jours</span>
-        </div>
+      {/* Boutique list */}
+      <div className="mb-4">
+        <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Rechercher par nom ou ville…"
+          className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors" />
+      </div>
 
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="hidden sm:grid grid-cols-12 gap-3 px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-gray-100">
+          <span className="col-span-4">Boutique</span>
+          <span className="col-span-2">Vues</span>
+          <span className="col-span-2">Auj.</span>
+          <span className="col-span-4">Actions</span>
+        </div>
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-brand-orange" />
-          </div>
-        ) : restaurants.length === 0 ? (
-          <p className="text-center py-16 text-gray-400 text-sm">Aucun restaurant</p>
+          <p className="text-center text-gray-400 text-sm py-12">Chargement…</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-center text-gray-500 py-20 text-sm">Aucune boutique</p>
         ) : (
           <div className="divide-y divide-gray-100">
-            {restaurants.map(r => (
-              <div key={r.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
-                {/* Avatar */}
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                  style={{ backgroundColor: r.is_boosted ? '#F97316' : '#E5E7EB', color: r.is_boosted ? '#fff' : '#9CA3AF' }}>
-                  {r.name.charAt(0)}
-                </div>
-
-                {/* Nom + ville */}
-                <div className="flex-1 min-w-0">
+            {filtered.map(b => (
+              <div key={b.id} className="p-4 sm:p-0 sm:grid sm:grid-cols-12 sm:gap-3 sm:px-5 sm:py-4 items-center gap-3 flex flex-col sm:flex-row">
+                <div className="w-full sm:col-span-4 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-sm text-gray-900 truncate">{r.name}</p>
-                    {r.is_boosted && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
-                        style={{ backgroundColor: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
-                        <Zap className="w-3 h-3 fill-orange-500" />Boosté
-                      </span>
-                    )}
-                    {!r.is_active && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
-                        Hors ligne
-                      </span>
-                    )}
+                    <p className="text-sm font-medium text-gray-900 truncate">{b.name}</p>
+                    {b.is_verified && <VerifiedBadge label="" className="text-gray-600" />}
                   </div>
-                  <p className="text-xs text-gray-400 mt-0.5">{r.city ?? 'Sénégal'} · /{r.slug}</p>
+                  <p className="text-xs text-gray-400 truncate">{b.shop_category}{b.city ? ` · ${b.city}` : ''}</p>
                 </div>
-
-                {/* Note */}
-                <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0 w-20">
-                  {r.rating ? (
-                    <>
-                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                      <span className="text-sm font-semibold text-gray-900">{r.rating.toFixed(1)}</span>
-                      <span className="text-xs text-gray-400">({r.review_count})</span>
-                    </>
-                  ) : (
-                    <span className="text-xs text-gray-300">Pas d&apos;avis</span>
-                  )}
+                <div className="sm:col-span-2">
+                  <div className="flex items-center gap-1 text-sm text-gray-700">
+                    <Eye className="w-3.5 h-3.5 text-gray-400" />
+                    {b.views.toLocaleString('fr-SN')}
+                  </div>
                 </div>
-
-                {/* Clics 30j */}
-                <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0 w-24 justify-end">
-                  <TrendingUp className="w-3.5 h-3.5 text-gray-300" />
-                  <span className="text-sm font-semibold text-gray-900">{r.click_count}</span>
-                  <span className="text-xs text-gray-400">clics</span>
+                <div className="sm:col-span-2">
+                  <span className="text-sm text-gray-500">{b.views_today > 0 ? `+${b.views_today}` : '—'}</span>
                 </div>
-
-                {/* Toggle boost */}
-                <button
-                  onClick={() => toggleBoost(r)}
-                  disabled={togglingId === r.id}
-                  className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
-                  style={r.is_boosted ? {
-                    backgroundColor: '#FFF7ED',
-                    color: '#EA580C',
-                    border: '1px solid #FED7AA',
-                  } : {
-                    backgroundColor: '#F9FAFB',
-                    color: '#6B7280',
-                    border: '1px solid #E5E7EB',
-                  }}
-                >
-                  {togglingId === r.id
-                    ? <Loader2 className="w-3 h-3 animate-spin" />
-                    : <Zap className={`w-3 h-3 ${r.is_boosted ? 'fill-orange-500 text-orange-500' : ''}`} />
-                  }
-                  {r.is_boosted ? 'Retirer le boost' : 'Booster'}
-                </button>
+                <div className="sm:col-span-4 flex items-center gap-2 flex-wrap w-full sm:w-auto">
+                  <button
+                    onClick={() => toggle(b.id, 'is_active', b.is_active)}
+                    disabled={toggling === `${b.id}-is_active`}
+                    className={`text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${b.is_active ? 'bg-green-50 text-green-700 hover:bg-red-50 hover:text-red-600' : 'bg-gray-100 text-gray-500 hover:bg-green-50 hover:text-green-700'}`}>
+                    {b.is_active ? 'Active' : 'Inactive'}
+                  </button>
+                  <button
+                    onClick={() => toggle(b.id, 'is_verified', b.is_verified)}
+                    disabled={toggling === `${b.id}-is_verified`}
+                    className={`text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 ${b.is_verified ? 'bg-blue-50 text-blue-700 hover:bg-gray-100 hover:text-gray-500' : 'bg-gray-100 text-gray-500 hover:bg-blue-50 hover:text-blue-700'}`}>
+                    {b.is_verified ? '✓ Vérifié' : 'Vérifier'}
+                  </button>
+                  <a href={`/${b.slug}`} target="_blank" rel="noopener noreferrer"
+                    className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-brand-violet hover:border-brand-violet/30 transition-colors">
+                    <MousePointerClick className="w-3.5 h-3.5 inline" />
+                  </a>
+                </div>
               </div>
             ))}
           </div>

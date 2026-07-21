@@ -1,503 +1,388 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, MessageCircle, Check, X, MapPin, ExternalLink, UserPlus, Zap, Store, Trash2 } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
-import { Badge } from '@/components/ui/Badge'
+import type { EarlyAccessApplicationRow, EarlyAccessConfigRow, WaitlistRow } from '@/lib/types/database'
+import { Ticket, Clock, CheckCircle, Users, X, MessageCircle } from 'lucide-react'
 
-const MAX_SLOTS = 15
-
-interface Registration {
-  id: string
-  restaurant_name: string
-  admin_name: string
-  phone: string
-  whatsapp: string
-  address: string | null
-  neighborhood: string | null
-  city: string | null
-  wave_number: string | null
-  orange_money_number: string | null
-  logo_url: string | null
-  banner_url: string | null
-  color_choice: 'terangalink' | 'custom'
-  primary_color: string | null
-  secondary_color: string | null
-  facebook_url: string | null
-  instagram_url: string | null
-  tiktok_url: string | null
-  snapchat_url: string | null
-  status: 'pending' | 'accepted' | 'rejected'
-  slot_number: number | null
-  restaurant_id: string | null
-  created_at: string
+const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  pending: { label: 'En attente', color: '#D97706', bg: '#FFFBEB' },
+  contacted: { label: 'Contacté', color: '#2563EB', bg: '#EFF6FF' },
+  confirmed: { label: 'Confirmé', color: '#059669', bg: '#F0FDF4' },
+  rejected: { label: 'Refusé', color: '#DC2626', bg: '#FEF2F2' },
 }
 
-interface WaitlistLead {
-  id: string
-  prenom: string
-  whatsapp: string
-  type: 'reservation' | 'waitlist'
-  contacted: boolean
-  created_at: string
+function StatCard({ title, value, icon, color }: { title: string; value: number; icon: React.ReactNode; color: string }) {
+  return (
+    <div className="rounded-2xl p-5 border" style={{ backgroundColor: '#F9FAFB', borderColor: '#F3F4F6' }}>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-gray-500 text-sm font-medium">{title}</p>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}1A`, color }}>
+          {icon}
+        </div>
+      </div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+    </div>
+  )
 }
 
-interface AcceptResult {
-  tempPassword: string
-  slug: string
-  whatsappUrl: string
+function InfoRow({ label, value, link }: { label: string; value: string; link?: boolean }) {
+  return (
+    <div className="flex justify-between gap-3 py-1.5 text-sm">
+      <span className="text-gray-400">{label}</span>
+      {link ? (
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-brand-violet hover:underline truncate max-w-[60%] text-right">{value}</a>
+      ) : (
+        <span className="text-gray-900 text-right">{value}</span>
+      )}
+    </div>
+  )
 }
 
-const STATUS_CONFIG: Record<Registration['status'], { label: string; variant: 'warning' | 'success' | 'danger' }> = {
-  pending: { label: 'En attente', variant: 'warning' },
-  accepted: { label: 'Acceptée', variant: 'success' },
-  rejected: { label: 'Refusée', variant: 'danger' },
+function InfoSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">{title}</p>
+      {children}
+    </div>
+  )
 }
 
 export default function EarlyAccessPage() {
   const supabase = createClient()
-  const [registrations, setRegistrations] = useState<Registration[]>([])
-  const [waitlist, setWaitlist] = useState<WaitlistLead[]>([])
+  const [applications, setApplications] = useState<EarlyAccessApplicationRow[]>([])
+  const [config, setConfig] = useState<EarlyAccessConfigRow | null>(null)
+  const [waitlist, setWaitlist] = useState<WaitlistRow[]>([])
   const [loading, setLoading] = useState(true)
-  const [selected, setSelected] = useState<Registration | null>(null)
-  const [isOpen, setIsOpen] = useState(true)
-  const [togglingOpen, setTogglingOpen] = useState(false)
-  const [accepting, setAccepting] = useState(false)
-  const [deletingShop, setDeletingShop] = useState(false)
-  const [deletingReg, setDeletingReg] = useState(false)
-  const [acceptResult, setAcceptResult] = useState<AcceptResult | null>(null)
-  const [actionError, setActionError] = useState('')
+  const [selected, setSelected] = useState<EarlyAccessApplicationRow | null>(null)
+  const [notesDraft, setNotesDraft] = useState('')
+  const [confirming, setConfirming] = useState(false)
 
   const load = useCallback(async () => {
-    setLoading(true)
-    const [{ data: regs }, { data: leads }, { data: setting }] = await Promise.all([
-      supabase.from('early_access_registrations').select('*').order('created_at', { ascending: false }),
-      supabase.from('early_access_leads').select('*').eq('type', 'waitlist').order('created_at', { ascending: true }),
-      supabase.from('platform_settings').select('value').eq('key', 'early_access_open').maybeSingle(),
+    const [{ data: apps }, { data: cfg }, { data: wl }] = await Promise.all([
+      supabase.from('early_access_applications').select('*').order('created_at', { ascending: true }),
+      supabase.from('early_access_config').select('*').single(),
+      supabase.from('waitlist').select('*').order('created_at', { ascending: false }),
     ])
-    setRegistrations((regs as Registration[]) ?? [])
-    setWaitlist((leads as WaitlistLead[]) ?? [])
-    setIsOpen(setting?.value !== 'false')
+    setApplications(apps ?? [])
+    setConfig(cfg ?? null)
+    setWaitlist(wl ?? [])
     setLoading(false)
+    return apps ?? []
   }, [supabase])
 
   useEffect(() => { load() }, [load])
 
-  const takenCount = registrations.filter(r => r.status !== 'rejected').length
+  useEffect(() => {
+    setNotesDraft(selected?.notes_admin ?? '')
+  }, [selected])
 
-  async function toggleOpen() {
-    setTogglingOpen(true)
-    const next = !isOpen
-    await supabase.from('platform_settings')
-      .upsert({ key: 'early_access_open', value: next ? 'true' : 'false' }, { onConflict: 'key' })
-    setIsOpen(next)
-    setTogglingOpen(false)
+  async function toggleIsOpen() {
+    if (!config) return
+    const nextOpen = !config.is_open
+    setConfig({ ...config, is_open: nextOpen })
+    await supabase.from('early_access_config').update({ is_open: nextOpen }).eq('id', config.id)
   }
 
-  function openDetail(reg: Registration) {
-    setSelected(reg)
-    setAcceptResult(null)
-    setActionError('')
+  async function updateStatus(id: string, status: EarlyAccessApplicationRow['status']) {
+    setApplications(prev => prev.map(a => a.id === id ? { ...a, status } : a))
+    if (selected?.id === id) setSelected(prev => prev ? { ...prev, status } : prev)
+    await supabase.from('early_access_applications').update({ status }).eq('id', id)
   }
 
-  async function handleRefuse(reg: Registration) {
-    if (!confirm(`Refuser l'inscription de ${reg.restaurant_name} ? La place redeviendra disponible.`)) return
-    await supabase.from('early_access_registrations')
-      .update({ status: 'rejected', updated_at: new Date().toISOString() })
-      .eq('id', reg.id)
-    setRegistrations(prev => prev.map(r => r.id === reg.id ? { ...r, status: 'rejected' } : r))
-    setSelected(s => s ? { ...s, status: 'rejected' } : s)
+  async function saveNotes() {
+    if (!selected) return
+    await supabase.from('early_access_applications').update({ notes_admin: notesDraft }).eq('id', selected.id)
+    setApplications(prev => prev.map(a => a.id === selected.id ? { ...a, notes_admin: notesDraft } : a))
   }
 
-  async function handleAccept(reg: Registration) {
-    if (!confirm(`Créer la boutique pour ${reg.restaurant_name} ?`)) return
-    setAccepting(true)
-    setActionError('')
-    const res = await fetch('/api/super-admin/early-access/accept', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ registration_id: reg.id }),
-    })
-    const data = await res.json()
-    setAccepting(false)
-    if (!res.ok) { setActionError(data.error || 'Erreur'); return }
-
-    const msg = encodeURIComponent(
-      `Bonjour ${data.admin_name}, votre restaurant ${data.restaurant_name} est prêt sur TerangaLink ! ` +
-      `Voici vos identifiants : mot de passe temporaire : ${data.tempPassword}. ` +
-      `Connectez-vous sur teranga-link.com/login`
-    )
-    const whatsappUrl = `https://wa.me/${data.whatsapp.replace(/\D/g, '')}?text=${msg}`
-
-    setAcceptResult({ tempPassword: data.tempPassword, slug: data.slug, whatsappUrl })
-    const updated = { ...reg, status: 'accepted' as const, restaurant_id: data.restaurant_id }
-    setRegistrations(prev => prev.map(r => r.id === reg.id ? updated : r))
-    setSelected(updated)
+  async function confirmAndCreateBoutique(id: string) {
+    setConfirming(true)
+    try {
+      const res = await fetch('/api/super-admin/early-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        alert(data.error || 'Erreur lors de la confirmation')
+        return
+      }
+      const freshApps = await load()
+      const updated = freshApps.find(a => a.id === id)
+      if (updated) setSelected(updated)
+    } finally {
+      setConfirming(false)
+    }
   }
 
-  async function handleDeleteShop(reg: Registration) {
-    if (!confirm(`Supprimer la boutique de ${reg.restaurant_name} ? Cette action est irréversible.`)) return
-    setDeletingShop(true)
-    setActionError('')
-    const res = await fetch('/api/super-admin/early-access/delete-restaurant', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ registration_id: reg.id }),
-    })
-    const data = await res.json()
-    setDeletingShop(false)
-    if (!res.ok) { setActionError(data.error || 'Erreur'); return }
+  if (loading) return <p className="text-gray-400 text-sm py-8">Chargement...</p>
 
-    setAcceptResult(null)
-    const updated = { ...reg, status: 'pending' as const, restaurant_id: null }
-    setRegistrations(prev => prev.map(r => r.id === reg.id ? updated : r))
-    setSelected(updated)
-  }
-
-  async function handleDeleteRegistration(reg: Registration) {
-    if (!confirm(`Supprimer définitivement l'inscription de ${reg.restaurant_name} ?`)) return
-    setDeletingReg(true)
-    const { error } = await supabase.from('early_access_registrations').delete().eq('id', reg.id)
-    setDeletingReg(false)
-    if (error) { setActionError(error.message); return }
-    setRegistrations(prev => prev.filter(r => r.id !== reg.id))
-    setSelected(null)
-  }
-
-  async function toggleContacted(lead: WaitlistLead) {
-    await supabase.from('early_access_leads').update({ contacted: !lead.contacted }).eq('id', lead.id)
-    setWaitlist(prev => prev.map(l => l.id === lead.id ? { ...l, contacted: !l.contacted } : l))
-  }
+  const confirmed = applications.filter(a => a.status === 'confirmed').length
+  const pending = applications.filter(a => a.status === 'pending').length
+  const activeCount = applications.filter(a => a.status !== 'rejected').length
+  const placesLeft = Math.max(0, (config?.max_places ?? 15) - activeCount)
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+    <div>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Early Access</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {takenCount} / {MAX_SLOTS} places prises
-            {waitlist.length > 0 && ` · ${waitlist.length} en liste d'attente`}
-          </p>
+          <p className="text-gray-500 text-sm mt-1">Gestion des {config?.max_places ?? 15} premières boutiques</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600">Inscriptions {config?.is_open ? 'ouvertes' : 'fermées'}</span>
           <button
-            onClick={toggleOpen}
-            disabled={togglingOpen}
-            className="inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-colors disabled:opacity-60"
-            style={isOpen
-              ? { backgroundColor: '#F0FDF4', color: '#22C55E', border: '1px solid #BBF7D0' }
-              : { backgroundColor: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
-            <span className={`w-8 h-4.5 rounded-full relative transition-all ${isOpen ? 'bg-green-500' : 'bg-gray-300'}`} style={{ width: 32, height: 18 }}>
-              <span className="absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white transition-all shadow" style={{ left: isOpen ? 16 : 2 }} />
-            </span>
-            {togglingOpen ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : (isOpen ? 'Inscriptions ouvertes' : 'Inscriptions fermées')}
+            onClick={toggleIsOpen}
+            role="switch"
+            aria-checked={!!config?.is_open}
+            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
+            style={{ backgroundColor: config?.is_open ? '#7C3AED' : '#E5E7EB' }}
+          >
+            <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+              style={{ transform: config?.is_open ? 'translateX(22px)' : 'translateX(2px)' }} />
           </button>
-          <Link href="/early-access" target="_blank"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-colors"
-            style={{ backgroundColor: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB' }}>
-            <ExternalLink className="w-3.5 h-3.5" />
-            Voir la page publique
-          </Link>
-          <Link href="/early-access/inscription" target="_blank"
-            className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2.5 rounded-xl text-white transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#F97316' }}>
-            <UserPlus className="w-3.5 h-3.5" />
-            Inscrire restaurant
-          </Link>
         </div>
       </div>
 
-      {!isOpen && (
-        <div className="rounded-xl p-3.5 mb-6 flex items-center gap-2.5" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
-          <X className="w-4 h-4 flex-shrink-0" style={{ color: '#EF4444' }} />
-          <p className="text-xs" style={{ color: '#991B1B' }}>
-            Les inscriptions sont fermées : la page publique affiche automatiquement la liste d&apos;attente.
-          </p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-        <div className="rounded-2xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#9CA3AF' }}>Places prises</p>
-          <p className="text-2xl font-black" style={{ color: '#111111' }}>{takenCount}<span className="text-sm font-medium" style={{ color: '#9CA3AF' }}> / {MAX_SLOTS}</span></p>
-        </div>
-        <div className="rounded-2xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#9CA3AF' }}>En attente</p>
-          <p className="text-2xl font-black" style={{ color: '#111111' }}>{registrations.filter(r => r.status === 'pending').length}</p>
-        </div>
-        <div className="rounded-2xl p-4" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#9CA3AF' }}>Liste d&apos;attente</p>
-          <p className="text-2xl font-black" style={{ color: '#111111' }}>{waitlist.length}</p>
-        </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <StatCard title="Places restantes" value={placesLeft} icon={<Ticket className="w-4 h-4" />} color="#7C3AED" />
+        <StatCard title="En attente" value={pending} icon={<Clock className="w-4 h-4" />} color="#D97706" />
+        <StatCard title="Confirmées" value={confirmed} icon={<CheckCircle className="w-4 h-4" />} color="#059669" />
+        <StatCard title="Liste d'attente" value={waitlist.length} icon={<Users className="w-4 h-4" />} color="#2563EB" />
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
-        </div>
-      ) : (
-        <div className="space-y-10">
-          <section>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-3" style={{ color: '#9CA3AF' }}>
-              Inscriptions Early Access ({takenCount}/{MAX_SLOTS})
-            </h2>
-            {registrations.length === 0 ? (
-              <div className="rounded-2xl p-8 text-center" style={{ backgroundColor: '#F9FAFB', border: '1px dashed #E5E7EB' }}>
-                <Zap className="w-6 h-6 mx-auto mb-2" style={{ color: '#F97316' }} />
-                <p className="text-sm font-medium mb-1" style={{ color: '#111111' }}>Aucune inscription pour le moment</p>
-                <p className="text-xs" style={{ color: '#9CA3AF' }}>
-                  Partagez la <Link href="/early-access" target="_blank" className="underline">page publique</Link>, ou inscrivez un restaurant vous-même avec le bouton &quot;Inscrire restaurant&quot; ci-dessus.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {registrations.map(reg => (
-                  <div key={reg.id}
-                    onClick={() => openDetail(reg)}
-                    className="rounded-xl p-4 flex items-center justify-between gap-4 cursor-pointer hover:shadow-md transition-all"
-                    style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-                    <div className="min-w-0 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0"
-                        style={{ backgroundColor: '#F97316' }}>
-                        {reg.restaurant_name.charAt(0)}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-sm" style={{ color: '#111111' }}>{reg.restaurant_name}</p>
-                          <Badge variant={STATUS_CONFIG[reg.status].variant}>{STATUS_CONFIG[reg.status].label}</Badge>
-                          {reg.restaurant_id && (
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
-                              style={{ backgroundColor: '#EFF6FF', color: '#2563EB' }}>
-                              <Store className="w-3 h-3" />Boutique créée
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs" style={{ color: '#9CA3AF' }}>
-                          <span>{reg.admin_name}</span>
-                          {reg.city && <span><MapPin className="w-3 h-3 inline mr-0.5" />{reg.city}</span>}
-                          <span>{formatDate(reg.created_at)}</span>
-                        </div>
-                      </div>
-                    </div>
+      <div className="bg-white border border-gray-200 rounded-2xl divide-y divide-gray-100 mb-8">
+        {applications.length === 0 ? (
+          <p className="text-center text-gray-400 py-16 text-sm">Aucune candidature pour le moment</p>
+        ) : (
+          applications.map(app => {
+            const statusInfo = STATUS_LABELS[app.status] ?? STATUS_LABELS.pending
+            return (
+              <button
+                key={app.id}
+                onClick={() => setSelected(app)}
+                className="w-full flex items-center gap-4 p-4 text-left hover:bg-gray-50 transition-colors"
+              >
+                {app.logo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={app.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-brand-violet flex-shrink-0">
+                    {app.boutique_name.charAt(0)}
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section>
-            <h2 className="text-sm font-bold uppercase tracking-wide mb-3" style={{ color: '#9CA3AF' }}>
-              Liste d&apos;attente ({waitlist.length})
-            </h2>
-            {waitlist.length === 0 ? (
-              <p className="text-sm" style={{ color: '#9CA3AF' }}>Personne en liste d&apos;attente.</p>
-            ) : (
-              <div className="space-y-2">
-                {waitlist.map(lead => (
-                  <div key={lead.id}
-                    className="rounded-xl p-4 flex items-center justify-between gap-4"
-                    style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm" style={{ color: '#111111' }}>{lead.prenom}</p>
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs" style={{ color: '#9CA3AF' }}>
-                        <span>{lead.whatsapp}</span>
-                        <span>{formatDate(lead.created_at)}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <a
-                        href={`https://wa.me/${lead.whatsapp.replace(/\D/g, '')}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg text-white"
-                        style={{ backgroundColor: '#25D366' }}>
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        WhatsApp
-                      </a>
-                      <button
-                        onClick={() => toggleContacted(lead)}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-                        style={lead.contacted
-                          ? { backgroundColor: '#F0FDF4', color: '#22C55E', border: '1px solid #BBF7D0' }
-                          : { backgroundColor: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB' }}>
-                        <Check className="w-3.5 h-3.5" />
-                        {lead.contacted ? 'Contacté' : 'Marquer contacté'}
-                      </button>
-                    </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-brand-violet shrink-0">
+                      #{app.place_number}
+                    </span>
+                    <p className="font-semibold text-gray-900 truncate">{app.boutique_name}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-      )}
+                  <p className="text-xs text-gray-400">{app.shop_category} · {app.city}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 truncate">{app.owner_name} · {app.phone}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full"
+                    style={{ backgroundColor: statusInfo.bg, color: statusInfo.color }}>
+                    {statusInfo.label}
+                  </span>
+                  <span className="text-[11px] text-gray-400">{new Date(app.created_at).toLocaleDateString('fr-SN')}</span>
+                </div>
+              </button>
+            )
+          })
+        )}
+      </div>
 
-      {/* Panel détail */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5">
+        <h2 className="font-bold text-gray-900 mb-4">Liste d&apos;attente ({waitlist.length})</h2>
+        {waitlist.length === 0 ? (
+          <p className="text-sm text-gray-400">Personne pour le moment</p>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {waitlist.map(w => (
+              <div key={w.id} className="flex items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{w.name || 'Sans nom'}</p>
+                  <p className="text-xs text-gray-400">{w.phone}</p>
+                </div>
+                <a
+                  href={`https://wa.me/${w.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                    `Bonjour ${w.name || ''}, TerangaSpot ouvre officiellement bientôt ! Nous vous recontactons dès que les inscriptions sont ouvertes.`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-white shrink-0"
+                  style={{ backgroundColor: '#25D366' }}
+                >
+                  <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {selected && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSelected(null)} />
-          <div className="relative w-full max-w-lg bg-white h-full overflow-y-auto shadow-2xl flex flex-col"
-            style={{ borderLeft: '1px solid #E5E7EB' }}>
-
-            <div className="sticky top-0 bg-white z-10 px-6 py-4 flex items-center justify-between"
-              style={{ borderBottom: '1px solid #E5E7EB' }}>
-              <div>
-                <p className="font-bold text-gray-900">{selected.restaurant_name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant={STATUS_CONFIG[selected.status].variant}>{STATUS_CONFIG[selected.status].label}</Badge>
-                  <span className="text-xs text-gray-400">{formatDate(selected.created_at)}</span>
+          <div className="absolute inset-0 bg-black/30" onClick={() => setSelected(null)} />
+          <div className="relative w-full max-w-lg bg-white h-full overflow-y-auto shadow-2xl border-l border-gray-100">
+            <div className="sticky top-0 bg-white px-6 py-4 border-b border-gray-100 flex items-center justify-between z-10">
+              <div className="flex items-center gap-3">
+                {selected.logo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={selected.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-brand-violet">
+                    {selected.boutique_name.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-gray-900">{selected.boutique_name}</p>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white bg-brand-violet">
+                      Early Access #{selected.place_number}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400">{selected.shop_category} · {selected.city}</p>
                 </div>
               </div>
-              <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
+              <button onClick={() => setSelected(null)}><X className="w-5 h-5 text-gray-400" /></button>
             </div>
 
-            <div className="p-6 space-y-6 flex-1">
+            <div className="p-6 space-y-6">
+              {selected.cover_url && (
+                <InfoSection title="Bannière">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={selected.cover_url} alt="" className="w-full h-36 object-cover rounded-xl border border-gray-100" />
+                </InfoSection>
+              )}
 
-              {acceptResult && (
-                <div className="rounded-xl p-4 space-y-3" style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
-                  <p className="text-green-700 font-bold text-sm">Boutique créée avec succès !</p>
-                  <p className="text-green-600 text-xs">
-                    Mot de passe temporaire : <strong className="font-mono bg-green-100 px-1.5 py-0.5 rounded">{acceptResult.tempPassword}</strong>
-                  </p>
-                  <div className="flex gap-2 flex-wrap">
-                    <a href={acceptResult.whatsappUrl} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg text-white"
-                      style={{ backgroundColor: '#25D366' }}>
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      Envoyer les identifiants WhatsApp
-                    </a>
-                    <a href={`/${acceptResult.slug}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-green-700 font-semibold underline py-2">
-                      <ExternalLink className="w-3 h-3" />Voir le site
-                    </a>
+              {selected.description && (
+                <InfoSection title="Description">
+                  <p className="text-sm text-gray-700 leading-relaxed">{selected.description}</p>
+                </InfoSection>
+              )}
+
+              <InfoSection title="Contact">
+                <InfoRow label="Responsable" value={selected.owner_name} />
+                <InfoRow label="Email" value={selected.email} />
+                <InfoRow label="Téléphone" value={selected.phone} />
+                <InfoRow label="WhatsApp" value={selected.whatsapp_number} />
+              </InfoSection>
+
+              <InfoSection title="Offre">
+                <InfoRow label="Plan" value={selected.plan === 'pro' ? 'Pro' : 'Starter'} />
+                {selected.partner_offer_type && (
+                  <InfoRow
+                    label="Offre partenaire"
+                    value={
+                      selected.partner_offer_type === 'discount_10' ? '-10% de réduction'
+                        : selected.partner_offer_type === 'free_delivery' ? 'Livraison gratuite'
+                        : `Personnalisée : ${selected.partner_offer_custom ?? ''}`
+                    }
+                  />
+                )}
+                {selected.referral_code && <InfoRow label="Code parrainage" value={selected.referral_code} />}
+              </InfoSection>
+
+              {(selected.wave_number || selected.orange_money_number) && (
+                <InfoSection title="Paiement mobile">
+                  {selected.wave_number && <InfoRow label="Wave" value={selected.wave_number} />}
+                  {selected.orange_money_number && <InfoRow label="Orange Money" value={selected.orange_money_number} />}
+                </InfoSection>
+              )}
+
+              {(selected.instagram_url || selected.facebook_url || selected.tiktok_url || selected.snapchat_url) && (
+                <InfoSection title="Réseaux sociaux">
+                  {selected.instagram_url && <InfoRow label="Instagram" value={selected.instagram_url} link />}
+                  {selected.facebook_url && <InfoRow label="Facebook" value={selected.facebook_url} link />}
+                  {selected.tiktok_url && <InfoRow label="TikTok" value={selected.tiktok_url} link />}
+                  {selected.snapchat_url && <InfoRow label="Snapchat" value={selected.snapchat_url} />}
+                </InfoSection>
+              )}
+
+              <InfoSection title="Notes internes">
+                <textarea
+                  value={notesDraft}
+                  onChange={e => setNotesDraft(e.target.value)}
+                  onBlur={saveNotes}
+                  placeholder="Ajouter une note..."
+                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 resize-none focus:outline-none focus:border-brand-violet"
+                  rows={3}
+                />
+              </InfoSection>
+
+              {selected.created_boutique_id && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                    <p className="text-sm font-semibold text-green-700">Boutique créée automatiquement</p>
                   </div>
+                  {selected.created_admin_password && (
+                    <>
+                      <p className="text-xs text-green-600 mb-3">
+                        Mot de passe admin : <span className="font-mono font-bold">{selected.created_admin_password}</span>
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const msg = `Bonjour ${selected.owner_name}, votre boutique ${selected.boutique_name} est prête sur TerangaSpot !\n\nEmail : ${selected.email}\nMot de passe : ${selected.created_admin_password}\n\nConnectez-vous sur : ${window.location.origin}/login`
+                          window.open(`https://wa.me/${selected.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank')
+                        }}
+                        className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                      >
+                        Envoyer les identifiants sur WhatsApp
+                      </button>
+                    </>
+                  )}
                 </div>
-              )}
-
-              {actionError && (
-                <div className="rounded-xl p-3.5" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
-                  <p className="text-xs" style={{ color: '#991B1B' }}>{actionError}</p>
-                </div>
-              )}
-
-              <Section title="Compte">
-                <Row label="Responsable" value={selected.admin_name} />
-                <Row label="Téléphone" value={selected.phone} />
-                <Row label="WhatsApp" value={selected.whatsapp} />
-              </Section>
-
-              <Section title="Localisation">
-                {selected.city && <Row label="Ville" value={selected.city} />}
-                {selected.neighborhood && <Row label="Quartier" value={selected.neighborhood} />}
-                {selected.address && <Row label="Adresse" value={selected.address} />}
-                {!selected.city && !selected.neighborhood && !selected.address && <Row label="—" value="Non renseigné" />}
-              </Section>
-
-              <Section title="Paiement">
-                <Row label="Wave" value={selected.wave_number || '—'} />
-                <Row label="Orange Money" value={selected.orange_money_number || '—'} />
-              </Section>
-
-              {(selected.facebook_url || selected.instagram_url || selected.tiktok_url || selected.snapchat_url) && (
-                <Section title="Réseaux sociaux">
-                  {selected.instagram_url && <UrlRow label="Instagram" url={selected.instagram_url} />}
-                  {selected.facebook_url && <UrlRow label="Facebook" url={selected.facebook_url} />}
-                  {selected.tiktok_url && <UrlRow label="TikTok" url={selected.tiktok_url} />}
-                  {selected.snapchat_url && <UrlRow label="Snapchat" url={selected.snapchat_url} />}
-                </Section>
-              )}
-
-              {(selected.logo_url || selected.banner_url) && (
-                <Section title="Images">
-                  <div className="flex flex-wrap gap-2 p-3">
-                    {selected.logo_url && <img src={selected.logo_url} alt="Logo" className="h-14 w-14 rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />}
-                    {selected.banner_url && <img src={selected.banner_url} alt="Bannière" className="h-14 w-28 rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />}
-                  </div>
-                </Section>
               )}
             </div>
 
-            <div className="sticky bottom-0 bg-white px-6 py-4 space-y-2" style={{ borderTop: '1px solid #E5E7EB' }}>
-              <a href={`https://wa.me/${selected.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
+            <div className="sticky bottom-0 bg-white px-6 py-4 border-t border-gray-100 space-y-2">
+              <a
+                href={`https://wa.me/${selected.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `Bonjour ${selected.owner_name}, nous avons bien reçu votre demande d'inscription Early Access pour ${selected.boutique_name} sur TerangaSpot ! Nous allons vous contacter très prochainement pour la suite.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white"
                 style={{ backgroundColor: '#25D366' }}>
-                <MessageCircle className="w-3.5 h-3.5" />
+                <MessageCircle className="w-4 h-4" />
                 Contacter sur WhatsApp
               </a>
 
-              {selected.status === 'pending' && !selected.restaurant_id && (
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => handleAccept(selected)} disabled={accepting}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-60"
-                    style={{ backgroundColor: '#22C55E' }}>
-                    {accepting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Store className="w-3.5 h-3.5" />}
-                    Créer la boutique
-                  </button>
-                  <button onClick={() => handleRefuse(selected)}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ backgroundColor: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
-                    <X className="w-3.5 h-3.5" />
-                    Refuser
-                  </button>
-                </div>
-              )}
-
-              {selected.restaurant_id && (
-                <button onClick={() => handleDeleteShop(selected)} disabled={deletingShop}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-                  style={{ backgroundColor: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
-                  {deletingShop ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Store className="w-3.5 h-3.5" />}
-                  Supprimer la boutique
+              {!selected.created_boutique_id && (
+                <button
+                  onClick={() => confirmAndCreateBoutique(selected.id)}
+                  disabled={confirming}
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50"
+                  style={{ backgroundColor: '#7C3AED' }}>
+                  {confirming ? 'Création en cours...' : 'Confirmer & créer la boutique'}
                 </button>
               )}
 
-              {!selected.restaurant_id && (
-                <button onClick={() => handleDeleteRegistration(selected)} disabled={deletingReg}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-                  style={{ backgroundColor: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB' }}>
-                  {deletingReg ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                  Supprimer l&apos;inscription
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => updateStatus(selected.id, 'contacted')}
+                  disabled={selected.status === 'contacted' || selected.status === 'confirmed'}
+                  className="py-2.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 disabled:opacity-40">
+                  Marquer contacté
                 </button>
-              )}
+                <button
+                  onClick={() => updateStatus(selected.id, 'rejected')}
+                  disabled={selected.status === 'rejected'}
+                  className="py-2.5 rounded-xl text-xs font-semibold border border-red-200 text-red-500 disabled:opacity-40">
+                  Refuser
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: '#9CA3AF' }}>{title}</p>
-      <div className="rounded-xl overflow-hidden space-y-0" style={{ border: '1px solid #E5E7EB' }}>
-        {children}
-      </div>
-    </div>
-  )
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-3 px-4 py-2.5" style={{ borderBottom: '1px solid #F3F4F6' }}>
-      <span className="text-xs text-gray-400 flex-shrink-0 w-28">{label}</span>
-      <span className="text-xs font-medium break-all" style={{ color: '#111111' }}>{value}</span>
-    </div>
-  )
-}
-
-function UrlRow({ label, url }: { label: string; url: string }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: '1px solid #F3F4F6' }}>
-      <span className="text-xs text-gray-400 w-28">{label}</span>
-      <a href={url} target="_blank" rel="noopener noreferrer"
-        className="text-xs text-orange-500 hover:underline truncate flex items-center gap-1">
-        <ExternalLink className="w-3 h-3 flex-shrink-0" />{url}
-      </a>
     </div>
   )
 }

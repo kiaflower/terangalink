@@ -1,224 +1,150 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { OrderItem, PaymentMethod } from '@/lib/types'
+import { NextRequest, NextResponse } from 'next/server'
+import { getSiteUrl } from '@/lib/site-url'
+import { sendPushToBoutique } from '@/lib/push/sendPush'
 
-const PAYMENT_LABELS: Record<PaymentMethod, string> = {
-  cash: 'Espèces',
-  wave: 'Wave',
-  orange_money: 'Orange Money',
+export const dynamic = 'force-dynamic'
+
+async function generateOrderNumber(boutiqueId: string, admin: ReturnType<typeof createAdminClient>): Promise<string> {
+  const { count } = await admin
+    .from('orders')
+    .select('id', { count: 'exact', head: true })
+    .eq('boutique_id', boutiqueId)
+  const next = ((count ?? 0) + 1).toString().padStart(6, '0')
+  return `TS-${next}`
 }
 
-function cleanPhone(phone: string | null | undefined) {
-  const digits = (phone || '').replace(/\D/g, '')
-  if (digits.length === 9 && digits.startsWith('7')) return `221${digits}`
-  return digits
-}
-
-function formatOrderTime(value: string) {
-  const d = new Date(value)
-  if (isNaN(d.getTime())) return new Date().toLocaleString('fr-SN', { timeZone: 'Africa/Dakar' })
-  return new Intl.DateTimeFormat('fr-SN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Africa/Dakar',
-  }).format(d)
-}
-
-function buildOwnerMessage(params: {
-  restaurantName: string
-  orderNumber: string
-  customerName: string
-  customerPhone: string
-  customerAddress: string | null
-  items: OrderItem[]
+async function resolveDiscount(
+  admin: ReturnType<typeof createAdminClient>,
+  boutiqueId: string,
+  promoCodeId: string | undefined,
   total: number
-  paymentMethod: PaymentMethod
-  createdAt: string
-  notes: string | null
-  discountAmount: number
-  shortUrl: string
-  isPreorder: boolean
-  deliveryDate: string | null
-}) {
-  const itemLines = params.items
-    .map(item => {
-      const variantPart = item.variant_name ? ` (${item.variant_name})` : ''
-      return `• ${item.quantity}× ${item.name}${variantPart} — ${(item.price * item.quantity).toLocaleString('fr-SN')} FCFA`
-    })
-    .join('\n')
+): Promise<{ promo_code_id: string | null; discount_amount: number }> {
+  if (!promoCodeId) return { promo_code_id: null, discount_amount: 0 }
 
-  const promoLine = params.discountAmount > 0
-    ? `\nRéduction : −${params.discountAmount.toLocaleString('fr-SN')} FCFA`
-    : ''
-  const noteLine = params.notes ? `\nNote : ${params.notes}` : ''
-  const addressLine = params.customerAddress ? `\nAdresse : ${params.customerAddress}` : ''
-  const header = params.isPreorder
-    ? `📅 Précommande ${params.orderNumber} — ${params.restaurantName}`
-    : `🍽 Commande ${params.orderNumber} — ${params.restaurantName}`
-  const deliveryLine = params.isPreorder && params.deliveryDate
-    ? `\nLivraison : ${params.deliveryDate}`
-    : ''
+  // Les codes promo sont réservés au plan Pro — vérifié ici aussi (pas
+  // seulement à la validation du code) car un client pourrait autrement
+  // appeler /api/orders directement avec un promo_code_id périmé par un
+  // downgrade Starter survenu entre la validation et l'envoi de la commande.
+  const { data: subscription } = await admin
+    .from('subscriptions')
+    .select('plan')
+    .eq('boutique_id', boutiqueId)
+    .single()
+  if (subscription?.plan !== 'pro') return { promo_code_id: null, discount_amount: 0 }
 
-  return encodeURIComponent(
-    `${header}\n\n` +
-    `Client : ${params.customerName}\n` +
-    `Tél : ${params.customerPhone}${addressLine}\n\n` +
-    `Articles :\n${itemLines}${promoLine}${deliveryLine}\n\n` +
-    `Total : ${params.total.toLocaleString('fr-SN')} FCFA\n` +
-    `Paiement : ${PAYMENT_LABELS[params.paymentMethod]}\n` +
-    `Heure : ${formatOrderTime(params.createdAt)}${noteLine}\n\n` +
-    `🔗 Voir la commande :\n${params.shortUrl}`
-  )
+  const { data: promo } = await admin
+    .from('promo_codes')
+    .select('*')
+    .eq('id', promoCodeId)
+    .eq('boutique_id', boutiqueId)
+    .single()
+
+  if (!promo || !promo.is_active) return { promo_code_id: null, discount_amount: 0 }
+  if (promo.expires_at && new Date(promo.expires_at) < new Date()) return { promo_code_id: null, discount_amount: 0 }
+  if (promo.max_uses != null && promo.uses_count >= promo.max_uses) return { promo_code_id: null, discount_amount: 0 }
+  if (total < promo.min_order_amount) return { promo_code_id: null, discount_amount: 0 }
+
+  const discount = promo.discount_type === 'percent'
+    ? Math.round((total * promo.discount_value) / 100)
+    : Math.min(promo.discount_value, total)
+
+  await admin.from('promo_codes').update({ uses_count: promo.uses_count + 1 }).eq('id', promo.id)
+
+  return { promo_code_id: promo.id, discount_amount: discount }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const {
-      restaurant_id, customer_name, customer_phone, customer_address,
-      items, total, notes, promo_code_id, discount_amount,
-    } = body
+export async function POST(req: NextRequest) {
+  const body = await req.json()
+  const { boutique_id, customer_name, customer_phone, customer_address, items, total, payment_method, notes, promo_code_id } = body
 
-    const payment_method: PaymentMethod = ['cash', 'wave', 'orange_money'].includes(body.payment_method)
-      ? body.payment_method
-      : 'cash'
-
-    if (!restaurant_id || !customer_phone?.trim() || !items?.length || !total) {
-      return NextResponse.json({ error: 'Données manquantes' }, { status: 400 })
-    }
-
-    const admin = createAdminClient()
-
-    const { data: restaurant, error: restaurantError } = await admin
-      .from('restaurants')
-      .select('name, slug, phone, whatsapp_number')
-      .eq('id', restaurant_id)
-      .eq('is_active', true)
-      .single()
-
-    if (restaurantError || !restaurant) {
-      console.error('[orders POST] restaurant error:', restaurantError)
-      return NextResponse.json({ error: 'Restaurant introuvable' }, { status: 404 })
-    }
-
-    const ownerPhone = cleanPhone(restaurant.whatsapp_number || restaurant.phone)
-    if (!ownerPhone) {
-      return NextResponse.json({ error: 'Numéro WhatsApp du restaurant non configuré' }, { status: 400 })
-    }
-
-    // Normaliser les items — s'assurer que id est toujours un UUID simple
-    const normalizedItems = (items as Array<{
-      id: string; name: string; price: number; quantity: number
-      variant_id?: string | null; variant_name?: string | null
-      preorder_delivery_date?: string | null
-    }>).map(i => ({
-      id: i.id.includes('__') ? i.id.split('__')[0] : i.id, // sécurité : nettoyer si corrompu
-      name: i.name,
-      price: i.price,
-      quantity: i.quantity,
-      variant_id: i.variant_id ?? null,
-      variant_name: i.variant_name ?? null,
-      preorder_delivery_date: i.preorder_delivery_date ?? null,
-    }))
-
-    // Construire le payload d'insertion progressivement
-    // pour gérer les colonnes qui n'existent pas encore en BDD
-    const basePayload = {
-      restaurant_id,
-      customer_name: (customer_name || '').trim() || 'Client',
-      customer_phone: customer_phone.trim(),
-      items: normalizedItems,
-      total,
-      status: 'pending' as const,
-      notes: notes || null,
-    }
-
-    // Essai complet avec toutes les colonnes optionnelles
-    let { data, error } = await admin
-      .from('orders')
-      .insert({
-        ...basePayload,
-        payment_method,
-        customer_address: (customer_address || '').trim() || null,
-        promo_code_id: promo_code_id || null,
-        discount_amount: discount_amount || 0,
-      })
-      .select()
-      .single()
-
-    // Fallbacks progressifs si certaines colonnes manquent en BDD
-    if (error) {
-      console.error('[orders POST] insert error (full):', error.message)
-
-      if (error.message.includes('promo_code_id') || error.message.includes('discount_amount')) {
-        // Sans promo
-        const r = await admin.from('orders').insert({
-          ...basePayload,
-          payment_method,
-          customer_address: (customer_address || '').trim() || null,
-        }).select().single()
-        data = r.data; error = r.error
-        if (error) console.error('[orders POST] insert error (no promo):', error.message)
-      }
-
-      if (error && error.message.includes('customer_address')) {
-        // Sans adresse
-        const r = await admin.from('orders').insert({
-          ...basePayload,
-          payment_method,
-        }).select().single()
-        data = r.data; error = r.error
-        if (error) console.error('[orders POST] insert error (no address):', error.message)
-      }
-
-      if (error && error.message.includes('payment_method')) {
-        // Sans payment_method
-        const r = await admin.from('orders').insert(basePayload).select().single()
-        data = r.data; error = r.error
-        if (error) console.error('[orders POST] insert error (base):', error.message)
-      }
-    }
-
-    if (error || !data) {
-      console.error('[orders POST] final error:', error)
-      return NextResponse.json({ error: error?.message || 'Erreur insertion' }, { status: 500 })
-    }
-
-    const orderNumber = (data as { order_number?: string }).order_number || data.id.slice(0, 8).toUpperCase()
-    const origin = request.nextUrl.origin
-    const shortUrl = `${origin}/c/${restaurant.slug}/${orderNumber}`
-
-    const preorderItem = normalizedItems.find(i => i.preorder_delivery_date)
-    const isPreorder = !!preorderItem
-    const deliveryDate = preorderItem?.preorder_delivery_date ?? null
-
-    const whatsappMessage = buildOwnerMessage({
-      restaurantName: restaurant.name,
-      orderNumber,
-      customerName: data.customer_name || 'Client',
-      customerPhone: customer_phone.trim(),
-      customerAddress: (data as { customer_address?: string | null }).customer_address || null,
-      items: data.items as OrderItem[],
-      total: data.total,
-      paymentMethod: (data as { payment_method?: PaymentMethod }).payment_method || payment_method,
-      createdAt: data.created_at,
-      notes: notes || null,
-      discountAmount: discount_amount || 0,
-      shortUrl,
-      isPreorder,
-      deliveryDate,
-    })
-
-    return NextResponse.json({
-      success: true,
-      data,
-      order_number: orderNumber,
-      short_url: shortUrl,
-      slug: restaurant.slug,
-      whatsapp_url: `https://wa.me/${ownerPhone}?text=${whatsappMessage}`,
-    })
-  } catch (err) {
-    console.error('[orders POST] unexpected error:', err)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  if (!boutique_id || !items || !total) {
+    return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
   }
+
+  const admin = createAdminClient()
+  const { data: boutique } = await admin.from('boutiques').select('slug, is_active').eq('id', boutique_id).single()
+  if (!boutique?.is_active) {
+    return NextResponse.json({ error: 'Boutique non disponible' }, { status: 400 })
+  }
+
+  // Le suivi de commande client (/c/[slug]/[ref]) est une fonctionnalité
+  // Starter/Pro — en Free, on n'inclut pas ce lien dans la commande.
+  const { data: subForTracking } = await admin.from('subscriptions').select('plan').eq('boutique_id', boutique_id).single()
+  const hasOrderTracking = subForTracking?.plan !== 'free'
+
+  const { promo_code_id: appliedPromoId, discount_amount } = await resolveDiscount(admin, boutique_id, promo_code_id, total)
+
+  const baseInsertData: Record<string, unknown> = {
+    boutique_id,
+    customer_name,
+    customer_phone,
+    customer_address: customer_address || null,
+    items,
+    total: total - discount_amount,
+    discount_amount,
+    promo_code_id: appliedPromoId,
+    payment_method: payment_method ?? 'Cash',
+    notes: notes || null,
+    status: 'pending',
+  }
+
+  // Checkout is a public, unauthenticated flow (customers never log in), so
+  // this must bypass RLS rather than rely on the anon-scoped client.
+  // order_number is generated per-boutique and can collide under concurrent
+  // requests (two customers checking out at the same time); retry with a
+  // freshly-computed number on a unique-constraint violation.
+  let data, error
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const order_number = await generateOrderNumber(boutique_id, admin)
+    const result = await admin.from('orders').insert({ ...baseInsertData, order_number }).select().single()
+    data = result.data
+    error = result.error
+    if (!error || error.code !== '23505') break
+  }
+
+  if (error) {
+    console.error('orders insert error:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Décrémente le stock des articles commandés (hors précommandes, qui portent
+  // sur un stock futur et ne doivent pas toucher le stock disponible actuel).
+  // decrement_product_stock est un no-op si track_stock est désactivé pour
+  // ce produit, donc aucune vérification préalable n'est nécessaire ici.
+  for (const item of items as Array<{ product_id?: string; quantity?: number; isPreorder?: boolean }>) {
+    if (!item.product_id || item.isPreorder) continue
+    const quantity = Number(item.quantity)
+    if (!Number.isFinite(quantity) || quantity <= 0) continue
+    await admin.rpc('decrement_product_stock', { p_product_id: item.product_id, p_quantity: quantity })
+  }
+
+  // /c/[slug]/[order_number] is the unified link: it auto-redirects the
+  // boutique admin (when logged in) to their dashboard order view, and
+  // shows the public tracking page to the customer otherwise (Starter/Pro only).
+  const dashboard_url = hasOrderTracking ? `${getSiteUrl()}/c/${boutique.slug}/${data.order_number}` : null
+
+  // Awaited (pas fire-and-forget) : une fonction serverless Vercel peut être
+  // gelée juste après avoir envoyé la réponse, ce qui tuerait une promesse
+  // encore en vol. Échec de push non bloquant pour le client final.
+  try {
+    const { data: settings } = await admin
+      .from('boutique_notification_settings')
+      .select('new_order_enabled')
+      .eq('boutique_id', boutique_id)
+      .maybeSingle()
+
+    if (settings?.new_order_enabled !== false) {
+      await sendPushToBoutique(admin, boutique_id, {
+        type: 'new_order',
+        title: 'Nouvelle commande !',
+        body: `${customer_name} — ${(total - discount_amount).toLocaleString('fr-FR')} FCFA`,
+        url: '/dashboard/boutique/orders',
+      })
+    }
+  } catch (err) {
+    console.error('new_order push error:', err)
+  }
+
+  return NextResponse.json({ ...data, slug: boutique.slug, dashboard_url })
 }

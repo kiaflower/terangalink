@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Le body est maintenant blanc — les pages sombres gèrent leur propre fond */
   :root { color-scheme: light; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
@@ -15,13 +14,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Scrollbar — s'adapte au contexte */
+  .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: #F3F4F6; }
   ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: #F97316; }
+  ::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
 
-  /* Dashboard dark — override du body */
   .theme-dark {
     color-scheme: dark;
     background-color: #0A0A0A;
@@ -30,7 +30,50 @@
   .theme-dark ::-webkit-scrollbar-track { background: #1C1C1C; }
   .theme-dark ::-webkit-scrollbar-thumb { background: #2E2E2E; }
 
-  :focus-visible { outline: 2px solid #F97316; outline-offset: 2px; }
+  :focus-visible { outline: 2px solid #7C3AED; outline-offset: 2px; }
+
+  /* iOS Safari auto-zooms on focus when an input's font-size is below 16px,
+     regardless of the viewport meta's user-scalable/maximum-scale setting. */
+  @media (max-width: 767px) {
+    input, select, textarea { font-size: 16px !important; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    html { scroll-behavior: auto; }
+  }
+}
+
+@keyframes marqueeSlide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+@keyframes tendancesScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes fadeInPhoto {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.fade-in-photo {
+  animation: fadeInPhoto 0.6s ease;
+}
+
+.tendances-marquee {
+  animation: tendancesScroll 30s linear infinite;
+  width: max-content;
+}
+
+.tendances-marquee:hover {
+  animation-play-state: paused;
 }
 
 @layer components {
@@ -39,11 +82,10 @@
   .heading-xl { @apply font-sans font-black text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight; }
   .heading-lg { @apply font-sans font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight tracking-tight; }
   .heading-md { @apply font-sans text-2xl sm:text-3xl font-bold tracking-tight; }
-  .text-gradient { @apply bg-gradient-to-r from-brand-orange via-brand-gold to-brand-orange-light bg-clip-text text-transparent; }
-  .glow-orange { box-shadow: 0 0 40px rgba(249,115,22,0.12), 0 0 80px rgba(249,115,22,0.04); }
+  .text-gradient { @apply bg-gradient-to-r from-brand-violet via-brand-gold to-brand-violet-light bg-clip-text text-transparent; }
+  .glow-violet { box-shadow: 0 0 40px rgba(124,58,237,0.12), 0 0 80px rgba(124,58,237,0.04); }
   .stats-grid { @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4; }
 
-  /* Form card — version light et dark */
   .form-card {
     background-color: #F9FAFB;
     border: 1px solid #E5E7EB;
@@ -55,7 +97,6 @@
     border-color: #242424;
   }
 
-  /* Glass card */
   .glass-card {
     background-color: rgba(0,0,0,0.03);
     border: 1px solid rgba(0,0,0,0.08);

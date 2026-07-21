@@ -1,13 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  // Accessible aux utilisateurs connectés (dashboard restaurant)
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-
+  // Public — les prospects doivent pouvoir voir les créneaux disponibles
   const admin = createAdminClient()
   const today = new Date().toISOString().slice(0, 10)
 
@@ -26,18 +23,16 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  // Accessible sans authentification (prospects depuis /pour-les-restaurants)
-  // et aux utilisateurs connectés (dashboard restaurant)
+  // Public — les prospects réservent un appel sans être connectés
   const body = await req.json()
-  const { slot_id, restaurant_id, restaurant_name, owner_name, email, whatsapp } = body
+  const { slot_id, boutique_id, boutique_name, owner_name, email, whatsapp } = body
 
-  if (!slot_id || !owner_name || !restaurant_name) {
+  if (!slot_id || !owner_name || !boutique_name) {
     return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
   }
 
   const admin = createAdminClient()
 
-  // Vérifier que le créneau est encore disponible et récupérer date/heures
   const { data: slot } = await admin
     .from('availability_slots')
     .select('id, is_booked, is_blocked, date, start_time, end_time')
@@ -50,8 +45,8 @@ export async function POST(req: Request) {
 
   const { error: apptErr } = await admin.from('appointments').insert({
     slot_id,
-    restaurant_id: restaurant_id ?? null,
-    restaurant_name,
+    boutique_id: boutique_id ?? null,
+    boutique_name,
     owner_name,
     email: email ?? null,
     whatsapp: whatsapp ?? null,

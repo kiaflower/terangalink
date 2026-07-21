@@ -1,303 +1,210 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import {
-  Globe, MessageCircle, Mail, Palette, Settings, Shield,
-  Save, CheckCircle, Loader2, AlertCircle, Info,
-  ToggleLeft, ToggleRight, ChevronDown, ChevronUp,
-} from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import { Input } from '@/components/ui/Input'
+import { useEffect, useState } from 'react'
+import { Settings as SettingsIcon, Check, AlertTriangle, Bell } from 'lucide-react'
+import { NotificationSettings } from '@/components/dashboard/NotificationSettings'
 
-function SmtpTest() {
-  const [testEmail, setTestEmail] = useState('')
-  const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null)
+const NOTIF_FIELDS = [
+  { key: 'admin_notif_no_new_product_days', label: 'Pas de nouveau produit depuis (jours)', placeholder: '14' },
+  { key: 'admin_notif_no_product_ever_days', label: "Boutique jamais publiée après (jours)", placeholder: '7' },
+  { key: 'admin_notif_inactive_boutique_days', label: 'Boutique inactive depuis (jours)', placeholder: '30' },
+  { key: 'admin_notif_product_limit_percent', label: 'Alerte limite de plan atteinte à (%)', placeholder: '80' },
+]
 
-  async function handleTest() {
-    if (!testEmail.trim()) return
-    setSending(true)
-    setResult(null)
-    try {
-      const res = await fetch('/api/admin/test-smtp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to_email: testEmail.trim() }),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        setResult({ ok: true, message: `✅ Email envoyé à ${testEmail}` })
-      } else {
-        setResult({ ok: false, message: `❌ Erreur : ${data.error || 'Inconnue'}` })
-      }
-    } catch (e) {
-      setResult({ ok: false, message: `❌ Erreur réseau : ${e instanceof Error ? e.message : 'Inconnue'}` })
-    } finally {
-      setSending(false)
-    }
-  }
+const NOTIF_TOGGLES: Array<{ key: string; label: string; hint: string }> = [
+  { key: 'admin_notif_new_signup_enabled', label: 'Nouvelle inscription', hint: 'Dès qu\'une demande d\'inscription est soumise' },
+  { key: 'admin_notif_no_new_product_enabled', label: 'Catalogue figé / boutique sans produit', hint: 'Pas de nouveau produit, ou aucun produit jamais publié' },
+  { key: 'admin_notif_inactive_boutique_enabled', label: 'Boutique inactive', hint: 'Pas de connexion depuis le seuil configuré' },
+  { key: 'admin_notif_overdue_invoice_enabled', label: 'Facture impayée', hint: 'Facture au statut "en retard"' },
+  { key: 'admin_notif_product_limit_enabled', label: 'Proche de la limite de plan', hint: 'Free/Starter proches de leur limite de produits' },
+  { key: 'admin_notif_periodic_reminder_enabled', label: 'Rappel périodique', hint: 'Lundi, mercredi et vendredi — bilan + suggestion' },
+]
 
-  return (
-    <div className="space-y-3">
-      <p className="text-gray-500 text-xs">
-        Envoie un email de test pour vérifier que SMTP_HOST, SMTP_USER et SMTP_PASS sont bien configurés en production.
-      </p>
-      <div className="flex gap-2">
-        <input
-          type="email"
-          value={testEmail}
-          onChange={e => setTestEmail(e.target.value)}
-          placeholder="ton@email.com"
-          className="flex-1 bg-gray-100 border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
-        />
-        <button
-          onClick={handleTest}
-          disabled={sending || !testEmail.trim()}
-          className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange/90 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
-        >
-          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-          Tester
-        </button>
-      </div>
-      {result && (
-        <p className={`text-sm font-medium ${result.ok ? 'text-green-400' : 'text-red-400'}`}>
-          {result.message}
-        </p>
-      )}
-    </div>
+const FIELDS = [
+  { key: 'platform_url', label: 'URL de la plateforme', placeholder: 'https://terangaspot.com' },
+  { key: 'support_phone', label: 'Téléphone support', placeholder: '+221 77 000 00 00' },
+  { key: 'support_whatsapp', label: 'WhatsApp support', placeholder: '+221 77 000 00 00' },
+  { key: 'support_email', label: 'Email support', placeholder: 'support@terangaspot.com' },
+  { key: 'instagram_url', label: 'Lien Instagram', placeholder: 'https://instagram.com/terangaspot' },
+  { key: 'facebook_url', label: 'Lien Facebook', placeholder: 'https://facebook.com/terangaspot' },
+  { key: 'tiktok_url', label: 'Lien TikTok', placeholder: 'https://tiktok.com/@terangaspot' },
+  { key: 'plan_starter_price', label: 'Prix plan Starter (FCFA/mois)', placeholder: '9900' },
+  { key: 'plan_pro_price', label: 'Prix plan Pro (FCFA/mois)', placeholder: '19900' },
+  { key: 'subscription_payment_number', label: 'Numéro de paiement abonnement (Wave / Orange Money)', placeholder: '77 000 00 00' },
+  { key: 'maintenance_message', label: 'Message de maintenance', placeholder: 'Retour dans quelques minutes...' },
+]
+
+const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors'
+
+export default function SettingsPage() {
+  const [values, setValues] = useState<Record<string, string>>({})
+  const [maintenance, setMaintenance] = useState(false)
+  const [notifToggles, setNotifToggles] = useState<Record<string, boolean>>(
+    Object.fromEntries(NOTIF_TOGGLES.map(t => [t.key, true]))
   )
-}
-
-
-function Section({
-  icon: Icon, title, description, children, defaultOpen = true
-}: {
-  icon: React.ElementType; title: string; description?: string; children: React.ReactNode; defaultOpen?: boolean
-}) {
-  const [open, setOpen] = useState(defaultOpen)
-  return (
-    <div className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden">
-      <button className="w-full flex items-center justify-between p-5 hover:bg-gray-100 transition-colors" onClick={() => setOpen(!open)}>
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-brand-orange/10 rounded-xl flex items-center justify-center">
-            <Icon className="w-4 h-4 text-brand-orange" />
-          </div>
-          <div className="text-left">
-            <p className="text-gray-900 font-semibold text-sm">{title}</p>
-            {description && <p className="text-gray-500 text-xs mt-0.5">{description}</p>}
-          </div>
-        </div>
-        {open ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
-      </button>
-      {open && <div className="px-5 pb-5 border-t border-gray-200 pt-4 space-y-4">{children}</div>}
-    </div>
-  )
-}
-
-function ToggleRow({ label, description, value, onChange }: {
-  label: string; description?: string; value: boolean; onChange: (v: boolean) => void
-}) {
-  return (
-    <div className="flex items-center justify-between py-2">
-      <div>
-        <p className="text-gray-900 text-sm font-medium">{label}</p>
-        {description && <p className="text-gray-500 text-xs mt-0.5">{description}</p>}
-      </div>
-      <button onClick={() => onChange(!value)} className="flex-shrink-0 ml-4">
-        {value ? <ToggleRight className="w-7 h-7 text-green-400" /> : <ToggleLeft className="w-7 h-7 text-gray-500" />}
-      </button>
-    </div>
-  )
-}
-
-export default function SuperAdminSettingsPage() {
-  const supabase = createClient()
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [totalRestaurants, setTotalRestaurants] = useState(0)
-  const [totalAdmins, setTotalAdmins] = useState(0)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
 
-  const [platformName, setPlatformName] = useState('TerangaLink')
-  const [platformUrl, setPlatformUrl] = useState('https://terangalink.sn')
-  const [whatsappPrincipal, setWhatsappPrincipal] = useState('221700000000')
-  const [emailSupport, setEmailSupport] = useState('support@terangalink.sn')
-  const [maintenanceMode, setMaintenanceMode] = useState(false)
-  const [allowSignup, setAllowSignup] = useState(false)
-  const [demoActive, setDemoActive] = useState(true)
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(true)
-  const [prixStarter, setPrixStarter] = useState('9900')
-  const [prixPro, setPrixPro] = useState('19900')
+  useEffect(() => {
+    fetch('/api/super-admin/platform-settings')
+      .then(r => r.json())
+      .then(data => {
+        const map: Record<string, string> = {}
+        for (const row of data.settings ?? []) map[row.key] = row.value
+        setValues(map)
+        setMaintenance(map['maintenance_mode'] === 'true')
+        // Absent en base = jamais configuré = valeur par défaut (activé),
+        // pas "désactivé" — cohérent avec getAdminNotificationSettings côté serveur.
+        setNotifToggles(Object.fromEntries(
+          NOTIF_TOGGLES.map(t => [t.key, map[t.key] === undefined ? true : map[t.key] === 'true'])
+        ))
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
 
-  const loadStats = useCallback(async () => {
-    const [{ count: r }, { count: a }, { data: settingsData }] = await Promise.all([
-      supabase.from('restaurants').select('*', { count: 'exact', head: true }),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'restaurant_admin'),
-      supabase.from('platform_settings').select('key, value'),
-    ])
-    setTotalRestaurants(r ?? 0)
-    setTotalAdmins(a ?? 0)
-    // Load saved settings
-    if (settingsData) {
-      const map: Record<string, string> = {}
-      for (const row of settingsData) map[row.key] = row.value
-      if (map.whatsapp) setWhatsappPrincipal(map.whatsapp)
-      if (map.email) setEmailSupport(map.email)
-      if (map.platform_name) setPlatformName(map.platform_name)
-      if (map.platform_url) setPlatformUrl(map.platform_url)
-    }
-  }, [supabase])
-
-  useEffect(() => { loadStats() }, [loadStats])
-
-  async function handleSave() {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     setSaving(true)
-    // Save to platform_settings table
-    const updates = [
-      { key: 'whatsapp', value: whatsappPrincipal },
-      { key: 'email', value: emailSupport },
-      { key: 'platform_name', value: platformName },
-      { key: 'platform_url', value: platformUrl },
+    setError('')
+    const settings = [
+      ...FIELDS.map(f => ({ key: f.key, value: values[f.key] ?? '' })),
+      ...NOTIF_FIELDS.map(f => ({ key: f.key, value: values[f.key] ?? '' })),
+      ...NOTIF_TOGGLES.map(t => ({ key: t.key, value: String(notifToggles[t.key]) })),
+      { key: 'maintenance_mode', value: String(maintenance) },
     ]
-    for (const u of updates) {
-      await supabase
-        .from('platform_settings')
-        .upsert({ key: u.key, value: u.value }, { onConflict: 'key' })
+    const res = await fetch('/api/super-admin/platform-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settings }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      setError(data.error || 'Erreur lors de la sauvegarde')
+    } else {
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 3000)
     }
     setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-3xl">
-      <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Paramètres plateforme</h1>
-          <p className="text-gray-500 text-sm mt-1">Configuration globale de TerangaLink</p>
-        </div>
-        <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-          {saved ? 'Sauvegardé !' : 'Enregistrer'}
-        </button>
+    <div className="max-w-xl">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Paramètres</h1>
+        <p className="text-gray-500 text-sm mt-1">Configuration globale de la plateforme</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        {[
-          { label: 'Restaurants', value: totalRestaurants, color: 'text-brand-orange' },
-          { label: 'Admins', value: totalAdmins, color: 'text-blue-400' },
-          { label: 'Version', value: 'v4.0', color: 'text-purple-400' },
-        ].map(s => (
-          <div key={s.label} className="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-            <p className="text-gray-500 text-xs mt-1">{s.label}</p>
-          </div>
-        ))}
-      </div>
+      {loading ? (
+        <p className="text-gray-500 text-sm">Chargement...</p>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <NotificationSettings variant="admin" />
 
-      <div className="space-y-4">
-        <Section icon={Globe} title="Informations plateforme" description="Nom, URL et contacts officiels">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input label="Nom de la plateforme" value={platformName} onChange={e => setPlatformName(e.target.value)} />
-            <Input label="URL officielle" value={platformUrl} onChange={e => setPlatformUrl(e.target.value)} />
-            <Input label="WhatsApp principal" value={whatsappPrincipal} onChange={e => setWhatsappPrincipal(e.target.value)} hint="Sans + ni espaces : 221771234567" />
-            <Input label="Email support" type="email" value={emailSupport} onChange={e => setEmailSupport(e.target.value)} />
-          </div>
-          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
-            <Info className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-            <p className="text-gray-500 text-xs">✅ Ces modifications s&apos;appliquent automatiquement partout : landing page, footer, emails, QR codes, liens d&apos;upgrade.</p>
-          </div>
-        </Section>
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+            <h2 className="text-gray-900 font-semibold mb-1 flex items-center gap-2">
+              <Bell className="w-4 h-4 text-brand-violet" />
+              Alertes Super Admin
+            </h2>
+            <p className="text-xs text-gray-500">Choisissez quelles alertes déclenchent une notification, et à partir de quel seuil.</p>
 
-        <Section icon={Settings} title="Tarifs abonnements" description="Prix affichés sur la landing page (FCFA)">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { label: 'Starter (FCFA/mois)', value: prixStarter, set: setPrixStarter },
-              { label: 'Pro (FCFA/mois)', value: prixPro, set: setPrixPro },
-            ].map(p => (
-              <div key={p.label}>
-                <label className="text-gray-500 text-xs block mb-1.5">{p.label}</label>
-                <input type="number" value={p.value} onChange={e => p.set(e.target.value)} className="w-full bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50" />
+            <div className="space-y-3">
+              {NOTIF_TOGGLES.map(t => (
+                <label key={t.key} className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={notifToggles[t.key] ?? true}
+                    onChange={e => setNotifToggles(v => ({ ...v, [t.key]: e.target.checked }))}
+                    className="mt-0.5 w-4 h-4 accent-brand-violet"
+                  />
+                  <span>
+                    <span className="block text-sm text-gray-900">{t.label}</span>
+                    <span className="block text-xs text-gray-400">{t.hint}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100">
+              {NOTIF_FIELDS.map(f => (
+                <div key={f.key}>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">{f.label}</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={values[f.key] ?? ''}
+                    onChange={e => setValues(v => ({ ...v, [f.key]: e.target.value }))}
+                    placeholder={f.placeholder}
+                    className={inputClass}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+            <h2 className="text-gray-900 font-semibold mb-2 flex items-center gap-2">
+              <SettingsIcon className="w-4 h-4 text-brand-violet" />
+              Paramètres généraux
+            </h2>
+            {FIELDS.map(f => (
+              <div key={f.key}>
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">{f.label}</label>
+                <input
+                  type="text"
+                  value={values[f.key] ?? ''}
+                  onChange={e => setValues(v => ({ ...v, [f.key]: e.target.value }))}
+                  placeholder={f.placeholder}
+                  className={inputClass}
+                />
               </div>
             ))}
           </div>
-          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-            <p className="text-gray-500 text-xs">Pour changer les prix dans la logique des plans, modifie <code className="text-brand-orange">PLAN_PRICES</code> dans <code className="text-brand-orange">src/lib/plans.ts</code>.</p>
-          </div>
-        </Section>
 
-        <Section icon={Shield} title="Système" description="Maintenance, inscriptions, démonstration">
-          <ToggleRow label="Mode maintenance" description="Les visiteurs voient une page d'indisponibilité. Les admins restent connectés." value={maintenanceMode} onChange={setMaintenanceMode} />
-          {maintenanceMode && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs p-3 rounded-xl">
-              ⚠️ Mode maintenance activé. Les visiteurs ne peuvent pas accéder au site.
+          <div className={`rounded-2xl p-5 border-2 ${maintenance ? 'border-red-300 bg-red-50' : 'bg-white border-gray-200'}`}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className={`w-4 h-4 ${maintenance ? 'text-red-500' : 'text-gray-400'}`} />
+                  <p className="font-semibold text-gray-900 text-sm">Mode maintenance</p>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Active une page de maintenance visible par tous les visiteurs non-admin.
+                </p>
+                {maintenance && (
+                  <p className="text-xs text-red-600 font-medium mt-1.5">⚠ La plateforme est actuellement en maintenance</p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMaintenance(m => !m)}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${maintenance ? 'bg-red-500' : 'bg-gray-200'}`}
+                role="switch"
+                aria-checked={maintenance}
+              >
+                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${maintenance ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
             </div>
+          </div>
+
+          {error && (
+            <p className="text-red-600 text-sm bg-red-50 border border-red-200 px-3 py-2 rounded-lg">{error}</p>
           )}
-          <ToggleRow label="Nouvelles inscriptions" description="Permettre de nouveaux comptes. Actuellement géré manuellement via WhatsApp." value={allowSignup} onChange={setAllowSignup} />
-          <ToggleRow label="Restaurant démo actif" description="Le restaurant démo est accessible depuis le bouton Voir la démo." value={demoActive} onChange={setDemoActive} />
-          <ToggleRow label="Analytics activés" description="Enregistrer les vues et ajouts au panier pour les statistiques restaurants." value={analyticsEnabled} onChange={setAnalyticsEnabled} />
-        </Section>
+          {success && (
+            <p className="text-green-700 text-sm flex items-center gap-1.5"><Check className="w-4 h-4" /> Paramètres enregistrés</p>
+          )}
 
-        <Section icon={Palette} title="Branding dashboard" description="Identité visuelle TerangaLink" defaultOpen={false}>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-gray-500 text-xs block mb-2">Couleur principale</label>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl border border-gray-300" style={{ backgroundColor: '#F97316' }} />
-                <div>
-                  <p className="text-gray-900 text-sm font-mono">#F97316</p>
-                  <p className="text-gray-500 text-xs">Orange TerangaLink</p>
-                </div>
-              </div>
-            </div>
-            <div>
-              <label className="text-gray-500 text-xs block mb-2">Fond dashboard</label>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl border border-gray-300" style={{ backgroundColor: '#FFFFFF' }} />
-                <div>
-                  <p className="text-gray-900 text-sm font-mono">#FFFFFF</p>
-                  <p className="text-gray-500 text-xs">Noir profond</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
-            <Info className="w-4 h-4 text-brand-orange flex-shrink-0 mt-0.5" />
-            <p className="text-gray-500 text-xs">Couleurs dashboard fixes par design. Pour modifier, édite <code className="text-brand-orange">tailwind.config.ts</code>.</p>
-          </div>
-        </Section>
-
-        <Section icon={MessageCircle} title="Notifications" description="Alertes et communications" defaultOpen={false}>
-          <ToggleRow label="Notification nouvelle inscription" description="Message WhatsApp à chaque nouveau restaurant." value={false} onChange={() => {}} />
-          <ToggleRow label="Alerte abonnement expiré" description="Alerte 7 jours avant expiration." value={false} onChange={() => {}} />
-          <ToggleRow label="Rapport hebdomadaire" description="Résumé automatique chaque lundi." value={false} onChange={() => {}} />
-          <div className="bg-gray-100 rounded-xl p-3 flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-            <p className="text-gray-500 text-xs">Les notifications automatiques nécessitent une intégration WhatsApp Business API. Disponible dans une prochaine version.</p>
-          </div>
-        </Section>
-
-        <Section icon={Mail} title="Test SMTP — Emails" description="Vérifier que les emails partent correctement" defaultOpen={false}>
-          <SmtpTest />
-        </Section>
-
-        <Section icon={Mail} title="Contact & support" description="Résumé des coordonnées publiques" defaultOpen={false}>
-          <div className="bg-gray-100 rounded-xl p-4 space-y-2.5">
-            {[
-              { label: 'Email support', value: emailSupport },
-              { label: 'WhatsApp inscriptions', value: `+${whatsappPrincipal}` },
-              { label: 'URL plateforme', value: platformUrl },
-              { label: 'Nom plateforme', value: platformName },
-            ].map(row => (
-              <div key={row.label} className="flex justify-between text-sm">
-                <span className="text-gray-500">{row.label}</span>
-                <span className="text-gray-900 font-medium">{row.value}</span>
-              </div>
-            ))}
-          </div>
-        </Section>
-      </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full bg-brand-violet hover:bg-brand-violet-dark text-white py-2.5 rounded-xl font-medium transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Enregistrement...' : 'Enregistrer les paramètres'}
+          </button>
+        </form>
+      )}
     </div>
   )
 }

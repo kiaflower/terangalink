@@ -1,498 +1,387 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Badge } from '@/components/ui/Badge'
-import { Loader2, Eye, MessageCircle, Check, X, Phone, Mail, MapPin, Clock, ExternalLink, ChevronRight } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { useEffect, useState } from 'react'
+import { X, FileText, ExternalLink, ShieldCheck, Tag, Truck, Sparkles, CheckCircle2 } from 'lucide-react'
 
-type AppStatus = 'pending' | 'accepted' | 'refused' | 'contacted'
-
-interface Application {
-  id: string
-  created_at: string
-  owner_name: string
-  restaurant_name: string
-  email: string
-  whatsapp: string
-  cuisine_type: string | null
-  description: string | null
-  address: string | null
-  city: string | null
-  neighborhood: string | null
-  google_maps_url: string | null
-  opening_hours: Record<string, { ouverture: string; fermeture: string; ferme: boolean }> | null
-  logo_url: string | null
-  banner_url: string | null
-  menu_image_url: string | null
-  product_photos: string[]
-  facebook_url: string | null
-  instagram_url: string | null
-  tiktok_url: string | null
-  snapchat_url: string | null
-  selected_plan: string
-  color_choice: 'terangalink' | 'custom' | null
-  primary_color: string | null
-  secondary_color: string | null
-  allow_social_media: boolean
-  allow_photos: boolean
-  allow_promo_offer: boolean
-  promo_offer_type: string | null
-  promo_offer_custom: string | null
-  status: AppStatus
-  admin_notes: string | null
+interface Inscription {
+  id: string; boutique_name: string; owner_name: string; email: string; phone: string
+  whatsapp_number: string; shop_category?: string; city?: string; description?: string
+  plan?: string; primary_color?: string; facebook_url?: string; instagram_url?: string
+  tiktok_url?: string; snapchat_url?: string; referral_code?: string
+  logo_base64?: string; cover_base64?: string; status: string; created_at: string
+  want_verified_badge?: boolean; partner_offer_type?: string; partner_offer_custom?: string
+  consent_images?: boolean; consent_annuaire?: boolean; consent_marketing?: boolean
+  created_boutique_id?: string; created_admin_password?: string
 }
 
-const STATUS_CONFIG: Record<AppStatus, { label: string; variant: 'warning' | 'success' | 'danger' | 'info' | 'default' }> = {
-  pending:   { label: 'En attente',  variant: 'warning' },
-  accepted:  { label: 'Acceptée',    variant: 'success' },
-  refused:   { label: 'Refusée',     variant: 'danger' },
-  contacted: { label: 'Contactée',   variant: 'info' },
+const STATUS_LABELS: Record<string, string> = { pending: 'En attente', approved: 'Approuvée', rejected: 'Rejetée' }
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-amber-50 text-amber-600 border-amber-200',
+  approved: 'bg-green-50 text-green-600 border-green-200',
+  rejected: 'bg-red-50 text-red-600 border-red-200',
 }
 
-const FILTERS: { key: 'all' | AppStatus; label: string }[] = [
-  { key: 'all', label: 'Toutes' },
-  { key: 'pending', label: 'En attente' },
-  { key: 'accepted', label: 'Acceptées' },
-  { key: 'contacted', label: 'Contactées' },
-  { key: 'refused', label: 'Refusées' },
-]
-
-const JOURS_ORDER = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
-const JOUR_LABELS: Record<string, string> = {
-  lundi: 'Lun', mardi: 'Mar', mercredi: 'Mer', jeudi: 'Jeu',
-  vendredi: 'Ven', samedi: 'Sam', dimanche: 'Dim',
+const OFFER_LABELS: Record<string, string> = {
+  discount_10: '-10% de réduction',
+  free_delivery: 'Livraison gratuite',
+  custom: 'Offre personnalisée',
+}
+const OFFER_ICONS: Record<string, React.ReactNode> = {
+  discount_10: <Tag className="w-3.5 h-3.5" />,
+  free_delivery: <Truck className="w-3.5 h-3.5" />,
+  custom: <Sparkles className="w-3.5 h-3.5" />,
 }
 
-export default function InscriptionsPage() {
-  const supabase = createClient()
-  const [apps, setApps] = useState<Application[]>([])
-  const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<'all' | AppStatus>('pending')
-  const [selected, setSelected] = useState<Application | null>(null)
-  const [accepting, setAccepting] = useState(false)
-  const [refusing, setRefusing] = useState(false)
-  const [contacting, setContacting] = useState(false)
-  const [acceptResult, setAcceptResult] = useState<{ tempPassword: string; slug: string; whatsappUrl: string } | null>(null)
-  const [notes, setNotes] = useState('')
-  const [savingNotes, setSavingNotes] = useState(false)
+function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: () => void; onApproved?: (id: string, action: 'approve' | 'reject') => void }) {
+  const [approving, setApproving] = useState(false)
+  const [rejecting, setRejecting] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    const { data } = await supabase
-      .from('restaurant_applications')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setApps((data as Application[]) ?? [])
-    setLoading(false)
-  }, [supabase])
+  const rows = [
+    { label: 'Boutique', value: ins.boutique_name },
+    { label: 'Responsable', value: ins.owner_name },
+    { label: 'Email', value: ins.email },
+    { label: 'Téléphone', value: ins.phone },
+    { label: 'WhatsApp', value: ins.whatsapp_number },
+    { label: 'Catégorie', value: ins.shop_category },
+    { label: 'Ville', value: ins.city },
+    { label: 'Description', value: ins.description },
+    { label: 'Plan', value: ins.plan === 'pro' ? 'Pro — 19 900 FCFA/mois' : 'Starter — 9 900 FCFA/mois' },
+    { label: 'Instagram', value: ins.instagram_url },
+    { label: 'Facebook', value: ins.facebook_url },
+    { label: 'TikTok', value: ins.tiktok_url },
+    { label: 'Snapchat', value: ins.snapchat_url },
+    { label: 'Code parrainage', value: ins.referral_code },
+    { label: 'Statut', value: STATUS_LABELS[ins.status] ?? ins.status },
+    { label: 'Soumis le', value: new Date(ins.created_at).toLocaleString('fr-SN') },
+  ]
 
-  useEffect(() => { load() }, [load])
-
-  const filtered = filter === 'all' ? apps : apps.filter(a => a.status === filter)
-
-  function openDetail(app: Application) {
-    setSelected(app)
-    setNotes(app.admin_notes ?? '')
-    setAcceptResult(null)
-  }
-
-  async function handleAccept() {
-    if (!selected) return
-    if (!confirm(`Accepter la demande de ${selected.restaurant_name} ?`)) return
-    setAccepting(true)
-    const res = await fetch('/api/super-admin/accept-application', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ application_id: selected.id }),
-    })
-    const data = await res.json()
-    setAccepting(false)
-    if (!res.ok) { alert(data.error || 'Erreur'); return }
-    // Construire l'URL WhatsApp sans l'ouvrir (popup bloqué après async)
-    const msg = encodeURIComponent(
-      `Bonjour ${data.owner_name}, votre restaurant ${data.restaurant_name} est maintenant en ligne sur TerangaLink ! ` +
-      `Voici vos identifiants : Email : ${data.email} / Mot de passe temporaire : ${data.tempPassword}. ` +
-      `Connectez-vous sur teranga-link.com/login`
-    )
-    const whatsappUrl = `https://wa.me/${data.whatsapp.replace(/\D/g, '')}?text=${msg}`
-
-    setAcceptResult({ tempPassword: data.tempPassword, slug: data.slug, whatsappUrl })
-    setApps(prev => prev.map(a => a.id === selected.id ? { ...a, status: 'accepted' } : a))
-    setSelected(s => s ? { ...s, status: 'accepted' } : s)
-  }
-
-  async function handleContact() {
-    if (!selected) return
-    setContacting(true)
-    await supabase.from('restaurant_applications')
-      .update({ status: 'contacted', updated_at: new Date().toISOString() })
-      .eq('id', selected.id)
-    setApps(prev => prev.map(a => a.id === selected.id ? { ...a, status: 'contacted' } : a))
-    setSelected(s => s ? { ...s, status: 'contacted' } : s)
-    setContacting(false)
-    const msg = encodeURIComponent(
-      `Bonjour ${selected.owner_name}, nous avons bien reçu votre demande d'inscription pour ${selected.restaurant_name} sur TerangaLink. ` +
-      `Pouvez-vous nous confirmer quelques informations ?`
-    )
-    window.open(`https://wa.me/${selected.whatsapp.replace(/\D/g, '')}?text=${msg}`, '_blank')
-  }
-
-  async function handleRefuse() {
-    if (!selected) return
-    if (!confirm(`Refuser la demande de ${selected.restaurant_name} ?`)) return
-    setRefusing(true)
-    await supabase.from('restaurant_applications')
-      .update({ status: 'refused', updated_at: new Date().toISOString() })
-      .eq('id', selected.id)
-    setApps(prev => prev.map(a => a.id === selected.id ? { ...a, status: 'refused' } : a))
-    setSelected(s => s ? { ...s, status: 'refused' } : s)
-    setRefusing(false)
-  }
-
-  async function saveNotes() {
-    if (!selected) return
-    setSavingNotes(true)
-    const res = await fetch('/api/super-admin/inscriptions', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: selected.id, admin_notes: notes }),
-    })
+  async function handleApprove() {
+    setApproving(true)
+    const fd = new FormData()
+    fd.append('id', ins.id)
+    fd.append('action', 'approve')
+    const res = await fetch('/api/super-admin/inscriptions', { method: 'POST', body: fd })
+    const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      const data = await res.json()
-      alert(data.error || 'Erreur lors de la sauvegarde')
-    } else {
-      setApps(prev => prev.map(a => a.id === selected.id ? { ...a, admin_notes: notes } : a))
+      alert(data.error || 'Erreur lors de l\'approbation')
+      setApproving(false)
+      return
     }
-    setSavingNotes(false)
+    onApproved?.(ins.id, 'approve')
+    setApproving(false)
+  }
+
+  async function handleReject() {
+    setRejecting(true)
+    const fd = new FormData()
+    fd.append('id', ins.id)
+    fd.append('action', 'reject')
+    await fetch('/api/super-admin/inscriptions', { method: 'POST', body: fd })
+    onApproved?.(ins.id, 'reject')
+    setRejecting(false)
+    onClose()
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white px-6 py-4 flex items-center justify-between border-b border-gray-100 rounded-t-2xl">
+          <div>
+            <h2 className="font-bold text-gray-900">{ins.boutique_name}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Fiche d&apos;inscription complète</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="p-6">
+          {(ins.logo_base64 || ins.cover_base64) && (
+            <div className="mb-5 space-y-3">
+              {ins.cover_base64 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Bannière</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={ins.cover_base64} alt="Bannière" className="w-full h-32 object-cover rounded-xl border border-gray-200" />
+                </div>
+              )}
+              {ins.logo_base64 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-1">Logo</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={ins.logo_base64} alt="Logo" className="w-16 h-16 object-cover rounded-xl border border-gray-200" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {ins.primary_color && (
+            <div className="mb-5 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg border border-gray-200 flex-shrink-0" style={{ backgroundColor: ins.primary_color }} />
+              <span className="text-sm text-gray-600 font-mono">{ins.primary_color}</span>
+              <span className="text-xs text-gray-400">couleur principale</span>
+            </div>
+          )}
+
+          {/* Options spéciales */}
+          {(ins.want_verified_badge || ins.partner_offer_type) && (
+            <div className="mb-5 space-y-2">
+              {ins.want_verified_badge && (
+                <div className="inline-flex items-center gap-2 bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Badge Vérifié demandé (+1 000 FCFA/mois)
+                </div>
+              )}
+              {ins.partner_offer_type && (
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-full w-fit">
+                  {OFFER_ICONS[ins.partner_offer_type]}
+                  Offre partenaire : {OFFER_LABELS[ins.partner_offer_type] ?? ins.partner_offer_type}
+                  {ins.partner_offer_type === 'custom' && ins.partner_offer_custom && ` — "${ins.partner_offer_custom}"`}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Consentements */}
+          <div className="mb-5 space-y-1.5">
+            <p className="text-xs font-medium text-gray-500 mb-2">Consentements</p>
+            {[
+              { key: 'consent_images' as keyof Inscription, label: 'Utilisation images pour pub' },
+              { key: 'consent_annuaire' as keyof Inscription, label: 'Inscription dans l\'annuaire' },
+              { key: 'consent_marketing' as keyof Inscription, label: 'Communications marketing' },
+            ].map(({ key, label }) => (
+              <div key={key} className="flex items-center gap-2">
+                <div className={`w-4 h-4 rounded flex items-center justify-center ${ins[key] ? 'bg-green-500' : 'bg-gray-200'}`}>
+                  {ins[key] && <Check className="w-2.5 h-2.5 text-white" />}
+                </div>
+                <span className="text-xs text-gray-600">{label}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-0">
+            {rows.map(({ label, value }) => value ? (
+              <div key={label} className="flex gap-4 py-2.5 border-b border-gray-50 last:border-0">
+                <span className="text-xs font-medium text-gray-400 w-32 flex-shrink-0 pt-0.5">{label}</span>
+                <span className="text-sm text-gray-900 break-all">{value}</span>
+              </div>
+            ) : null)}
+          </div>
+
+          {/* Boutique créée */}
+          {ins.created_boutique_id && (
+            <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="w-4 h-4 text-green-600" />
+                <p className="text-sm font-semibold text-green-700">Boutique créée automatiquement</p>
+              </div>
+              {ins.created_admin_password && (
+                <>
+                  <p className="text-xs text-green-600 mb-3">Mot de passe admin : <span className="font-mono font-bold">{ins.created_admin_password}</span></p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const msg = `Bonjour ${ins.owner_name}, votre boutique ${ins.boutique_name} est prête sur TerangaSpot !\n\nEmail : ${ins.email}\nMot de passe : ${ins.created_admin_password}\n\nConnectez-vous sur : ${window.location.origin}/login`
+                      window.open(`https://wa.me/${ins.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank')
+                    }}
+                    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+                  >
+                    Envoyer les identifiants sur WhatsApp
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="px-6 pb-6 flex gap-2 pt-2 border-t border-gray-100">
+          {ins.status === 'pending' && (
+            <>
+              <button type="button" onClick={handleApprove} disabled={approving}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50">
+                {approving ? 'Approbation...' : '✓ Approuver & créer boutique'}
+              </button>
+              <button type="button" onClick={handleReject} disabled={rejecting}
+                className="flex-1 border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50">
+                {rejecting ? '...' : 'Rejeter'}
+              </button>
+            </>
+          )}
+          {ins.status === 'approved' && ins.created_boutique_id && (
+            <a href={`/dashboard/super-admin/boutiques`}
+              className="flex-1 flex items-center justify-center gap-2 bg-brand-violet text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-opacity hover:opacity-90">
+              <ExternalLink className="w-4 h-4" />
+              Voir les boutiques
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Check({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
+const FILTER_OPTIONS = [
+  { value: 'all', label: 'Toutes' },
+  { value: 'pending', label: 'En attente' },
+  { value: 'approved', label: 'Approuvées' },
+  { value: 'rejected', label: 'Rejetées' },
+]
+
+export default function InscriptionsPage() {
+  const [inscriptions, setInscriptions] = useState<Inscription[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState<Inscription | null>(null)
+  const [statusFilter, setStatusFilter] = useState('all')
+
+  async function loadInscriptions(): Promise<Inscription[]> {
+    try {
+      const r = await fetch('/api/super-admin/inscriptions-list')
+      const d = await r.json()
+      const list: Inscription[] = d.inscriptions ?? []
+      setInscriptions(list)
+      setLoading(false)
+      return list
+    } catch {
+      setLoading(false)
+      return []
+    }
+  }
+
+  useEffect(() => { loadInscriptions() }, [])
+
+  // La liste n'inclut pas les images (base64, potentiellement plusieurs Mo) —
+  // on charge la fiche complète à la demande, seulement pour l'inscription ouverte.
+  async function openFiche(ins: Inscription) {
+    setSelected(ins)
+    try {
+      const r = await fetch(`/api/super-admin/inscriptions-list?id=${ins.id}`)
+      const d = await r.json()
+      if (d.inscription) setSelected(d.inscription)
+    } catch { /* keep the list-level data */ }
+  }
+
+  async function handleApproved(id: string, action: 'approve' | 'reject') {
+    await loadInscriptions()
+    if (action === 'reject') { setSelected(null); return }
+    const r = await fetch(`/api/super-admin/inscriptions-list?id=${id}`)
+    const d = await r.json()
+    setSelected(d.inscription ?? null)
+  }
+
+  if (loading) return <p className="text-gray-400 text-sm py-8">Chargement...</p>
+
+  return (
+    <div>
+      {selected && (
+        <FicheModal
+          ins={selected}
+          onClose={() => setSelected(null)}
+          onApproved={handleApproved}
+        />
+      )}
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Inscriptions</h1>
-        <p className="text-gray-500 text-sm mt-1">{apps.length} demande(s) reçue(s)</p>
+        <p className="text-gray-500 text-sm mt-1">Gérez les demandes d&apos;inscription des boutiques</p>
       </div>
 
-      {/* Filtres */}
-      <div className="flex gap-2 flex-wrap mb-6">
-        {FILTERS.map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)}
-            className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all"
-            style={{
-              backgroundColor: filter === f.key ? '#F97316' : '#F3F4F6',
-              color: filter === f.key ? '#FFFFFF' : '#6B7280',
-            }}>
-            {f.label}
-            <span className="ml-1.5 opacity-70">
-              ({f.key === 'all' ? apps.length : apps.filter(a => a.status === f.key).length})
-            </span>
+      <div className="flex gap-2 mb-6 overflow-x-auto -mx-1 px-1 pb-1" style={{ scrollbarWidth: 'thin' }}>
+        {FILTER_OPTIONS.map(f => (
+          <button
+            key={f.value}
+            onClick={() => setStatusFilter(f.value)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+              statusFilter === f.value ? 'bg-brand-violet text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+            }`}
+          >
+            {f.label} {f.value !== 'all' ? `(${inscriptions.filter(i => i.status === f.value).length})` : `(${inscriptions.length})`}
           </button>
         ))}
       </div>
 
-      {/* Liste */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-gray-400 text-sm">Aucune demande pour ce filtre</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map(app => (
-            <div key={app.id}
-              className="rounded-2xl p-4 sm:p-5 flex items-start sm:items-center gap-3 sm:gap-4 transition-all hover:shadow-md cursor-pointer"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}
-              onClick={() => openDetail(app)}>
-
-              {/* Avatar */}
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0"
-                style={{ backgroundColor: '#F97316' }}>
-                {app.restaurant_name.charAt(0)}
-              </div>
-
+      <div className="space-y-4">
+        {inscriptions.filter(ins => statusFilter === 'all' || ins.status === statusFilter).map(ins => (
+          <div key={ins.id} className="bg-white border border-gray-200 rounded-2xl p-5">
+            <div className="flex items-start justify-between mb-2 gap-3">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-gray-900 break-words">{app.restaurant_name}</p>
-                  <Badge variant={STATUS_CONFIG[app.status].variant}>{STATUS_CONFIG[app.status].label}</Badge>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                    style={{ backgroundColor: '#FFF7ED', color: '#EA580C' }}>
-                    {app.selected_plan}
+                <div className="flex items-center gap-2 mb-1">
+                  {ins.primary_color && (
+                    <div className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: ins.primary_color }} />
+                  )}
+                  <h3 className="text-base font-semibold text-gray-900 truncate">{ins.boutique_name}</h3>
+                  {ins.want_verified_badge && (
+                    <ShieldCheck className="w-4 h-4 text-brand-violet shrink-0" />
+                  )}
+                </div>
+                <p className="text-sm text-gray-500">{ins.owner_name} · {ins.email}</p>
+                <p className="text-sm text-gray-500">{ins.phone}</p>
+                {ins.shop_category && <p className="text-xs text-gray-400 mt-0.5">{ins.shop_category}{ins.city && ` · ${ins.city}`}</p>}
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Plan: <span className="font-medium">{ins.plan === 'pro' ? 'Pro' : 'Starter'}</span> · {new Date(ins.created_at).toLocaleDateString('fr-SN')}
+                </p>
+                {ins.partner_offer_type && (
+                  <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-full">
+                    {OFFER_ICONS[ins.partner_offer_type]}
+                    {OFFER_LABELS[ins.partner_offer_type]}
                   </span>
-                </div>
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-400">
-                  <span>{app.owner_name}</span>
-                  {app.city && <span><MapPin className="w-3 h-3 inline mr-0.5" />{app.city}</span>}
-                  <span className="break-all">{app.whatsapp}</span>
-                  <span>{formatDate(app.created_at)}</span>
-                </div>
-              </div>
-
-              <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1 sm:mt-0" />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Panel détail */}
-      {selected && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSelected(null)} />
-          <div className="relative w-full max-w-lg bg-white h-full overflow-y-auto shadow-2xl flex flex-col"
-            style={{ borderLeft: '1px solid #E5E7EB' }}>
-
-            {/* Header panneau */}
-            <div className="sticky top-0 bg-white z-10 px-6 py-4 flex items-center justify-between"
-              style={{ borderBottom: '1px solid #E5E7EB' }}>
-              <div>
-                <p className="font-bold text-gray-900">{selected.restaurant_name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant={STATUS_CONFIG[selected.status].variant}>{STATUS_CONFIG[selected.status].label}</Badge>
-                  <span className="text-xs text-gray-400">{formatDate(selected.created_at)}</span>
-                </div>
-              </div>
-              <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6 flex-1">
-
-              {/* Résultat accept */}
-              {acceptResult && (
-                <div className="rounded-xl p-4 space-y-3" style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
-                  <p className="text-green-700 font-bold text-sm">Restaurant créé avec succès !</p>
-                  <p className="text-green-600 text-xs">
-                    Mot de passe temporaire : <strong className="font-mono bg-green-100 px-1.5 py-0.5 rounded">{acceptResult.tempPassword}</strong>
-                  </p>
-                  <div className="flex gap-2 flex-wrap">
-                    <a href={acceptResult.whatsappUrl} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg text-white"
-                      style={{ backgroundColor: '#25D366' }}>
-                      <MessageCircle className="w-3.5 h-3.5" />
-                      Envoyer les identifiants WhatsApp
-                    </a>
-                    <a href={`/${acceptResult.slug}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-green-700 font-semibold underline py-2">
-                      <ExternalLink className="w-3 h-3" />Voir le site
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {/* Compte */}
-              <Section title="Compte">
-                <Row icon={<Phone className="w-3.5 h-3.5" />} label="Responsable" value={selected.owner_name} />
-                <Row icon={<Mail className="w-3.5 h-3.5" />} label="Email" value={selected.email} />
-                <Row icon={<MessageCircle className="w-3.5 h-3.5" />} label="WhatsApp" value={selected.whatsapp} />
-                <Row label="Plan choisi" value={selected.selected_plan.toUpperCase()} highlight />
-              </Section>
-
-              {/* Restaurant */}
-              <Section title="Restaurant">
-                {selected.cuisine_type && <Row label="Type de cuisine" value={selected.cuisine_type} />}
-                {selected.description && <Row label="Description" value={selected.description} />}
-                {selected.city && <Row icon={<MapPin className="w-3.5 h-3.5" />} label="Ville" value={selected.city} />}
-                {selected.neighborhood && <Row label="Quartier" value={selected.neighborhood} />}
-                {selected.address && <Row label="Adresse" value={selected.address} />}
-                {selected.google_maps_url && (
-                  <a href={selected.google_maps_url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-orange-500 hover:underline mt-1">
-                    <ExternalLink className="w-3 h-3" />Voir sur Google Maps
-                  </a>
                 )}
-              </Section>
-
-              {/* Horaires */}
-              {selected.opening_hours && Object.keys(selected.opening_hours).length > 0 && (
-                <Section title="Horaires">
-                  <div className="space-y-1">
-                    {JOURS_ORDER.map(jour => {
-                      const h = selected.opening_hours?.[jour]
-                      if (!h) return null
-                      return (
-                        <div key={jour} className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500 w-8">{JOUR_LABELS[jour]}</span>
-                          {h.ferme
-                            ? <span className="text-red-400">Fermé</span>
-                            : <span className="text-gray-700 font-medium">{h.ouverture} – {h.fermeture}</span>
-                          }
-                        </div>
-                      )
-                    })}
-                  </div>
-                </Section>
-              )}
-
-              {/* Réseaux */}
-              {(selected.facebook_url || selected.instagram_url || selected.tiktok_url || selected.snapchat_url) && (
-                <Section title="Réseaux sociaux">
-                  {selected.facebook_url && <UrlRow label="Facebook" url={selected.facebook_url} />}
-                  {selected.instagram_url && <UrlRow label="Instagram" url={selected.instagram_url} />}
-                  {selected.tiktok_url && <UrlRow label="TikTok" url={selected.tiktok_url} />}
-                  {selected.snapchat_url && <UrlRow label="Snapchat" url={selected.snapchat_url} />}
-                </Section>
-              )}
-
-              {/* Couleurs */}
-              {(selected.selected_plan === 'pro' || selected.selected_plan === 'premium') && (
-                <Section title="Couleurs personnalisées">
-                  {selected.color_choice === 'custom' && selected.primary_color ? (
-                    <div className="px-4 py-3 flex items-center gap-3">
-                      <div className="flex gap-2">
-                        <div className="w-7 h-7 rounded-full shadow-sm border border-gray-100" style={{ backgroundColor: selected.primary_color }} />
-                        {selected.secondary_color && (
-                          <div className="w-7 h-7 rounded-full shadow-sm border border-gray-100" style={{ backgroundColor: selected.secondary_color }} />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium" style={{ color: '#111111' }}>
-                          {selected.primary_color} · {selected.secondary_color}
-                        </p>
-                        <p className="text-xs" style={{ color: '#6B7280' }}>Couleurs choisies par le restaurant</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="px-4 py-3">
-                      <p className="text-xs" style={{ color: '#6B7280' }}>Laissé à TerangaLink — couleurs à définir par l&apos;équipe</p>
-                    </div>
-                  )}
-                </Section>
-              )}
-
-              {/* Communication */}
-              <Section title="Communication">
-                <Row label="Réseaux sociaux" value={selected.allow_social_media ? 'Oui' : 'Non'} />
-                <Row label="Utilisation photos" value={selected.allow_photos ? 'Oui' : 'Non'} />
-                {selected.allow_promo_offer && (
-                  <Row label="Offre promo" value={
-                    selected.promo_offer_type === '10_percent' ? '-10%'
-                    : selected.promo_offer_type === 'free_delivery' ? 'Livraison offerte'
-                    : selected.promo_offer_custom || 'Personnalisée'
-                  } />
-                )}
-              </Section>
-
-              {/* Images */}
-              {(selected.logo_url || selected.banner_url || selected.menu_image_url || (selected.product_photos?.length > 0)) && (
-                <Section title="Images">
-                  <div className="flex flex-wrap gap-2">
-                    {selected.logo_url && (
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Logo</p>
-                        <img src={selected.logo_url} alt="Logo" className="h-14 w-14 rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />
-                      </div>
-                    )}
-                    {selected.banner_url && (
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Bannière</p>
-                        <img src={selected.banner_url} alt="Bannière" className="h-14 w-28 rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />
-                      </div>
-                    )}
-                    {selected.menu_image_url && (
-                      <div>
-                        <p className="text-xs text-gray-400 mb-1">Menu</p>
-                        <img src={selected.menu_image_url} alt="Menu" className="h-14 w-20 rounded-xl object-cover" style={{ border: '1px solid #E5E7EB' }} />
-                      </div>
-                    )}
-                  </div>
-                  {selected.product_photos?.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-xs text-gray-400 mb-1">Photos produits</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selected.product_photos.map((url, i) => (
-                          <img key={i} src={url} alt="" className="h-12 w-12 rounded-lg object-cover" style={{ border: '1px solid #E5E7EB' }} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </Section>
-              )}
-
-              {/* Notes internes */}
-              <Section title="Notes internes">
-                <textarea
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  rows={3}
-                  placeholder="Notes visibles uniquement par l'équipe TerangaLink..."
-                  className="w-full px-3 py-2.5 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
-                  style={{ border: '1px solid #E5E7EB', backgroundColor: '#F9FAFB', color: '#111111' }}
-                />
-                <button onClick={saveNotes} disabled={savingNotes}
-                  className="mt-2 text-xs font-semibold px-4 py-1.5 rounded-lg text-white disabled:opacity-50"
-                  style={{ backgroundColor: '#6B7280' }}>
-                  {savingNotes ? 'Sauvegarde...' : 'Sauvegarder les notes'}
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <span className={`text-xs font-medium px-3 py-1 rounded-full border ${STATUS_COLORS[ins.status] ?? 'bg-gray-100 text-gray-500 border-gray-200'}`}>
+                  {STATUS_LABELS[ins.status] ?? ins.status}
+                </span>
+                <button
+                  onClick={() => openFiche(ins)}
+                  className="inline-flex items-center gap-1.5 text-xs text-brand-violet border border-brand-violet/30 px-3 py-1.5 rounded-lg hover:bg-brand-violet/5 transition-colors font-medium"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Fiche
                 </button>
-              </Section>
+              </div>
             </div>
 
-            {/* Actions */}
-            {selected.status !== 'accepted' && selected.status !== 'refused' && (
-              <div className="sticky bottom-0 bg-white px-6 py-4 space-y-2" style={{ borderTop: '1px solid #E5E7EB' }}>
-                <button onClick={handleAccept} disabled={accepting}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-60 transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: '#22C55E' }}>
-                  {accepting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  {accepting ? 'Création en cours...' : 'Accepter et créer le restaurant'}
+            {ins.status === 'pending' && (
+              <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+                <button type="button"
+                  onClick={async () => {
+                    const fd = new FormData()
+                    fd.append('id', ins.id)
+                    fd.append('action', 'approve')
+                    const res = await fetch('/api/super-admin/inscriptions', { method: 'POST', body: fd })
+                    const data = await res.json().catch(() => ({}))
+                    if (!res.ok) { alert(data.error || 'Erreur lors de l\'approbation'); return }
+                    handleApproved(ins.id, 'approve')
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                  ✓ Approuver & créer boutique
                 </button>
-                <div className="grid grid-cols-2 gap-2">
-                  <button onClick={handleContact} disabled={contacting}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-                    style={{ backgroundColor: '#FFF7ED', color: '#EA580C', border: '1px solid #FED7AA' }}>
-                    {contacting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />}
-                    Contacter
-                  </button>
-                  <button onClick={handleRefuse} disabled={refusing}
-                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
-                    style={{ backgroundColor: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}>
-                    {refusing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
-                    Refuser
-                  </button>
-                </div>
+                <button type="button"
+                  onClick={async () => {
+                    const fd = new FormData()
+                    fd.append('id', ins.id)
+                    fd.append('action', 'reject')
+                    await fetch('/api/super-admin/inscriptions', { method: 'POST', body: fd })
+                    handleApproved(ins.id, 'reject')
+                  }}
+                  className="border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+                  Rejeter
+                </button>
               </div>
             )}
           </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Sous-composants ──────────────────────────────────────────────────────────
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: '#9CA3AF' }}>{title}</p>
-      <div className="rounded-xl overflow-hidden space-y-0" style={{ border: '1px solid #E5E7EB' }}>
-        {children}
+        ))}
+        {!inscriptions.length && (
+          <p className="text-center text-gray-500 py-20">Aucune inscription</p>
+        )}
       </div>
-    </div>
-  )
-}
-
-function Row({ icon, label, value, highlight }: { icon?: React.ReactNode; label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className="flex items-start gap-3 px-4 py-2.5" style={{ borderBottom: '1px solid #F3F4F6' }}>
-      {icon && <span className="text-gray-400 mt-0.5 flex-shrink-0">{icon}</span>}
-      <span className="text-xs text-gray-400 flex-shrink-0 w-28">{label}</span>
-      <span className="text-xs font-medium break-all" style={{ color: highlight ? '#F97316' : '#111111' }}>{value}</span>
-    </div>
-  )
-}
-
-function UrlRow({ label, url }: { label: string; url: string }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5" style={{ borderBottom: '1px solid #F3F4F6' }}>
-      <span className="text-xs text-gray-400 w-28">{label}</span>
-      <a href={url} target="_blank" rel="noopener noreferrer"
-        className="text-xs text-orange-500 hover:underline truncate flex items-center gap-1">
-        <ExternalLink className="w-3 h-3 flex-shrink-0" />{url}
-      </a>
     </div>
   )
 }
