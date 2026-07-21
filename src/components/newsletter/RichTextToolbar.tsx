@@ -51,7 +51,7 @@ export function RichTextToolbar({ editor, disabled }: RichTextToolbarProps) {
           disabled={disabled}
           title={c.label}
           onClick={() => editor.chain().focus().setColor(c.value).run()}
-          className={`w-5 h-5 rounded-full border transition-transform ${activeColor === c.value ? 'ring-2 ring-brand-violet ring-offset-1' : 'border-gray-200'}`}
+          className={`w-5 h-5 rounded-full border transition-transform ${activeColor === c.value ? 'ring-2 ring-brand-orange ring-offset-1' : 'border-gray-200'}`}
           style={{ backgroundColor: c.value }}
         />
       ))}
@@ -65,7 +65,7 @@ export function RichTextToolbar({ editor, disabled }: RichTextToolbarProps) {
           disabled={disabled}
           onClick={() => editor.chain().focus().setFontSize(s.value).run()}
           className={`text-xs font-medium rounded-md px-2 py-1 transition-colors ${
-            activeSize === s.value ? 'bg-brand-violet/10 text-brand-violet' : 'text-gray-500 hover:bg-gray-50'
+            activeSize === s.value ? 'bg-brand-orange/10 text-brand-orange' : 'text-gray-500 hover:bg-gray-50'
           }`}
         >
           {s.label}
@@ -89,7 +89,7 @@ function ToolbarButton({ active, disabled, onClick, label, children }: {
       disabled={disabled}
       onClick={onClick}
       className={`inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors ${
-        active ? 'bg-brand-violet/10 text-brand-violet' : 'text-gray-500 hover:bg-gray-50'
+        active ? 'bg-brand-orange/10 text-brand-orange' : 'text-gray-500 hover:bg-gray-50'
       }`}
     >
       {children}

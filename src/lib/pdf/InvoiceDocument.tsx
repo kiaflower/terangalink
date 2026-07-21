@@ -10,7 +10,7 @@ const STATUS_STYLES: Record<string, { label: string; color: string; bg: string }
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 11, fontFamily: 'Helvetica', color: '#111827' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  brand: { fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#7C3AED' },
+  brand: { fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#F97316' },
   subtitle: { marginTop: 4, color: '#6B7280', fontSize: 10 },
   invoiceNumber: { fontSize: 15, fontFamily: 'Helvetica-Bold', textAlign: 'right' },
   statusBadge: { fontSize: 9, fontFamily: 'Helvetica-Bold', marginTop: 8, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 10, alignSelf: 'flex-end' },
@@ -30,11 +30,11 @@ const styles = StyleSheet.create({
   discountValue: { color: '#047857', fontFamily: 'Helvetica-Bold' },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F5F3FF', paddingVertical: 14, paddingHorizontal: 14, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
   totalLabel: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: '#111827' },
-  totalValue: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#7C3AED' },
+  totalValue: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#F97316' },
   paymentBox: { marginTop: 28, backgroundColor: '#FAFAFA', borderRadius: 10, padding: 16, borderWidth: 1, borderColor: '#F0F0F0' },
   paymentTitle: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: '#111827', marginBottom: 4 },
   paymentText: { fontSize: 10, color: '#4B5563', lineHeight: 1.4 },
-  paymentNumber: { fontFamily: 'Helvetica-Bold', color: '#7C3AED' },
+  paymentNumber: { fontFamily: 'Helvetica-Bold', color: '#F97316' },
   footer: { marginTop: 24, fontSize: 8, color: '#B0B0B0', textAlign: 'center' },
 })
 

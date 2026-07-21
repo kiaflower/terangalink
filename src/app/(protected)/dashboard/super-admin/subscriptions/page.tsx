@@ -77,7 +77,7 @@ export default function SubscriptionsPage() {
 
   const statCards = [
     { label: 'Actifs', value: activeCount, icon: TrendingUp, color: '#059669', bg: '#F0FDF4', filter: 'active' },
-    { label: 'En essai', value: trialCount, icon: Clock, color: '#7C3AED', bg: '#F5F3FF', filter: 'trial' },
+    { label: 'En essai', value: trialCount, icon: Clock, color: '#F97316', bg: '#F5F3FF', filter: 'trial' },
     { label: 'Expirés / suspendus', value: expiredCount, icon: XCircle, color: '#DC2626', bg: '#FEF2F2', filter: 'expired' },
     { label: 'Revenus / mois', value: `${new Intl.NumberFormat('fr-SN').format(estimatedRevenue)} FCFA`, icon: DollarSign, color: '#D97706', bg: '#FFFBEB', filter: 'all' },
   ]
@@ -103,7 +103,7 @@ export default function SubscriptionsPage() {
           </p>
         </div>
         <button onClick={fetchSubs}
-          className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-violet border border-gray-200 rounded-lg px-3 py-2 transition-colors shrink-0">
+          className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-orange border border-gray-200 rounded-lg px-3 py-2 transition-colors shrink-0">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline">{lastRefresh ? lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}</span>
         </button>

@@ -9,7 +9,7 @@ export default async function LegalPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
-      <Link href="/" className="text-brand-violet text-sm hover:underline">← Retour à l&apos;accueil</Link>
+      <Link href="/" className="text-brand-orange text-sm hover:underline">← Retour à l&apos;accueil</Link>
       <h1 className="text-3xl font-bold text-gray-900 mt-6 mb-8">Mentions légales & Confidentialité</h1>
 
       <div className="prose prose-gray max-w-none">

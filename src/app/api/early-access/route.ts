@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
         logo_url,
         cover_url,
         plan: (formData.get('plan') as string) || 'starter',
-        primary_color: (formData.get('primary_color') as string) || '#7C3AED',
+        primary_color: (formData.get('primary_color') as string) || '#F97316',
         theme: (formData.get('theme') as string) || 'light',
         referral_code: (formData.get('referral_code') as string) || null,
         partner_offer_type: (formData.get('partner_offer_type') as string) || null,

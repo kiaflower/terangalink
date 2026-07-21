@@ -409,7 +409,7 @@ export default function CataloguePage() {
             if (limitReached) { alert(productLimitMessage(plan)); return }
             setEditProduct(null); setForm(emptyForm); setVariants([]); setInitialHadVariants(false); setModalOpen(true)
           }}
-          className="bg-brand-violet text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-brand-violet-dark transition-colors"
+          className="bg-brand-orange text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-brand-orange-dark transition-colors"
         >
           + Ajouter un produit
         </button>
@@ -441,7 +441,7 @@ export default function CataloguePage() {
             id="announcement_enabled"
             checked={announcementEnabled}
             onChange={e => setAnnouncementEnabled(e.target.checked)}
-            className="w-4 h-4 accent-brand-violet"
+            className="w-4 h-4 accent-brand-orange"
           />
           <label htmlFor="announcement_enabled" className="text-sm text-gray-500">Activer la bannière d&apos;annonce</label>
         </div>
@@ -454,7 +454,7 @@ export default function CataloguePage() {
               Bannière (format paysage 3:1, ex: 1200x400px)
             </div>
           )}
-          <label className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer hover:border-brand-violet text-gray-600 hover:text-brand-violet transition-colors">
+          <label className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer hover:border-brand-orange text-gray-600 hover:text-brand-orange transition-colors">
             <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadAnnouncementImage(e.target.files[0])} />
             <Upload className="w-4 h-4" />
             {uploadingAnnouncement ? 'Envoi…' : 'Changer la bannière'}
@@ -468,7 +468,7 @@ export default function CataloguePage() {
             value={announcementTitle}
             onChange={e => setAnnouncementTitle(e.target.value)}
             placeholder="Ex: Validation panier Shein"
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
           />
           <p className="text-[11px] text-gray-400 mt-1">
             Personnalise le message WhatsApp pré-rempli quand un client clique sur &quot;Obtenir plus d&apos;infos&quot;.
@@ -479,7 +479,7 @@ export default function CataloguePage() {
           <button
             onClick={saveAnnouncement}
             disabled={savingAnnouncement}
-            className="bg-brand-violet text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+            className="bg-brand-orange text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
           >
             {savingAnnouncement ? 'Enregistrement…' : "Enregistrer l'annonce"}
           </button>
@@ -495,7 +495,7 @@ export default function CataloguePage() {
         <div className="flex gap-2 flex-wrap mb-3">
           <button
             onClick={() => setActiveCategory(null)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!activeCategory ? 'bg-brand-violet text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!activeCategory ? 'bg-brand-orange text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
           >
             Tous ({products.length})
           </button>
@@ -503,7 +503,7 @@ export default function CataloguePage() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCategory === cat.id ? 'bg-brand-violet text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeCategory === cat.id ? 'bg-brand-orange text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
             >
               {cat.name} ({products.filter(p => p.category_id === cat.id).length})
             </button>
@@ -514,12 +514,12 @@ export default function CataloguePage() {
             value={catName}
             onChange={e => setCatName(e.target.value)}
             placeholder="Nouvelle catégorie..."
-            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-violet"
+            className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-orange"
           />
           <button
             onClick={addCategory}
             disabled={addingCat || !catName.trim()}
-            className="bg-brand-violet text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+            className="bg-brand-orange text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
           >
             Ajouter
           </button>
@@ -532,11 +532,11 @@ export default function CataloguePage() {
               <div key={cat.id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
                 <span className="flex-1 text-sm text-gray-700 truncate">{cat.name}</span>
                 <button type="button" onClick={() => moveCategory(cat.id, -1)} disabled={i === 0}
-                  className="p-1 text-gray-400 hover:text-brand-violet disabled:opacity-30 disabled:hover:text-gray-400 transition-colors">
+                  className="p-1 text-gray-400 hover:text-brand-orange disabled:opacity-30 disabled:hover:text-gray-400 transition-colors">
                   <ChevronUp className="w-4 h-4" />
                 </button>
                 <button type="button" onClick={() => moveCategory(cat.id, 1)} disabled={i === categories.length - 1}
-                  className="p-1 text-gray-400 hover:text-brand-violet disabled:opacity-30 disabled:hover:text-gray-400 transition-colors">
+                  className="p-1 text-gray-400 hover:text-brand-orange disabled:opacity-30 disabled:hover:text-gray-400 transition-colors">
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 <button type="button" onClick={() => deleteCategory(cat.id)}
@@ -579,18 +579,18 @@ export default function CataloguePage() {
                   </span>
                 )}
                 {product.is_featured && product.badge_text && (
-                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-brand-violet text-white">
+                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-brand-orange text-white">
                     {product.badge_text}
                   </span>
                 )}
                 {product.discount_percent ? (
                   <p className="mt-2 flex items-center gap-2">
                     <span className="text-xs text-gray-400 line-through">{formatPrice(product.price)}</span>
-                    <span className="text-brand-violet-light font-bold">{formatPrice(Math.round(product.price * (1 - product.discount_percent / 100)))}</span>
+                    <span className="text-brand-orange-light font-bold">{formatPrice(Math.round(product.price * (1 - product.discount_percent / 100)))}</span>
                     <span className="text-xs font-semibold text-green-600">-{product.discount_percent}%</span>
                   </p>
                 ) : (
-                  <p className="text-brand-violet-light font-bold mt-2">{formatPrice(product.price)}</p>
+                  <p className="text-brand-orange-light font-bold mt-2">{formatPrice(product.price)}</p>
                 )}
                 {product.track_stock && product.stock_quantity !== null && (
                   product.stock_quantity === 0 ? (
@@ -627,7 +627,7 @@ export default function CataloguePage() {
                       setInitialHadVariants((product.variants ?? []).some(v => v.options.length > 0))
                       setModalOpen(true)
                     }}
-                    className="flex-1 text-sm border border-gray-200 text-gray-400 py-2 rounded-lg hover:border-brand-violet hover:text-brand-violet-light transition-colors"
+                    className="flex-1 text-sm border border-gray-200 text-gray-400 py-2 rounded-lg hover:border-brand-orange hover:text-brand-orange-light transition-colors"
                   >
                     Modifier
                   </button>
@@ -657,7 +657,7 @@ export default function CataloguePage() {
                 <input
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
                 />
               </div>
               <div>
@@ -666,7 +666,7 @@ export default function CataloguePage() {
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={3}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet resize-none"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange resize-none"
                 />
               </div>
               {!hasActiveVariants ? (
@@ -676,7 +676,7 @@ export default function CataloguePage() {
                     type="number"
                     value={form.price}
                     onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
                   />
                 </div>
               ) : (
@@ -696,7 +696,7 @@ export default function CataloguePage() {
                     value={form.discount_percent}
                     onChange={e => setForm(f => ({ ...f, discount_percent: e.target.value }))}
                     placeholder="Ex: 15"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
                   />
                   <p className="text-[11px] text-gray-400 mt-1">Différent des codes promo : cette réduction s&apos;applique automatiquement à ce produit, sans code.</p>
                 </div>
@@ -706,7 +706,7 @@ export default function CataloguePage() {
                 <select
                   value={form.category_id}
                   onChange={e => setForm(f => ({ ...f, category_id: e.target.value }))}
-                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
                 >
                   <option value="">Sans catégorie</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -728,7 +728,7 @@ export default function CataloguePage() {
                     </div>
                   ))}
                   {form.images.length < maxImages && (
-                    <label className="w-16 h-16 rounded-lg border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-violet text-gray-400 hover:text-brand-violet transition-colors">
+                    <label className="w-16 h-16 rounded-lg border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-orange text-gray-400 hover:text-brand-orange transition-colors">
                       <input type="file" accept="image/*" multiple={plan === 'pro'} className="hidden"
                         onChange={e => handleImageUpload(e.target.files)} />
                       <Upload className="w-5 h-5" />
@@ -746,7 +746,7 @@ export default function CataloguePage() {
                       className="text-xs text-red-400 hover:text-red-600">Retirer</button>
                   </div>
                 ) : (
-                  <label className="w-16 h-16 rounded-lg border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-violet text-gray-400 hover:text-brand-violet transition-colors">
+                  <label className="w-16 h-16 rounded-lg border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-orange text-gray-400 hover:text-brand-orange transition-colors">
                     <input type="file" accept="video/*" className="hidden"
                       onChange={e => { const f = e.target.files?.[0]; if (f) handleVideoUpload(f) }} />
                     <Video className="w-5 h-5" />
@@ -761,7 +761,7 @@ export default function CataloguePage() {
                   id="is_available"
                   checked={form.is_available}
                   onChange={e => setForm(f => ({ ...f, is_available: e.target.checked }))}
-                  className="w-4 h-4 accent-brand-violet"
+                  className="w-4 h-4 accent-brand-orange"
                 />
                 <label htmlFor="is_available" className="text-sm text-gray-400">Disponible</label>
               </div>
@@ -773,7 +773,7 @@ export default function CataloguePage() {
                       id="track_stock"
                       checked={form.track_stock}
                       onChange={e => setForm(f => ({ ...f, track_stock: e.target.checked }))}
-                      className="w-4 h-4 accent-brand-violet"
+                      className="w-4 h-4 accent-brand-orange"
                     />
                     <label htmlFor="track_stock" className="text-sm text-gray-400">Suivre le stock</label>
                   </div>
@@ -785,7 +785,7 @@ export default function CataloguePage() {
                         min={0}
                         value={form.stock_quantity}
                         onChange={e => setForm(f => ({ ...f, stock_quantity: e.target.value }))}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
                       />
                     </div>
                   )}
@@ -799,7 +799,7 @@ export default function CataloguePage() {
                 <div className="border-t border-gray-100 pt-4">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-gray-700">Variantes (taille, couleur…)</p>
-                    <button type="button" onClick={addVariant} className="text-xs text-brand-violet font-semibold hover:underline">
+                    <button type="button" onClick={addVariant} className="text-xs text-brand-orange font-semibold hover:underline">
                       + Ajouter une variante
                     </button>
                   </div>
@@ -844,7 +844,7 @@ export default function CataloguePage() {
                                   </button>
                                 </div>
                               ) : (
-                                <label className="w-8 h-8 rounded-md border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-violet text-gray-400 hover:text-brand-violet transition-colors flex-shrink-0"
+                                <label className="w-8 h-8 rounded-md border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-orange text-gray-400 hover:text-brand-orange transition-colors flex-shrink-0"
                                   title="Photo de cette option (optionnel)">
                                   <input type="file" accept="image/*" className="hidden"
                                     onChange={e => { const f = e.target.files?.[0]; if (f) uploadVariantOptionImage(vi, opt, f) }} />
@@ -889,7 +889,7 @@ export default function CataloguePage() {
                       aria-checked={form.preorder_enabled}
                       onClick={() => setForm(f => ({ ...f, preorder_enabled: !f.preorder_enabled }))}
                       className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
-                      style={{ backgroundColor: form.preorder_enabled ? '#7C3AED' : '#E5E7EB' }}
+                      style={{ backgroundColor: form.preorder_enabled ? '#F97316' : '#E5E7EB' }}
                     >
                       <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
                         style={{ transform: form.preorder_enabled ? 'translateX(22px)' : 'translateX(2px)' }} />
@@ -940,7 +940,7 @@ export default function CataloguePage() {
                     id="is_featured"
                     checked={form.is_featured}
                     onChange={e => setForm(f => ({ ...f, is_featured: e.target.checked }))}
-                    className="w-4 h-4 accent-brand-violet"
+                    className="w-4 h-4 accent-brand-orange"
                   />
                   <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">Mettre en avant sur la boutique</label>
                 </div>
@@ -953,7 +953,7 @@ export default function CataloguePage() {
                           key={preset}
                           type="button"
                           onClick={() => setForm(f => ({ ...f, badge_text: preset }))}
-                          className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${form.badge_text === preset ? 'bg-brand-violet text-white border-brand-violet' : 'border-gray-200 text-gray-500 hover:border-brand-violet'}`}
+                          className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${form.badge_text === preset ? 'bg-brand-orange text-white border-brand-orange' : 'border-gray-200 text-gray-500 hover:border-brand-orange'}`}
                         >
                           {preset}
                         </button>
@@ -964,7 +964,7 @@ export default function CataloguePage() {
                       onChange={e => setForm(f => ({ ...f, badge_text: e.target.value }))}
                       placeholder="Ex: Nouveau"
                       maxLength={20}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
                     />
                   </div>
                 )}
@@ -983,7 +983,7 @@ export default function CataloguePage() {
                       checked={form.is_pinned}
                       disabled={!form.is_pinned && otherPinnedCount >= 2}
                       onChange={e => setForm(f => ({ ...f, is_pinned: e.target.checked }))}
-                      className="w-4 h-4 accent-brand-violet shrink-0 disabled:opacity-40"
+                      className="w-4 h-4 accent-brand-orange shrink-0 disabled:opacity-40"
                     />
                   )}
                 </div>
@@ -1006,7 +1006,7 @@ export default function CataloguePage() {
               <button
                 onClick={saveProduct}
                 disabled={saving || !form.name || (!hasActiveVariants && !form.price) || variantsMissingPrice}
-                className="flex-1 bg-brand-violet text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+                className="flex-1 bg-brand-orange text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
               >
                 {saving ? 'Enregistrement...' : 'Enregistrer'}
               </button>
@@ -1026,7 +1026,7 @@ export default function CataloguePage() {
               type="number"
               value={reactivationPrice}
               onChange={e => setReactivationPrice(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet mb-4"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange mb-4"
             />
             <div className="flex gap-3">
               <button
@@ -1038,7 +1038,7 @@ export default function CataloguePage() {
               <button
                 onClick={() => confirmReactivation(reactivationPrice)}
                 disabled={!reactivationPrice}
-                className="flex-1 bg-brand-violet text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+                className="flex-1 bg-brand-orange text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
               >
                 Confirmer
               </button>

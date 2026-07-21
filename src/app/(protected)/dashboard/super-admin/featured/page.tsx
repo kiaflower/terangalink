@@ -23,7 +23,7 @@ interface FeaturedBlockRow {
 interface Boutique { id: string; name: string }
 interface SelectedItem { boutique_id: string; sort_order: number }
 
-const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors'
+const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors'
 
 const POSITION_LABELS: Record<string, string> = { top: 'En haut', mid: 'Au milieu', bottom: 'En bas' }
 
@@ -57,7 +57,7 @@ function BoutiqueMultiSelect({ boutiques, items, onToggle, onReorder }: {
         return (
           <label key={bt.id} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50">
             <input type="checkbox" checked={!!selected} onChange={() => onToggle(bt.id)}
-              className="w-4 h-4 accent-brand-violet shrink-0" />
+              className="w-4 h-4 accent-brand-orange shrink-0" />
             <span className="text-sm text-gray-800 flex-1 truncate">{bt.name}</span>
             {selected && (
               <input type="number" value={selected.sort_order} min={0}
@@ -200,7 +200,7 @@ export default function SuperAdminFeaturedPage() {
             <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button onClick={() => { setCreateOpen(true); setSaveError('') }}
-            className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors">
+            className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-orange-dark transition-colors">
             <Plus className="w-4 h-4" /> Créer un bloc
           </button>
         </div>
@@ -244,7 +244,7 @@ export default function SuperAdminFeaturedPage() {
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button onClick={() => toggleActive(b.id, b.is_active)}
-                      className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-brand-violet/30 hover:text-brand-violet transition-colors text-gray-500">
+                      className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-brand-orange/30 hover:text-brand-orange transition-colors text-gray-500">
                       {b.is_active ? 'Désactiver' : 'Activer'}
                     </button>
                     <button onClick={() => deleteBlock(b.id, b.title)} disabled={deleting === b.id}
@@ -299,11 +299,11 @@ export default function SuperAdminFeaturedPage() {
               <label className="flex items-center gap-2 cursor-pointer pt-1">
                 <input type="checkbox" checked={editForm.is_active}
                   onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
-                  className="w-4 h-4 accent-brand-violet" />
+                  className="w-4 h-4 accent-brand-orange" />
                 <span className="text-sm text-gray-700">Actif</span>
               </label>
               <button onClick={saveEdit} disabled={editSaving}
-                className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
                 {editSaving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </div>
@@ -351,11 +351,11 @@ export default function SuperAdminFeaturedPage() {
               <label className="flex items-center gap-2 cursor-pointer pt-1">
                 <input type="checkbox" checked={form.is_active}
                   onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))}
-                  className="w-4 h-4 accent-brand-violet" />
+                  className="w-4 h-4 accent-brand-orange" />
                 <span className="text-sm text-gray-700">Actif</span>
               </label>
               <button onClick={createBlock} disabled={saving}
-                className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
                 {saving ? 'Création…' : 'Créer le bloc'}
               </button>
             </div>

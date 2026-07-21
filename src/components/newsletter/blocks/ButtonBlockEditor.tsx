@@ -16,14 +16,14 @@ export function ButtonBlockEditor({ block, onChange, disabled }: {
         disabled={disabled}
         onChange={e => onChange({ text: e.target.value })}
         placeholder="Texte du bouton"
-        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-violet/30 disabled:bg-gray-50"
+        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-orange/30 disabled:bg-gray-50"
       />
       <input
         value={block.url}
         disabled={disabled}
         onChange={e => onChange({ url: e.target.value })}
         placeholder="https://…"
-        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-violet/30 disabled:bg-gray-50"
+        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-orange/30 disabled:bg-gray-50"
       />
     </div>
   )

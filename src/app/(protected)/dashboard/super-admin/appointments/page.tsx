@@ -8,7 +8,7 @@ interface BlockedDate { date: string }
 interface RecurringSlot { id: string; weekday: number; start_time: string; duration_minutes: number; is_active: boolean }
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche']
-const iCls = 'bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors'
+const iCls = 'bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 
 const STATUS_COLORS: Record<string, { label: string; color: string; bg: string }> = {
   pending:   { label: 'En attente', color: '#D97706', bg: '#FFFBEB' },
@@ -165,7 +165,7 @@ export default function AppointmentsPage() {
       {/* ── SECTION 1 : Créneaux ── */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <h2 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-brand-violet" />
+          <Calendar className="w-4 h-4 text-brand-orange" />
           Mes créneaux
         </h2>
         <p className="text-xs text-gray-400 mb-5">Ajoutez des créneaux individuels (jour, heure, durée). Ils se répètent chaque semaine et disparaissent automatiquement une fois réservés.</p>
@@ -182,7 +182,7 @@ export default function AppointmentsPage() {
                     <p className="text-sm font-semibold text-gray-900">{day}</p>
                     <button type="button"
                       onClick={() => setOpenDayForm(openDayForm === dayIndex ? null : dayIndex)}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-violet hover:text-brand-violet-dark transition-colors">
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-orange hover:text-brand-orange-dark transition-colors">
                       <Plus className="w-3.5 h-3.5" /> Ajouter un créneau
                     </button>
                   </div>
@@ -190,7 +190,7 @@ export default function AppointmentsPage() {
                   {daySlots.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3">
                       {daySlots.map(s => (
-                        <div key={s.id} className="flex items-center gap-1.5 bg-violet-50 border border-violet-100 text-brand-violet text-xs font-medium px-3 py-1.5 rounded-lg">
+                        <div key={s.id} className="flex items-center gap-1.5 bg-orange-50 border border-orange-100 text-brand-orange text-xs font-medium px-3 py-1.5 rounded-lg">
                           {s.start_time.slice(0, 5)} · {s.duration_minutes} min
                           <button onClick={() => removeRecurringSlot(s.id)} className="hover:text-red-600 ml-1">
                             <Trash2 className="w-3.5 h-3.5" />
@@ -216,7 +216,7 @@ export default function AppointmentsPage() {
                         </select>
                       </div>
                       <button type="button" onClick={() => addRecurringSlot(dayIndex)} disabled={addingSlot}
-                        className="inline-flex items-center gap-1.5 bg-brand-violet text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                        className="inline-flex items-center gap-1.5 bg-brand-orange text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
                         <Check className="w-4 h-4" /> Confirmer
                       </button>
                     </div>
@@ -269,7 +269,7 @@ export default function AppointmentsPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-brand-violet" />
+            <Clock className="w-4 h-4 text-brand-orange" />
             Rendez-vous reçus ({appointments.length})
           </h2>
           <button onClick={loadAppointments} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
@@ -300,7 +300,7 @@ export default function AppointmentsPage() {
                     </div>
                     <p className="text-sm text-gray-600">{a.phone}</p>
                     <p className="text-sm text-gray-600 truncate">{a.subject}</p>
-                    <p className="text-sm font-medium text-brand-violet">
+                    <p className="text-sm font-medium text-brand-orange">
                       {formatDate(a.requested_date)}<br />
                       <span className="text-xs text-gray-400">{a.requested_time?.slice(0, 5)}</span>
                     </p>

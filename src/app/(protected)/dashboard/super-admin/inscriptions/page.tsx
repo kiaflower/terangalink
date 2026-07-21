@@ -127,7 +127,7 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
           {(ins.want_verified_badge || ins.partner_offer_type) && (
             <div className="mb-5 space-y-2">
               {ins.want_verified_badge && (
-                <div className="inline-flex items-center gap-2 bg-violet-50 border border-violet-200 text-violet-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Badge Vérifié demandé (+1 000 FCFA/mois)
                 </div>
@@ -209,7 +209,7 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
           )}
           {ins.status === 'approved' && ins.created_boutique_id && (
             <a href={`/dashboard/super-admin/boutiques`}
-              className="flex-1 flex items-center justify-center gap-2 bg-brand-violet text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-opacity hover:opacity-90">
+              className="flex-1 flex items-center justify-center gap-2 bg-brand-orange text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-opacity hover:opacity-90">
               <ExternalLink className="w-4 h-4" />
               Voir les boutiques
             </a>
@@ -299,7 +299,7 @@ export default function InscriptionsPage() {
             key={f.value}
             onClick={() => setStatusFilter(f.value)}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-              statusFilter === f.value ? 'bg-brand-violet text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              statusFilter === f.value ? 'bg-brand-orange text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
           >
             {f.label} {f.value !== 'all' ? `(${inscriptions.filter(i => i.status === f.value).length})` : `(${inscriptions.length})`}
@@ -318,7 +318,7 @@ export default function InscriptionsPage() {
                   )}
                   <h3 className="text-base font-semibold text-gray-900 truncate">{ins.boutique_name}</h3>
                   {ins.want_verified_badge && (
-                    <ShieldCheck className="w-4 h-4 text-brand-violet shrink-0" />
+                    <ShieldCheck className="w-4 h-4 text-brand-orange shrink-0" />
                   )}
                 </div>
                 <p className="text-sm text-gray-500">{ins.owner_name} · {ins.email}</p>
@@ -340,7 +340,7 @@ export default function InscriptionsPage() {
                 </span>
                 <button
                   onClick={() => openFiche(ins)}
-                  className="inline-flex items-center gap-1.5 text-xs text-brand-violet border border-brand-violet/30 px-3 py-1.5 rounded-lg hover:bg-brand-violet/5 transition-colors font-medium"
+                  className="inline-flex items-center gap-1.5 text-xs text-brand-orange border border-brand-orange/30 px-3 py-1.5 rounded-lg hover:bg-brand-orange/5 transition-colors font-medium"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   Fiche

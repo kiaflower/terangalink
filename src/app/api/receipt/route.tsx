@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const paymentLabel = searchParams.get('paymentLabel') || 'Especes'
   const isPreorder = searchParams.get('isPreorder') === '1'
   const deliveryDate = searchParams.get('deliveryDate') || ''
-  const accentColor = searchParams.get('accentColor') || '#7C3AED'
+  const accentColor = searchParams.get('accentColor') || '#F97316'
   const itemsRaw = searchParams.get('items') || '[]'
   const items: { name: string; quantity: number; price: number }[] = JSON.parse(decodeURIComponent(itemsRaw))
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)

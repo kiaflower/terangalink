@@ -36,14 +36,14 @@ export function RealBoutiquesMarquee({ boutiques, dark = false }: RealBoutiquesM
             {b.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={b.logo_url} alt={b.name}
-                className={`w-16 h-16 rounded-full object-cover border group-hover:border-brand-violet transition-colors ${dark ? 'border-white/10' : 'border-gray-100'}`} />
+                className={`w-16 h-16 rounded-full object-cover border group-hover:border-brand-orange transition-colors ${dark ? 'border-white/10' : 'border-gray-100'}`} />
             ) : (
               <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-xl font-black"
-                style={{ backgroundColor: b.primary_color || '#7C3AED' }}>
+                style={{ backgroundColor: b.primary_color || '#F97316' }}>
                 {b.name.charAt(0)}
               </div>
             )}
-            <span className={`text-xs font-medium transition-colors max-w-[80px] truncate group-hover:text-brand-violet-light ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
+            <span className={`text-xs font-medium transition-colors max-w-[80px] truncate group-hover:text-brand-orange-light ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
               {b.name}
             </span>
           </Link>

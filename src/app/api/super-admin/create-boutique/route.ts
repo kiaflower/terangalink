@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         is_demo: false,
         is_verified: false,
         // Custom colors/theme are a Pro feature — Starter always keeps TerangaSpot's defaults
-        primary_color: finalPlan === 'pro' ? (primary_color || '#7C3AED') : '#7C3AED',
+        primary_color: finalPlan === 'pro' ? (primary_color || '#F97316') : '#F97316',
         theme: finalPlan === 'pro' ? (theme || 'light') : 'light',
         logo_url: logo_url || null,
         cover_url: cover_url || null,

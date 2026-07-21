@@ -19,7 +19,7 @@ export function SpacerBlockEditor({ block, onChange, disabled }: {
         value={block.height}
         disabled={disabled}
         onChange={e => onChange({ height: Number(e.target.value) })}
-        className="flex-1 accent-brand-violet"
+        className="flex-1 accent-brand-orange"
       />
       <span className="text-xs text-gray-500 w-12 text-right">{block.height}px</span>
     </div>

@@ -15,11 +15,11 @@ import {
 
 /* ─── helpers ─────────────────────────────────────────── */
 
-const COLOR_PALETTE = ['#7C3AED', '#2563EB', '#059669', '#DC2626', '#D97706', '#DB2777', '#0891B2', '#111111']
+const COLOR_PALETTE = ['#F97316', '#2563EB', '#059669', '#DC2626', '#D97706', '#DB2777', '#0891B2', '#111111']
 const THEMES = [
   { value: 'light', label: 'Clair', bg: '#FFFFFF', text: '#111111' },
   { value: 'dark', label: 'Sombre', bg: '#111111', text: '#FFFFFF' },
-  { value: 'vibrant', label: 'Coloré', bg: '#7C3AED', text: '#FFFFFF' },
+  { value: 'vibrant', label: 'Coloré', bg: '#F97316', text: '#FFFFFF' },
 ]
 const PLAN_OPTIONS = [{ value: 'free', label: 'Free' }, { value: 'starter', label: 'Starter' }, { value: 'pro', label: 'Pro' }]
 
@@ -30,7 +30,7 @@ function generatePassword() {
   return p
 }
 
-const iCls = 'w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors placeholder-gray-400'
+const iCls = 'w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors placeholder-gray-400'
 const lCls = 'block text-xs font-medium text-gray-500 mb-1.5'
 
 /* ─── mini preview ───────────────────────────────────── */
@@ -82,7 +82,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
     // Delivery
     delivery_info: '',
     // Visuals
-    primary_color: '#7C3AED', theme: 'light', logo_url: '', cover_url: '',
+    primary_color: '#F97316', theme: 'light', logo_url: '', cover_url: '',
     // Admin
     admin_full_name: '', admin_email: '', admin_password: generatePassword(), plan: 'starter',
   })
@@ -117,7 +117,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
   async function handleSubmit() {
     setLoading(true); setError('')
     try {
-      const payload = form.plan === 'pro' ? form : { ...form, primary_color: '#7C3AED', theme: 'light' }
+      const payload = form.plan === 'pro' ? form : { ...form, primary_color: '#F97316', theme: 'light' }
       const res = await fetch('/api/super-admin/create-boutique', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,7 +167,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
             {steps.map((s, i) => (
               <div key={s.id} className="flex items-center">
                 <button onClick={() => setStep(s.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${step === s.id ? 'bg-brand-violet/10 text-brand-violet' : step > s.id ? 'text-green-600' : 'text-gray-400'}`}>
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${step === s.id ? 'bg-brand-orange/10 text-brand-orange' : step > s.id ? 'text-green-600' : 'text-gray-400'}`}>
                   <s.icon className="w-3.5 h-3.5" />
                   {s.label}
                 </button>
@@ -189,9 +189,9 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
               <p className="text-gray-500 text-sm mb-6">Communiquez ces identifiants à l&apos;admin de la boutique.</p>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 w-full max-w-sm text-left space-y-3 mb-6">
                 <div><p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Email</p><p className="text-sm font-medium text-gray-900">{result.email}</p></div>
-                <div><p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Mot de passe</p><p className="text-sm font-mono font-bold text-brand-violet">{result.password}</p></div>
+                <div><p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Mot de passe</p><p className="text-sm font-mono font-bold text-brand-orange">{result.password}</p></div>
                 <div><p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Lien vitrine</p>
-                  <Link href={`/${result.slug}`} target="_blank" className="text-sm text-brand-violet flex items-center gap-1">/{result.slug}<ExternalLink className="w-3 h-3" /></Link>
+                  <Link href={`/${result.slug}`} target="_blank" className="text-sm text-brand-orange flex items-center gap-1">/{result.slug}<ExternalLink className="w-3 h-3" /></Link>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -201,7 +201,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                   {copied ? 'Copié !' : 'Copier les identifiants'}
                 </button>
                 <button onClick={onClose}
-                  className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors">
+                  className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-brand-orange-dark transition-colors">
                   Fermer
                 </button>
               </div>
@@ -219,7 +219,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                 {step === 1 && (
                   <div className="space-y-5">
                     <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-                      <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Store className="w-4 h-4 text-brand-violet" />Identité</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Store className="w-4 h-4 text-brand-orange" />Identité</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="sm:col-span-2">
                           <label className={lCls}>Nom de la boutique *</label>
@@ -227,7 +227,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                         </div>
                         <div className="sm:col-span-2">
                           <label className={lCls}>Slug (URL) *</label>
-                          <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-violet focus-within:ring-1 focus-within:ring-brand-violet/20 transition-colors">
+                          <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-orange focus-within:ring-1 focus-within:ring-brand-orange/20 transition-colors">
                             <span className="px-3 py-2.5 text-sm text-gray-400 bg-gray-50 border-r border-gray-200">{siteOrigin.replace(/^https?:\/\//, '')}/</span>
                             <input type="text" required value={form.slug}
                               onChange={e => { setSlugTouched(true); set('slug', e.target.value) }}
@@ -283,7 +283,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                             {PLAN_OPTIONS.map(o => (
                               <button key={o.value} type="button" onClick={() => set('plan', o.value)}
                                 className="flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all"
-                                style={{ borderColor: form.plan === o.value ? '#7C3AED' : '#E5E7EB', backgroundColor: form.plan === o.value ? '#7C3AED' : '#F9FAFB', color: form.plan === o.value ? '#FFF' : '#374151' }}>
+                                style={{ borderColor: form.plan === o.value ? '#F97316' : '#E5E7EB', backgroundColor: form.plan === o.value ? '#F97316' : '#F9FAFB', color: form.plan === o.value ? '#FFF' : '#374151' }}>
                                 {o.label}
                               </button>
                             ))}
@@ -298,11 +298,11 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                 {step === 2 && (
                   <div className="space-y-5">
                     <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-                      <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Upload className="w-4 h-4 text-brand-violet" />Logo &amp; bannière</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Upload className="w-4 h-4 text-brand-orange" />Logo &amp; bannière</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className={lCls}>Logo</label>
-                          <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-violet/40 transition-colors min-h-[100px]">
+                          <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-orange/40 transition-colors min-h-[100px]">
                             {logoPreview
                               ? <img src={logoPreview} alt="" className="w-16 h-16 rounded-xl object-cover" />
                               : <><Upload className="w-6 h-6 text-gray-300" /><span className="text-xs text-gray-400">Uploader</span></>}
@@ -311,7 +311,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                         </div>
                         <div>
                           <label className={lCls}>Bannière</label>
-                          <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-violet/40 transition-colors min-h-[100px]">
+                          <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-orange/40 transition-colors min-h-[100px]">
                             {coverPreview
                               ? <img src={coverPreview} alt="" className="w-full h-20 rounded-xl object-cover" />
                               : <><Upload className="w-6 h-6 text-gray-300" /><span className="text-xs text-gray-400">16:9 recommandé</span></>}
@@ -323,7 +323,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
 
                     <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Palette className="w-4 h-4 text-brand-violet" />Couleur &amp; thème</h3>
+                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Palette className="w-4 h-4 text-brand-orange" />Couleur &amp; thème</h3>
                         {form.plan !== 'pro' && (
                           <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
                             Réservé au plan Pro
@@ -342,7 +342,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                             {COLOR_PALETTE.map(c => (
                               <button key={c} type="button" onClick={() => set('primary_color', c)}
                                 className="w-8 h-8 rounded-lg border-2 transition-all"
-                                style={{ backgroundColor: c, borderColor: form.primary_color === c ? '#7C3AED' : 'transparent', transform: form.primary_color === c ? 'scale(1.15)' : 'scale(1)' }} />
+                                style={{ backgroundColor: c, borderColor: form.primary_color === c ? '#F97316' : 'transparent', transform: form.primary_color === c ? 'scale(1.15)' : 'scale(1)' }} />
                             ))}
                             <input type="color" value={form.primary_color} onChange={e => set('primary_color', e.target.value)}
                               className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200" title="Personnalisée" />
@@ -355,8 +355,8 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                               <button key={t.value} type="button" onClick={() => set('theme', t.value)}
                                 className="flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all"
                                 style={{
-                                  borderColor: form.theme === t.value ? '#7C3AED' : '#E5E7EB',
-                                  backgroundColor: t.bg === '#7C3AED' ? form.primary_color : t.bg,
+                                  borderColor: form.theme === t.value ? '#F97316' : '#E5E7EB',
+                                  backgroundColor: t.bg === '#F97316' ? form.primary_color : t.bg,
                                   color: t.text,
                                 }}>
                                 {t.label}
@@ -372,7 +372,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                 {/* STEP 3 — Réseaux sociaux */}
                 {step === 3 && (
                   <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Globe className="w-4 h-4 text-brand-violet" />Réseaux sociaux</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Globe className="w-4 h-4 text-brand-orange" />Réseaux sociaux</h3>
                     <p className="text-xs text-gray-400">Ces liens apparaîtront dans le footer de la vitrine boutique.</p>
                     {[
                       { key: 'facebook_url' as const, label: 'Facebook', placeholder: 'https://facebook.com/maboutique' },
@@ -391,7 +391,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                 {/* STEP 4 — Admin */}
                 {step === 4 && (
                   <div className="bg-gray-50 rounded-2xl p-5 space-y-4">
-                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><User className="w-4 h-4 text-brand-violet" />Administrateur</h3>
+                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><User className="w-4 h-4 text-brand-orange" />Administrateur</h3>
                     <div>
                       <label className={lCls}>Nom complet *</label>
                       <input type="text" required value={form.admin_full_name} onChange={e => set('admin_full_name', e.target.value)} placeholder="Aminata Diallo" className={iCls} />
@@ -421,7 +421,7 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
                 <p className="text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider">Aperçu en direct</p>
                 <BoutiquePreview
                   name={form.name}
-                  color={form.plan === 'pro' ? form.primary_color : '#7C3AED'}
+                  color={form.plan === 'pro' ? form.primary_color : '#F97316'}
                   theme={form.plan === 'pro' ? form.theme : 'light'}
                   logoUrl={logoPreview || undefined}
                   coverUrl={coverPreview || undefined}
@@ -450,17 +450,17 @@ function CreateBoutiqueModal({ onClose, onCreated }: { onClose: () => void; onCr
               {[1, 2, 3, 4].map(s => (
                 <button key={s} onClick={() => setStep(s)}
                   className="w-2 h-2 rounded-full transition-all"
-                  style={{ backgroundColor: step === s ? '#7C3AED' : '#E5E7EB', transform: step === s ? 'scale(1.3)' : 'scale(1)' }} />
+                  style={{ backgroundColor: step === s ? '#F97316' : '#E5E7EB', transform: step === s ? 'scale(1.3)' : 'scale(1)' }} />
               ))}
             </div>
             {step < 4 ? (
               <button onClick={() => setStep(s => s + 1)}
-                className="bg-brand-violet text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors">
+                className="bg-brand-orange text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-brand-orange-dark transition-colors">
                 Suivant →
               </button>
             ) : (
               <button onClick={handleSubmit} disabled={loading || !form.name || !form.whatsapp_number || !form.admin_email || !form.admin_full_name}
-                className="bg-brand-violet text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                className="bg-brand-orange text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
                 {loading ? 'Création…' : 'Créer la boutique'}
               </button>
             )}
@@ -489,8 +489,8 @@ interface Boutique {
 
 const PLAN_BADGE_STYLE: Record<string, { bg: string; text: string }> = {
   free: { bg: '#F3F4F6', text: '#4B5563' },
-  starter: { bg: '#EDE9FE', text: '#6D28D9' },
-  pro: { bg: '#7C3AED', text: '#FFFFFF' },
+  starter: { bg: '#EDE9FE', text: '#C2410C' },
+  pro: { bg: '#F97316', text: '#FFFFFF' },
 }
 const PLAN_LABEL: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro' }
 
@@ -567,7 +567,7 @@ export default function SuperAdminBoutiquesPage() {
           </button>
           <button
             onClick={() => setCreateOpen(true)}
-            className="inline-flex items-center gap-2 bg-brand-violet hover:bg-brand-violet-dark text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
+            className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors">
             <PlusCircle className="w-4 h-4" />
             Créer une boutique
           </button>
@@ -591,7 +591,7 @@ export default function SuperAdminBoutiquesPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Rechercher par nom, slug, ville…"
-          className="w-full sm:w-80 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors" />
+          className="w-full sm:w-80 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors" />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -617,7 +617,7 @@ export default function SuperAdminBoutiquesPage() {
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 {/* Logo */}
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden"
-                  style={{ backgroundColor: b.primary_color || '#7C3AED' }}>
+                  style={{ backgroundColor: b.primary_color || '#F97316' }}>
                   {b.logo_url
                     ? <img src={b.logo_url} alt="" className="w-full h-full object-cover" />
                     : b.name.charAt(0)}
@@ -635,7 +635,7 @@ export default function SuperAdminBoutiquesPage() {
                 <PlanBadge plan={b.plan} />
                 <StatusBadge status={b.is_active ? 'active' : 'inactive'} />
                 <Link href={`/${b.slug}`} target="_blank"
-                  className="flex items-center gap-1 text-xs text-brand-violet hover:text-brand-violet-dark transition-colors">
+                  className="flex items-center gap-1 text-xs text-brand-orange hover:text-brand-orange-dark transition-colors">
                   Voir <ExternalLink className="w-3 h-3" />
                 </Link>
                 <BoutiqueRowActions

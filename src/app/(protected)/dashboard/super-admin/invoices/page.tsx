@@ -42,7 +42,7 @@ export default function InvoicesPage() {
     { label: 'À jour', value: coveredRows.length, icon: CheckCircle, color: '#059669', bg: '#F0FDF4', filter: 'covered' },
     { label: 'À encaisser', value: dueRows.length, icon: Clock, color: '#D97706', bg: '#FFFBEB', filter: 'due' },
     { label: 'En retard', value: overdueRows.length, icon: AlertTriangle, color: '#DC2626', bg: '#FEF2F2', filter: 'overdue' },
-    { label: 'Montant à encaisser', value: `${new Intl.NumberFormat('fr-SN').format(dueRevenue)} FCFA`, icon: RefreshCw, color: '#7C3AED', bg: '#F5F3FF', filter: 'all' },
+    { label: 'Montant à encaisser', value: `${new Intl.NumberFormat('fr-SN').format(dueRevenue)} FCFA`, icon: RefreshCw, color: '#F97316', bg: '#F5F3FF', filter: 'all' },
   ]
 
   const filtered = rows.filter(r => {
@@ -78,12 +78,12 @@ export default function InvoicesPage() {
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={generateNow} disabled={generating}
             title="Générer les factures dues maintenant, sans attendre le cron"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-violet hover:bg-brand-violet-dark rounded-lg px-3 py-2 transition-colors disabled:opacity-50">
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark rounded-lg px-3 py-2 transition-colors disabled:opacity-50">
             <Zap className={`w-3.5 h-3.5 ${generating ? 'animate-pulse' : ''}`} />
             <span className="hidden sm:inline">{generating ? 'Génération...' : 'Générer maintenant'}</span>
           </button>
           <button onClick={fetchRows}
-            className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-violet border border-gray-200 rounded-lg px-3 py-2 transition-colors shrink-0">
+            className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-orange border border-gray-200 rounded-lg px-3 py-2 transition-colors shrink-0">
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">{lastRefresh ? lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}</span>
           </button>

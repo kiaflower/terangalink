@@ -81,7 +81,7 @@ export function SubscriptionRow({
         <Link
           href="/dashboard/super-admin/invoices"
           title="Encaisser un paiement pour cette boutique"
-          className="flex items-center gap-1.5 text-xs bg-white border border-gray-200 hover:border-brand-violet text-gray-700 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 text-xs bg-white border border-gray-200 hover:border-brand-orange text-gray-700 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
         >
           <Receipt className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Factures</span>
@@ -90,14 +90,14 @@ export function SubscriptionRow({
           <select
             value={form.plan}
             onChange={e => setForm(f => ({ ...f, plan: e.target.value }))}
-            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:border-brand-violet"
+            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:border-brand-orange"
           >
             {PLAN_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
           <select
             value={form.status}
             onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:border-brand-violet"
+            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:border-brand-orange"
           >
             {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -105,13 +105,13 @@ export function SubscriptionRow({
             type="date"
             value={form.ends_at}
             onChange={e => setForm(f => ({ ...f, ends_at: e.target.value }))}
-            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:border-brand-violet"
+            className="text-xs bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:border-brand-orange"
           />
           <button
             type="submit"
             disabled={saving}
             title="Mettre à jour l'abonnement"
-            className="flex items-center gap-1.5 text-xs bg-brand-violet hover:bg-brand-violet-dark text-white px-2 sm:px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs bg-brand-orange hover:bg-brand-orange-dark text-white px-2 sm:px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">{saving ? '...' : 'Mettre à jour'}</span>

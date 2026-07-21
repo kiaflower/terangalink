@@ -99,8 +99,8 @@ export default function ParrainagePage() {
         <div className="space-y-5">
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-                <Gift className="w-5 h-5 text-brand-violet" />
+              <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                <Gift className="w-5 h-5 text-brand-orange" />
               </div>
               <div>
                 <p className="font-bold text-gray-900">Comment ça fonctionne ?</p>
@@ -108,16 +108,16 @@ export default function ParrainagePage() {
             </div>
             <ol className="space-y-3 text-sm text-gray-600">
               <li className="flex gap-3">
-                <span className="w-5 h-5 rounded-full bg-violet-100 text-brand-violet text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                <span className="w-5 h-5 rounded-full bg-orange-100 text-brand-orange text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
                 Partagez votre lien de parrainage à un commerçant
               </li>
               <li className="flex gap-3">
-                <span className="w-5 h-5 rounded-full bg-violet-100 text-brand-violet text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                <span className="w-5 h-5 rounded-full bg-orange-100 text-brand-orange text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
                 Il s&apos;inscrit avec votre code et paie son premier mois d&apos;abonnement
               </li>
               <li className="flex gap-3">
-                <span className="w-5 h-5 rounded-full bg-violet-100 text-brand-violet text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                Vous gagnez <span className="font-bold text-brand-violet mx-1">1 crédit</span> : -25% sur une facture, ou 5 crédits pour un mois offert
+                <span className="w-5 h-5 rounded-full bg-orange-100 text-brand-orange text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                Vous gagnez <span className="font-bold text-brand-orange mx-1">1 crédit</span> : -25% sur une facture, ou 5 crédits pour un mois offert
               </li>
             </ol>
           </div>
@@ -138,7 +138,7 @@ export default function ParrainagePage() {
               <button
                 onClick={copyLink}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white flex-shrink-0 transition-all"
-                style={{ backgroundColor: copied ? '#059669' : '#7C3AED' }}
+                style={{ backgroundColor: copied ? '#059669' : '#F97316' }}
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copié' : 'Copier'}
@@ -149,14 +149,14 @@ export default function ParrainagePage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-3">
               <p className="font-bold text-gray-900">Vos crédits</p>
-              <p className="text-2xl font-bold text-brand-violet">{availableCredits}</p>
+              <p className="text-2xl font-bold text-brand-orange">{availableCredits}</p>
             </div>
             <div className="mb-1 flex items-center justify-between text-xs text-gray-500">
               <span>Vers votre prochain mois gratuit</span>
               <span className="font-semibold">{progressInTranche}/{PALIER}</span>
             </div>
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
-              <div className="h-full bg-brand-violet rounded-full transition-all" style={{ width: `${(progressInTranche / PALIER) * 100}%` }} />
+              <div className="h-full bg-brand-orange rounded-full transition-all" style={{ width: `${(progressInTranche / PALIER) * 100}%` }} />
             </div>
             {tranchesReady > 0 && (
               <p className="text-xs text-gray-500 mb-4">
@@ -165,7 +165,7 @@ export default function ParrainagePage() {
             )}
 
             {pendingAction && (
-              <div className="bg-violet-50 border border-violet-100 rounded-xl p-3 mb-4 text-xs text-brand-violet font-medium">
+              <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4 text-xs text-brand-orange font-medium">
                 {pendingAction === 'discount' && 'Une réduction de -25% est déjà prévue sur votre prochaine facture.'}
                 {pendingAction === 'free_month' && 'Un mois gratuit est déjà prévu sur votre prochaine facture.'}
                 {pendingAction === 'referral_welcome' && 'Votre réduction de bienvenue de -25% est déjà prévue sur votre prochaine facture.'}
@@ -179,7 +179,7 @@ export default function ParrainagePage() {
               <button
                 onClick={() => runAction('discount')}
                 disabled={!canApplyDiscount || acting !== null}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand-violet transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:border-brand-orange transition-colors"
               >
                 <Percent className="w-3.5 h-3.5" />
                 {acting === 'discount' ? '...' : 'Appliquer un crédit (-25%)'}
@@ -187,7 +187,7 @@ export default function ParrainagePage() {
               <button
                 onClick={() => runAction('free_month')}
                 disabled={!canRedeemFreeMonth || acting !== null}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-brand-violet hover:bg-brand-violet-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <PartyPopper className="w-3.5 h-3.5" />
                 {acting === 'free_month' ? '...' : 'Échanger 5 crédits (mois offert)'}
@@ -196,8 +196,8 @@ export default function ParrainagePage() {
           </div>
 
           <div className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-              <Users className="w-5 h-5 text-brand-violet" />
+            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+              <Users className="w-5 h-5 text-brand-orange" />
             </div>
             <div>
               <p className="font-bold text-gray-900 text-2xl">{referred.length}</p>

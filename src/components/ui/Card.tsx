@@ -10,7 +10,7 @@ export function Card({ className, variant = 'default', padding = 'md', children,
   const variants = {
     default: 'bg-white border border-gray-200',
     bordered: 'bg-white border-2 border-gray-300',
-    glow: 'bg-white border border-violet-200 shadow-lg shadow-violet-500/5',
+    glow: 'bg-white border border-orange-200 shadow-lg shadow-orange-500/5',
   }
   const paddings = { none: '', sm: 'p-4', md: 'p-6', lg: 'p-8' }
 

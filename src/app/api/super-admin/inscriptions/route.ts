@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
           is_demo: false,
           is_verified: false,
           // Custom colors and theme are a Pro feature — Starter always keeps TerangaSpot's defaults
-          primary_color: r.plan === 'pro' ? (r.primary_color || '#7C3AED') : '#7C3AED',
+          primary_color: r.plan === 'pro' ? (r.primary_color || '#F97316') : '#F97316',
           theme: r.plan === 'pro' ? ((r.theme as string) || 'light') : 'light',
           logo_url,
           cover_url,
@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
     description: description || null,
     message: message || null,
     plan: plan || 'starter',
-    primary_color: primary_color || '#7C3AED',
+    primary_color: primary_color || '#F97316',
     theme: theme || 'light',
     facebook_url: facebook_url || null,
     instagram_url: instagram_url || null,

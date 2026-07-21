@@ -2,7 +2,7 @@ import { Body, Button, Container, Head, Heading, Hr, Html, Img, Link, Preview, S
 import type { NewsletterBlock } from '@/lib/types/database'
 import { sanitizeRichText } from '../sanitizeHtml'
 
-const BRAND_VIOLET = '#7C3AED'
+const BRAND_VIOLET = '#F97316'
 
 interface CampaignEmailProps {
   blocks: NewsletterBlock[]

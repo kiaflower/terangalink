@@ -16,7 +16,7 @@ function page(title: string, message: string): string {
   .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 420px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   h1 { font-size: 18px; color: #111827; margin: 0 0 12px; }
   p { font-size: 14px; color: #6b7280; line-height: 22px; margin: 0; }
-  .brand { font-size: 13px; color: #7C3AED; font-weight: 600; margin-top: 20px; }
+  .brand { font-size: 13px; color: #F97316; font-weight: 600; margin-top: 20px; }
 </style>
 </head>
 <body>

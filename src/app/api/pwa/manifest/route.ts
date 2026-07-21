@@ -13,7 +13,7 @@ export async function GET() {
 
   const name = boutique ? `${boutique.name} — TerangaSpot` : 'TerangaSpot — Boutique'
   const shortName = boutique?.name?.slice(0, 12) || 'TerangaSpot'
-  const themeColor = boutique?.primary_color || '#7C3AED'
+  const themeColor = boutique?.primary_color || '#F97316'
   const backgroundColor = boutique?.background_color || '#FFFFFF'
 
   const manifest = {

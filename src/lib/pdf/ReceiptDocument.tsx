@@ -4,7 +4,7 @@ import { PLANS, PlanKey } from '@/lib/plans'
 const styles = StyleSheet.create({
   page: { padding: 40, fontSize: 11, fontFamily: 'Helvetica', color: '#111827' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  brand: { fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#7C3AED' },
+  brand: { fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#F97316' },
   subtitle: { marginTop: 4, color: '#6B7280', fontSize: 10 },
   receiptNumber: { fontSize: 15, fontFamily: 'Helvetica-Bold', textAlign: 'right' },
   badge: { fontSize: 9, fontFamily: 'Helvetica-Bold', marginTop: 8, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 10, alignSelf: 'flex-end', color: '#047857', backgroundColor: '#D1FAE5' },

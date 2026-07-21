@@ -100,7 +100,7 @@ export default function FichesPage() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link href="/dashboard/super-admin/fiches/new"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-violet hover:bg-brand-violet-dark rounded-lg px-3 py-2 transition-colors">
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark rounded-lg px-3 py-2 transition-colors">
             <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Nouvelle fiche</span>
           </Link>
@@ -116,7 +116,7 @@ export default function FichesPage() {
         <button onClick={() => setActiveCategory('all')}
           className="shrink-0 text-xs font-semibold px-3.5 py-2 rounded-full border transition-colors"
           style={activeCategory === 'all'
-            ? { backgroundColor: 'rgba(124,58,237,0.08)', borderColor: '#7C3AED', color: '#7C3AED' }
+            ? { backgroundColor: 'rgba(249,115,22,0.08)', borderColor: '#F97316', color: '#F97316' }
             : { backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#6B7280' }}>
           Tous
         </button>
@@ -140,7 +140,7 @@ export default function FichesPage() {
         <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Rechercher une fiche par titre…"
-          className="w-full sm:w-80 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors" />
+          className="w-full sm:w-80 border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors" />
       </div>
 
       {loading ? (

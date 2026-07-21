@@ -28,7 +28,7 @@ export function FeatureGate({ plan, feature, children, fallback, description, re
         {description ?? `Passez au plan ${requiredPlanLabel} pour débloquer cette fonctionnalité.`}
       </p>
       <Link href="/dashboard/boutique/settings#abonnement"
-        className="inline-block mt-3 text-xs font-bold text-brand-violet hover:underline">
+        className="inline-block mt-3 text-xs font-bold text-brand-orange hover:underline">
         Passer au plan {requiredPlanLabel} →
       </Link>
     </div>

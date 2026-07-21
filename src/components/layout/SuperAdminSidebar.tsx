@@ -49,10 +49,10 @@ function NavContent({ onClose, counts }: { onClose?: () => void; counts: Counts 
             <Link key={href} href={href} onClick={onClose}
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
               style={active
-                ? { backgroundColor: 'rgba(124,58,237,0.08)', color: '#7C3AED' }
+                ? { backgroundColor: 'rgba(249,115,22,0.08)', color: '#F97316' }
                 : { backgroundColor: 'transparent', color: '#6B7280' }
               }
-              onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'; (e.currentTarget as HTMLElement).style.color = '#7C3AED' } }}
+              onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'; (e.currentTarget as HTMLElement).style.color = '#F97316' } }}
               onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#6B7280' } }}
             >
               <Icon className="w-4 h-4 flex-shrink-0" />

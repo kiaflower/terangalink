@@ -34,7 +34,7 @@ const FIELDS = [
   { key: 'maintenance_message', label: 'Message de maintenance', placeholder: 'Retour dans quelques minutes...' },
 ]
 
-const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors'
+const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 
 export default function SettingsPage() {
   const [values, setValues] = useState<Record<string, string>>({})
@@ -105,7 +105,7 @@ export default function SettingsPage() {
 
           <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
             <h2 className="text-gray-900 font-semibold mb-1 flex items-center gap-2">
-              <Bell className="w-4 h-4 text-brand-violet" />
+              <Bell className="w-4 h-4 text-brand-orange" />
               Alertes Super Admin
             </h2>
             <p className="text-xs text-gray-500">Choisissez quelles alertes déclenchent une notification, et à partir de quel seuil.</p>
@@ -117,7 +117,7 @@ export default function SettingsPage() {
                     type="checkbox"
                     checked={notifToggles[t.key] ?? true}
                     onChange={e => setNotifToggles(v => ({ ...v, [t.key]: e.target.checked }))}
-                    className="mt-0.5 w-4 h-4 accent-brand-violet"
+                    className="mt-0.5 w-4 h-4 accent-brand-orange"
                   />
                   <span>
                     <span className="block text-sm text-gray-900">{t.label}</span>
@@ -146,7 +146,7 @@ export default function SettingsPage() {
 
           <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
             <h2 className="text-gray-900 font-semibold mb-2 flex items-center gap-2">
-              <SettingsIcon className="w-4 h-4 text-brand-violet" />
+              <SettingsIcon className="w-4 h-4 text-brand-orange" />
               Paramètres généraux
             </h2>
             {FIELDS.map(f => (
@@ -199,7 +199,7 @@ export default function SettingsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-brand-violet hover:bg-brand-violet-dark text-white py-2.5 rounded-xl font-medium transition-colors disabled:opacity-50"
+            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-2.5 rounded-xl font-medium transition-colors disabled:opacity-50"
           >
             {saving ? 'Enregistrement...' : 'Enregistrer les paramètres'}
           </button>

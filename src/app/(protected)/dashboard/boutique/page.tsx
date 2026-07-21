@@ -77,7 +77,7 @@ export default async function BoutiqueDashboardHome() {
   const showMonthlyBanner = today.getDate() >= daysInMonth - 2
 
   const planLabel: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro' }
-  const planVariant: Record<string, 'default' | 'violet'> = { free: 'default', starter: 'default', pro: 'violet' }
+  const planVariant: Record<string, 'default' | 'orange'> = { free: 'default', starter: 'default', pro: 'orange' }
   const plan: PlanKey = subscription?.plan === 'pro' || subscription?.plan === 'starter' ? subscription.plan : 'free'
 
   return (
@@ -90,8 +90,8 @@ export default async function BoutiqueDashboardHome() {
       </div>
 
       {boutique && (
-        <div className="bg-gray-50 border border-brand-violet/10 rounded-2xl p-5 mb-6 flex items-center gap-4">
-          <div className="w-12 h-12 bg-brand-violet/10 rounded-xl flex items-center justify-center text-brand-violet font-bold text-lg flex-shrink-0">
+        <div className="bg-gray-50 border border-brand-orange/10 rounded-2xl p-5 mb-6 flex items-center gap-4">
+          <div className="w-12 h-12 bg-brand-orange/10 rounded-xl flex items-center justify-center text-brand-orange font-bold text-lg flex-shrink-0">
             {boutique.name.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
@@ -119,8 +119,8 @@ export default async function BoutiqueDashboardHome() {
 
       {showMonthlyBanner && (
         <div className="mb-6 rounded-2xl p-5 flex items-center gap-4" style={{ backgroundColor: '#F5F3FF', border: '1.5px solid #DDD6FE' }}>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(124,58,237,0.12)' }}>
-            <BarChart2 className="w-5 h-5 text-brand-violet" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(249,115,22,0.12)' }}>
+            <BarChart2 className="w-5 h-5 text-brand-orange" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-gray-900 text-sm">Bilan de fin de mois</p>
@@ -130,7 +130,7 @@ export default async function BoutiqueDashboardHome() {
           </div>
           <Link href="/dashboard/boutique/analytics"
             className="text-xs font-bold px-3 py-2 rounded-xl text-white flex-shrink-0 transition-opacity hover:opacity-90"
-            style={{ backgroundColor: '#7C3AED' }}>
+            style={{ backgroundColor: '#F97316' }}>
             Voir l&apos;analyse
           </Link>
         </div>
@@ -141,7 +141,7 @@ export default async function BoutiqueDashboardHome() {
           title="Commandes aujourd'hui"
           value={String(todayOrders?.length ?? 0)}
           icon={<ShoppingBag className="w-5 h-5" />}
-          color="violet"
+          color="orange"
           subtitle={(todayOrders?.length ?? 0) === 0 ? 'Aucune commande ce jour' : `${todayOrders?.length} commande(s) active(s)`}
         />
         <StatCard
@@ -179,15 +179,15 @@ export default async function BoutiqueDashboardHome() {
             { label: 'Paramètres', desc: 'Configuration du compte', href: '/dashboard/boutique/settings', icon: Eye },
           ].map((item) => (
             <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl hover:border-brand-violet/30 hover:bg-brand-violet/5 transition-all group">
-              <div className="w-9 h-9 bg-brand-violet/10 rounded-lg flex items-center justify-center group-hover:bg-brand-violet/20 transition-colors">
-                <item.icon className="w-4 h-4 text-brand-violet" />
+              className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl hover:border-brand-orange/30 hover:bg-brand-orange/5 transition-all group">
+              <div className="w-9 h-9 bg-brand-orange/10 rounded-lg flex items-center justify-center group-hover:bg-brand-orange/20 transition-colors">
+                <item.icon className="w-4 h-4 text-brand-orange" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-gray-900 text-sm font-medium">{item.label}</p>
                 <p className="text-gray-500 text-xs">{item.desc}</p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-brand-violet transition-colors" />
+              <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-brand-orange transition-colors" />
             </Link>
           ))}
         </div>
@@ -200,7 +200,7 @@ export default async function BoutiqueDashboardHome() {
               <AlertCircle className="w-4 h-4 text-amber-500" />
               Stock faible
             </h2>
-            <Link href="/dashboard/boutique/catalogue" className="text-sm text-brand-violet hover:text-brand-violet-dark transition-colors">
+            <Link href="/dashboard/boutique/catalogue" className="text-sm text-brand-orange hover:text-brand-orange-dark transition-colors">
               Gérer le catalogue
             </Link>
           </div>
@@ -229,7 +229,7 @@ export default async function BoutiqueDashboardHome() {
         <Card>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-gray-900 font-semibold">Commandes récentes</h2>
-            <Link href="/dashboard/boutique/orders" className="text-sm text-brand-violet hover:text-brand-violet-dark transition-colors">
+            <Link href="/dashboard/boutique/orders" className="text-sm text-brand-orange hover:text-brand-orange-dark transition-colors">
               Voir tout
             </Link>
           </div>
@@ -241,7 +241,7 @@ export default async function BoutiqueDashboardHome() {
                   <p className="text-gray-500 text-xs">{order.customer_name} · {new Date(order.created_at).toLocaleDateString('fr-SN')}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-brand-violet font-semibold text-sm">{formatPrice(order.total)}</p>
+                  <p className="text-brand-orange font-semibold text-sm">{formatPrice(order.total)}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     order.status === 'pending' ? 'bg-amber-50 text-amber-600' :
                     order.status === 'confirmed' ? 'bg-blue-50 text-blue-600' :

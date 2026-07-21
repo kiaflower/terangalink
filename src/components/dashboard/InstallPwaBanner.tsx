@@ -77,7 +77,7 @@ export function InstallPwaBanner({ variant }: { variant: 'boutique' | 'admin' })
   }
 
   return (
-    <div className="relative mb-4 rounded-2xl border border-brand-violet/20 bg-brand-violet/5 p-4">
+    <div className="relative mb-4 rounded-2xl border border-brand-orange/20 bg-brand-orange/5 p-4">
       <button
         onClick={dismiss}
         className="absolute right-3 top-3 text-ink-300 hover:text-ink-500"
@@ -87,7 +87,7 @@ export function InstallPwaBanner({ variant }: { variant: 'boutique' | 'admin' })
       </button>
 
       <div className="flex items-start gap-3 pr-6">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-violet text-white">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-orange text-white">
           <Download size={18} />
         </div>
         <div className="min-w-0">
@@ -95,7 +95,7 @@ export function InstallPwaBanner({ variant }: { variant: 'boutique' | 'admin' })
           <p className="mt-1 text-xs text-ink-400 leading-relaxed">{copy.body}</p>
 
           {platform === 'ios' && (
-            <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-brand-violet-dark">
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-brand-orange-dark">
               Appuyez sur <Share size={14} className="inline" /> puis « Sur l'écran d'accueil »
             </p>
           )}
@@ -103,14 +103,14 @@ export function InstallPwaBanner({ variant }: { variant: 'boutique' | 'admin' })
           {platform !== 'ios' && deferredPrompt && (
             <button
               onClick={handleInstallClick}
-              className="mt-3 rounded-lg bg-brand-violet px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-violet-dark"
+              className="mt-3 rounded-lg bg-brand-orange px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-orange-dark"
             >
               Installer
             </button>
           )}
 
           {platform !== 'ios' && !deferredPrompt && (
-            <p className="mt-2 text-xs font-medium text-brand-violet-dark">
+            <p className="mt-2 text-xs font-medium text-brand-orange-dark">
               Menu du navigateur (⋮) → « Installer l'application » ou « Ajouter à l'écran d'accueil »
             </p>
           )}

@@ -85,7 +85,7 @@ export default function ProfilePage() {
         value={(form[key] as string) ?? ''}
         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
         placeholder={placeholder}
-        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
       />
     </div>
   )
@@ -103,7 +103,7 @@ export default function ProfilePage() {
             ) : (
               <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-gray-300 text-xs">Logo</div>
             )}
-            <label className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer hover:border-brand-violet text-gray-600 hover:text-brand-violet transition-colors">
+            <label className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer hover:border-brand-orange text-gray-600 hover:text-brand-orange transition-colors">
               <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0], 'logo')} />
               <Upload className="w-4 h-4" />
               {uploadingLogo ? 'Envoi…' : 'Changer le logo'}
@@ -119,7 +119,7 @@ export default function ProfilePage() {
             ) : (
               <div className="w-full h-28 rounded-xl bg-gray-100 flex items-center justify-center text-gray-300 text-xs">Couverture</div>
             )}
-            <label className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer hover:border-brand-violet text-gray-600 hover:text-brand-violet transition-colors">
+            <label className="inline-flex items-center gap-2 text-sm border border-gray-200 rounded-xl px-4 py-2.5 cursor-pointer hover:border-brand-orange text-gray-600 hover:text-brand-orange transition-colors">
               <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0], 'cover')} />
               <Upload className="w-4 h-4" />
               {uploadingCover ? 'Envoi…' : 'Changer la couverture'}
@@ -134,7 +134,7 @@ export default function ProfilePage() {
             value={(form.description as string) ?? ''}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             rows={3}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet resize-none"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange resize-none"
           />
         </div>
         <div>
@@ -142,7 +142,7 @@ export default function ProfilePage() {
           <select
             value={(form.shop_category as string) ?? ''}
             onChange={e => setForm(f => ({ ...f, shop_category: e.target.value }))}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
           >
             {SHOP_CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -168,7 +168,7 @@ export default function ProfilePage() {
             id="show_delivery"
             checked={!!form.show_delivery_info}
             onChange={e => setForm(f => ({ ...f, show_delivery_info: e.target.checked }))}
-            className="w-4 h-4 accent-brand-violet"
+            className="w-4 h-4 accent-brand-orange"
           />
           <label htmlFor="show_delivery" className="text-sm text-gray-400">Afficher ce bandeau sur ma boutique</label>
         </div>
@@ -179,15 +179,15 @@ export default function ProfilePage() {
             onChange={e => setForm(f => ({ ...f, delivery_info: e.target.value }))}
             rows={2}
             placeholder="Ex: Livraison disponible à Dakar, délai 24h..."
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet resize-none"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange resize-none"
           />
         </div>
         {form.show_delivery_info && (form.delivery_info as string) && (
           <div>
             <p className="text-xs text-gray-400 mb-1.5">Aperçu — ce qui sera affiché publiquement :</p>
             <div className="rounded-2xl p-5 flex items-center gap-4 bg-white border border-gray-200">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-brand-violet/10">
-                <Truck className="w-5 h-5 text-brand-violet" />
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-brand-orange/10">
+                <Truck className="w-5 h-5 text-brand-orange" />
               </div>
               <div>
                 <p className="font-semibold text-sm text-gray-900">Livraison</p>
@@ -202,7 +202,7 @@ export default function ProfilePage() {
         <button
           onClick={save}
           disabled={saving}
-          className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+          className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
         >
           {saving ? 'Enregistrement...' : 'Sauvegarder'}
         </button>

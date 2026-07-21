@@ -142,7 +142,7 @@ export function BoutiqueRowActions({
         disabled={loading !== null}
         aria-label={isActive ? 'Désactiver' : 'Activer'}
         title={isActive ? 'Désactiver' : 'Activer'}
-        className={`${iconBtnClass} text-gray-500 border-gray-200 hover:border-brand-violet/30 hover:text-brand-violet`}
+        className={`${iconBtnClass} text-gray-500 border-gray-200 hover:border-brand-orange/30 hover:text-brand-orange`}
       >
         {loading === 'toggle' ? <Loader2 className="w-4 h-4 animate-spin" /> : isActive ? <Power className="w-4 h-4" /> : <PowerOff className="w-4 h-4" />}
       </button>
@@ -151,7 +151,7 @@ export function BoutiqueRowActions({
         disabled={loading !== null}
         aria-label="Impersoner"
         title="Impersoner"
-        className={`${iconBtnClass} text-gray-500 border-gray-200 hover:border-brand-violet/30 hover:text-brand-violet`}
+        className={`${iconBtnClass} text-gray-500 border-gray-200 hover:border-brand-orange/30 hover:text-brand-orange`}
       >
         {loading === 'impersonate' ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCog className="w-4 h-4" />}
       </button>
@@ -159,7 +159,7 @@ export function BoutiqueRowActions({
         href={`/dashboard/super-admin/boutiques/${boutiqueId}/edit`}
         aria-label="Modifier"
         title="Modifier"
-        className={`${iconBtnClass} text-gray-500 border-gray-200 hover:border-brand-violet/30 hover:text-brand-violet`}
+        className={`${iconBtnClass} text-gray-500 border-gray-200 hover:border-brand-orange/30 hover:text-brand-orange`}
       >
         <Pencil className="w-4 h-4" />
       </Link>
@@ -168,7 +168,7 @@ export function BoutiqueRowActions({
         disabled={loading !== null}
         aria-label="Rapport hebdomadaire sur WhatsApp"
         title={sentThisWeek ? `Rapport déjà envoyé le ${new Date(lastReportSentAt!).toLocaleDateString('fr-SN')} — cliquer pour repréparer le message` : 'Préparer le rapport hebdomadaire sur WhatsApp'}
-        className={`${iconBtnClass} ${sentThisWeek ? 'text-green-600 border-green-200 hover:bg-green-50' : 'text-gray-500 border-gray-200 hover:border-brand-violet/30 hover:text-brand-violet'}`}
+        className={`${iconBtnClass} ${sentThisWeek ? 'text-green-600 border-green-200 hover:bg-green-50' : 'text-gray-500 border-gray-200 hover:border-brand-orange/30 hover:text-brand-orange'}`}
       >
         {loading === 'report' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
       </button>

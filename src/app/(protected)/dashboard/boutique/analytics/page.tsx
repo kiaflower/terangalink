@@ -150,7 +150,7 @@ async function AdvancedAnalytics({ supabase, boutiqueId, now, plan }: {
             {popularProducts.map(p => (
               <div key={p.name} className="flex items-center justify-between text-sm">
                 <span className="text-gray-700">{p.name}</span>
-                <span className="text-brand-violet font-semibold">{p.added} ajout{p.added > 1 ? 's' : ''} · {p.ordered} commandé{p.ordered > 1 ? 's' : ''}</span>
+                <span className="text-brand-orange font-semibold">{p.added} ajout{p.added > 1 ? 's' : ''} · {p.ordered} commandé{p.ordered > 1 ? 's' : ''}</span>
               </div>
             ))}
           </div>
@@ -186,7 +186,7 @@ async function AdvancedAnalytics({ supabase, boutiqueId, now, plan }: {
             <SectionTitle title="Recommandations" />
             <div className="space-y-3">
               {recommendations.map(r => (
-                <div key={r.type} className="bg-violet-50 border border-violet-100 rounded-2xl p-4 text-sm text-brand-violet font-medium">
+                <div key={r.type} className="bg-orange-50 border border-orange-100 rounded-2xl p-4 text-sm text-brand-orange font-medium">
                   {r.message}
                 </div>
               ))}

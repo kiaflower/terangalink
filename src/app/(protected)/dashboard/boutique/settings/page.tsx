@@ -9,9 +9,9 @@ import { getActiveDiscount } from '@/lib/subscriptionDiscount'
 import type { OpeningHours } from '@/lib/types'
 import { NotificationSettings } from '@/components/dashboard/NotificationSettings'
 
-const iCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors'
+const iCls = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 const lCls = 'block text-xs font-medium text-gray-500 mb-1.5'
-const timeCls = 'flex-1 min-w-0 border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors'
+const timeCls = 'flex-1 min-w-0 border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 
 interface BoutiqueData {
   id: string
@@ -265,7 +265,7 @@ export default function SettingsPage() {
     setExporting(false)
   }
 
-  const planColors: Record<string, string> = { free: '#6B7280', starter: '#6B7280', pro: '#7C3AED', trial: '#D97706' }
+  const planColors: Record<string, string> = { free: '#6B7280', starter: '#6B7280', pro: '#F97316', trial: '#D97706' }
   const planLabels: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro', trial: 'Essai', active: 'Actif', suspended: 'Suspendu', cancelled: 'Annulé' }
 
   return (
@@ -279,7 +279,7 @@ export default function SettingsPage() {
       {isPrincipal && (
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-1 flex items-center gap-2">
-            <Lock className="w-4 h-4 text-brand-violet" />
+            <Lock className="w-4 h-4 text-brand-orange" />
             Mot de passe de la boutique
           </h2>
           <p className="text-xs text-gray-500 mb-4">Ce mot de passe est partagé par tous les admins de la boutique.</p>
@@ -305,11 +305,11 @@ export default function SettingsPage() {
               </p>
             )}
             <button type="submit" disabled={pwSaving}
-              className="w-full bg-brand-violet text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+              className="w-full bg-brand-orange text-white py-3 rounded-xl text-sm font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
               {pwSaving ? 'Mise à jour…' : 'Mettre à jour le mot de passe'}
             </button>
             <a href="/mot-de-passe-oublie" target="_blank" rel="noopener noreferrer"
-              className="block text-center text-xs text-gray-400 hover:text-brand-violet transition-colors">
+              className="block text-center text-xs text-gray-400 hover:text-brand-orange transition-colors">
               Mot de passe actuel oublié ?
             </a>
           </form>
@@ -322,7 +322,7 @@ export default function SettingsPage() {
       {isPrincipal && sub?.plan === 'pro' && (
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
-            <Users className="w-4 h-4 text-brand-violet" />
+            <Users className="w-4 h-4 text-brand-orange" />
             Gestion des admins
           </h2>
           <div className="space-y-2 mb-4">
@@ -334,7 +334,7 @@ export default function SettingsPage() {
                   </p>
                   <p className="text-xs text-gray-400 truncate">{a.email}</p>
                 </div>
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${a.admin_role === 'principal' ? 'bg-violet-100 text-brand-violet' : 'bg-gray-200 text-gray-600'}`}>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${a.admin_role === 'principal' ? 'bg-orange-100 text-brand-orange' : 'bg-gray-200 text-gray-600'}`}>
                   {a.admin_role === 'principal' ? 'Principal' : 'Secondaire'}
                 </span>
                 {a.admin_role === 'secondaire' && (
@@ -365,7 +365,7 @@ export default function SettingsPage() {
                 </p>
               )}
               <button type="submit" disabled={addAdminSaving}
-                className="w-full inline-flex items-center justify-center gap-2 border border-brand-violet text-brand-violet py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-violet/5 transition-colors disabled:opacity-50">
+                className="w-full inline-flex items-center justify-center gap-2 border border-brand-orange text-brand-orange py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-orange/5 transition-colors disabled:opacity-50">
                 <Plus className="w-4 h-4" />
                 {addAdminSaving ? 'Ajout…' : 'Ajouter un admin'}
               </button>
@@ -379,7 +379,7 @@ export default function SettingsPage() {
       {/* ── Section 2 : Abonnement ── */}
       <div id="abonnement" className="bg-white border border-gray-200 rounded-2xl p-6 scroll-mt-6">
         <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
-          <CreditCard className="w-4 h-4 text-brand-violet" />
+          <CreditCard className="w-4 h-4 text-brand-orange" />
           Mon abonnement
         </h2>
         {sub ? (
@@ -405,7 +405,7 @@ export default function SettingsPage() {
               </span>
             </div>
             <button onClick={() => { setSelectedPlan(sub.plan === 'pro' ? 'starter' : 'pro'); setPlanModalOpen(true) }}
-              className="w-full border border-brand-violet text-brand-violet py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-violet/5 transition-colors">
+              className="w-full border border-brand-orange text-brand-orange py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-orange/5 transition-colors">
               Demander une modification
             </button>
           </div>
@@ -417,7 +417,7 @@ export default function SettingsPage() {
       {/* ── Section : Horaires d'ouverture ── */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-brand-violet" />
+          <Clock className="w-4 h-4 text-brand-orange" />
           Horaires d&apos;ouverture
         </h2>
         <p className="text-xs text-gray-500 mb-4">
@@ -450,7 +450,7 @@ export default function SettingsPage() {
                     type="checkbox"
                     checked={closed}
                     onChange={e => setHours(h => ({ ...h, [key]: e.target.checked ? null : '08:00-18:00' }))}
-                    className="w-3.5 h-3.5 accent-brand-violet"
+                    className="w-3.5 h-3.5 accent-brand-orange"
                   />
                   Fermé
                 </label>
@@ -460,7 +460,7 @@ export default function SettingsPage() {
         </div>
         <div className="flex items-center gap-3 mt-4">
           <button onClick={saveHours} disabled={hoursSaving}
-            className="bg-brand-violet text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+            className="bg-brand-orange text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
             {hoursSaving ? 'Enregistrement…' : 'Enregistrer les horaires'}
           </button>
           {hoursSaved && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Enregistré</span>}
@@ -470,7 +470,7 @@ export default function SettingsPage() {
       {/* ── Section : Newsletter ── */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
-          <Mail className="w-4 h-4 text-brand-violet" />
+          <Mail className="w-4 h-4 text-brand-orange" />
           Newsletter TerangaSpot
         </h2>
         <label className="flex items-start gap-3 cursor-pointer">
@@ -478,7 +478,7 @@ export default function SettingsPage() {
             type="checkbox"
             checked={newsletterOptIn}
             onChange={e => toggleNewsletterOptIn(e.target.checked)}
-            className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0"
+            className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0"
           />
           <span className="text-sm text-gray-700">
             Recevoir les emails de la newsletter TerangaSpot (conseils, offres partenaires, actualités).
@@ -491,7 +491,7 @@ export default function SettingsPage() {
       {/* ── Section 3 : Parrainage ── */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <h2 className="font-semibold text-gray-900 text-sm mb-4 flex items-center gap-2">
-          <Gift className="w-4 h-4 text-brand-violet" />
+          <Gift className="w-4 h-4 text-brand-orange" />
           Mon code de parrainage
         </h2>
         {boutique?.referral_code ? (
@@ -500,12 +500,12 @@ export default function SettingsPage() {
               Partagez ce code. Si le filleul s&apos;abonne après son essai, vous recevez tous les deux 25% sur votre prochain mois.
             </p>
             <div className="flex items-center gap-3 mb-3">
-              <span className="font-mono font-bold text-xl tracking-wider px-4 py-2 bg-white border border-gray-200 rounded-xl" style={{ color: '#7C3AED' }}>
+              <span className="font-mono font-bold text-xl tracking-wider px-4 py-2 bg-white border border-gray-200 rounded-xl" style={{ color: '#F97316' }}>
                 {boutique.referral_code}
               </span>
               <button onClick={handleShare}
                 className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-xl text-white transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#7C3AED' }}>
+                style={{ backgroundColor: '#F97316' }}>
                 <Share2 className="w-4 h-4" />
                 {copied ? 'Lien copié !' : 'Partager'}
               </button>
@@ -522,7 +522,7 @@ export default function SettingsPage() {
       {/* ── Section 4 : Export ── */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6">
         <h2 className="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-2">
-          <FileDown className="w-4 h-4 text-brand-violet" />
+          <FileDown className="w-4 h-4 text-brand-orange" />
           Télécharger mes données
         </h2>
         <p className="text-xs text-gray-500 mb-4">
@@ -552,12 +552,12 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {(Object.entries(PLANS) as [string, typeof PLANS.starter][]).map(([key, plan]) => (
                   <button key={key} onClick={() => setSelectedPlan(key as PlanKey)}
-                    className={`text-left p-5 rounded-2xl border-2 transition-all ${selectedPlan === key ? 'border-brand-violet bg-violet-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                    className={`text-left p-5 rounded-2xl border-2 transition-all ${selectedPlan === key ? 'border-brand-orange bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-gray-900">{plan.name}</span>
-                      {selectedPlan === key && <Check className="w-4 h-4 text-brand-violet" />}
+                      {selectedPlan === key && <Check className="w-4 h-4 text-brand-orange" />}
                     </div>
-                    <p className="text-xl font-bold text-brand-violet mb-3">{(planPrices[key] ?? plan.price).toLocaleString('fr-FR')} FCFA<span className="text-sm font-normal text-gray-400">/mois</span></p>
+                    <p className="text-xl font-bold text-brand-orange mb-3">{(planPrices[key] ?? plan.price).toLocaleString('fr-FR')} FCFA<span className="text-sm font-normal text-gray-400">/mois</span></p>
                     <ul className="space-y-1.5">
                       {plan.features.slice(0, 5).map(f => (
                         <li key={f} className="flex items-start gap-1.5 text-xs text-gray-600">
@@ -575,7 +575,7 @@ export default function SettingsPage() {
                   className={`${iCls} resize-none`} />
               </div>
               <button onClick={sendPlanRequest}
-                className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors text-sm">
+                className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-brand-orange-dark transition-colors text-sm">
                 Envoyer ma demande via WhatsApp
               </button>
             </div>

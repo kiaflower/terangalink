@@ -138,7 +138,7 @@ async function loadDemoShowcase(): Promise<DemoShowcaseEntry[]> {
 
   return Promise.all(sorted.map(async b => {
     const isPro = b.plan === 'pro'
-    const displayBoutique = (isPro ? b : { ...b, primary_color: '#7C3AED', theme: 'light' }) as Boutique
+    const displayBoutique = (isPro ? b : { ...b, primary_color: '#F97316', theme: 'light' }) as Boutique
 
     const { data: categories } = await supabase
       .from('product_categories')
@@ -273,15 +273,15 @@ export default async function PourLesBoutiquesPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link href="/"><Logo textClassName="text-xl font-bold" textStyle={{ color: '#111111' }} /></Link>
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/boutiques" className="text-sm text-gray-500 hover:text-brand-violet transition-colors">Annuaire</Link>
-            <Link href="#fonctionnalites" className="text-sm text-gray-500 hover:text-brand-violet transition-colors">Fonctionnalités</Link>
-            <Link href="#tarifs" className="text-sm text-gray-500 hover:text-brand-violet transition-colors">Tarifs</Link>
-            <Link href="#faq" className="text-sm text-gray-500 hover:text-brand-violet transition-colors">FAQ</Link>
+            <Link href="/boutiques" className="text-sm text-gray-500 hover:text-brand-orange transition-colors">Annuaire</Link>
+            <Link href="#fonctionnalites" className="text-sm text-gray-500 hover:text-brand-orange transition-colors">Fonctionnalités</Link>
+            <Link href="#tarifs" className="text-sm text-gray-500 hover:text-brand-orange transition-colors">Tarifs</Link>
+            <Link href="#faq" className="text-sm text-gray-500 hover:text-brand-orange transition-colors">FAQ</Link>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/login"
               className="inline-flex text-sm font-semibold px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-white transition-opacity hover:opacity-90 whitespace-nowrap"
-              style={{ backgroundColor: '#7C3AED' }}>
+              style={{ backgroundColor: '#F97316' }}>
               Me connecter
             </Link>
             <MobileMenu />
@@ -292,13 +292,13 @@ export default async function PourLesBoutiquesPage() {
       {/* Hero — fond sombre, lueur violette diffuse, mockups téléphone en illustration */}
       <section className="relative" style={{ backgroundColor: '#0A0A0A' }}>
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full opacity-40 blur-[100px]" style={{ backgroundColor: '#7C3AED' }} />
-          <div className="absolute top-1/3 -right-32 w-[380px] h-[380px] rounded-full opacity-30 blur-[110px]" style={{ backgroundColor: '#6D28D9' }} />
+          <div className="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full opacity-40 blur-[100px]" style={{ backgroundColor: '#F97316' }} />
+          <div className="absolute top-1/3 -right-32 w-[380px] h-[380px] rounded-full opacity-30 blur-[110px]" style={{ backgroundColor: '#C2410C' }} />
         </div>
 
         <div className="relative max-w-6xl mx-auto px-4 py-20 sm:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="text-center lg:text-left">
-            <span className="inline-block text-xs font-bold text-violet-300 uppercase tracking-widest mb-4">
+            <span className="inline-block text-xs font-bold text-orange-300 uppercase tracking-widest mb-4">
               Pour les boutiques et commerçants
             </span>
             <h1 className="font-black text-4xl sm:text-5xl text-white mb-6 leading-tight tracking-tight">
@@ -310,7 +310,7 @@ export default async function PourLesBoutiquesPage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
               <Link href="/inscription"
-                className="inline-flex items-center justify-center gap-2 bg-brand-violet text-white px-8 py-4 rounded-2xl font-bold text-base hover:bg-brand-violet-dark transition-colors w-full sm:w-auto whitespace-nowrap">
+                className="inline-flex items-center justify-center gap-2 bg-brand-orange text-white px-8 py-4 rounded-2xl font-bold text-base hover:bg-brand-orange-dark transition-colors w-full sm:w-auto whitespace-nowrap">
                 Commencer gratuitement
                 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -322,7 +322,7 @@ export default async function PourLesBoutiquesPage() {
               </a>
             </div>
             <p className="inline-flex items-center gap-2 text-sm mt-6" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              <Check className="w-4 h-4 text-violet-300 shrink-0" />
+              <Check className="w-4 h-4 text-orange-300 shrink-0" />
               Gratuit pour démarrer, sans limite de durée
             </p>
           </div>
@@ -335,12 +335,12 @@ export default async function PourLesBoutiquesPage() {
       {realBoutiques.length > 0 && (
         <section style={{ backgroundColor: '#0A0A0A' }}>
           <div className="max-w-5xl mx-auto px-4 pt-10 pb-16 sm:pb-20" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-            <p className="text-center text-sm sm:text-base font-bold text-violet-300 uppercase tracking-widest mb-6 pt-10">
+            <p className="text-center text-sm sm:text-base font-bold text-orange-300 uppercase tracking-widest mb-6 pt-10">
               Elles vendent déjà sur TerangaSpot
             </p>
             <RealBoutiquesMarquee boutiques={realBoutiques} dark />
             <div className="text-center mt-4">
-              <Link href="/boutiques" className="inline-flex items-center gap-2 text-sm font-semibold text-violet-300 hover:text-white transition-colors">
+              <Link href="/boutiques" className="inline-flex items-center gap-2 text-sm font-semibold text-orange-300 hover:text-white transition-colors">
                 Voir toutes les boutiques dans la vitrine publique
                 <ArrowRight className="w-4 h-4" />
               </Link>
@@ -356,23 +356,23 @@ export default async function PourLesBoutiquesPage() {
         className="relative z-10 -mt-8 sm:-mt-10 pt-10 sm:pt-14 pb-20 px-4 bg-white rounded-t-[2rem] sm:rounded-t-[2.5rem] rounded-b-[2rem] sm:rounded-b-[2.5rem] shadow-[0_-24px_40px_-28px_rgba(0,0,0,0.2),0_24px_40px_-28px_rgba(0,0,0,0.2)]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <span className="inline-block text-xs font-bold text-brand-violet uppercase tracking-widest mb-3">Comment ça marche</span>
+            <span className="inline-block text-xs font-bold text-brand-orange uppercase tracking-widest mb-3">Comment ça marche</span>
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Votre routine ne change pas — le chaos, lui, disparaît</h2>
             <p className="text-gray-500">TerangaSpot s&apos;ajoute à ce que vous faites déjà, en 3 étapes.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {steps.map((s, i) => (
               <div key={s.title} className="relative">
-                <div className="h-full rounded-2xl p-6 text-center bg-gray-50 border border-gray-100 transition-colors hover:border-violet-200">
-                  <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-violet-100 flex items-center justify-center mx-auto mb-4">
-                    <s.icon className="w-6 h-6 text-brand-violet" />
+                <div className="h-full rounded-2xl p-6 text-center bg-gray-50 border border-gray-100 transition-colors hover:border-orange-200">
+                  <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-orange-100 flex items-center justify-center mx-auto mb-4">
+                    <s.icon className="w-6 h-6 text-brand-orange" />
                   </div>
-                  <span className="inline-block text-xs font-bold text-brand-violet mb-2 tracking-wide">ÉTAPE {i + 1}</span>
+                  <span className="inline-block text-xs font-bold text-brand-orange mb-2 tracking-wide">ÉTAPE {i + 1}</span>
                   <h3 className="font-bold text-gray-900 mb-2">{s.title}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{s.text}</p>
                 </div>
                 {i < steps.length - 1 && (
-                  <ArrowRight className="hidden md:block absolute top-1/2 -right-4 -translate-y-1/2 w-6 h-6 text-violet-200 z-10" />
+                  <ArrowRight className="hidden md:block absolute top-1/2 -right-4 -translate-y-1/2 w-6 h-6 text-orange-200 z-10" />
                 )}
               </div>
             ))}
@@ -386,8 +386,8 @@ export default async function PourLesBoutiquesPage() {
       {demoShowcase.length > 0 && (
         <section className="relative -mt-8 sm:-mt-10 pt-16 sm:pt-20 pb-16 px-4 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
           <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-            <div className="absolute top-1/4 -right-28 w-[360px] h-[360px] rounded-full opacity-35 blur-[110px]" style={{ backgroundColor: '#6D28D9' }} />
-            <div className="absolute -bottom-24 -left-20 w-[400px] h-[400px] rounded-full opacity-30 blur-[120px]" style={{ backgroundColor: '#7C3AED' }} />
+            <div className="absolute top-1/4 -right-28 w-[360px] h-[360px] rounded-full opacity-35 blur-[110px]" style={{ backgroundColor: '#C2410C' }} />
+            <div className="absolute -bottom-24 -left-20 w-[400px] h-[400px] rounded-full opacity-30 blur-[120px]" style={{ backgroundColor: '#F97316' }} />
           </div>
           <div className="relative max-w-5xl mx-auto">
             <div className="text-center mb-12">
@@ -407,15 +407,15 @@ export default async function PourLesBoutiquesPage() {
         className="relative z-10 -mt-8 sm:-mt-10 pt-14 sm:pt-16 pb-20 bg-gray-50 rounded-t-[2rem] sm:rounded-t-[2.5rem] rounded-b-[2rem] sm:rounded-b-[2.5rem] shadow-[0_-24px_40px_-28px_rgba(0,0,0,0.2),0_24px_40px_-28px_rgba(0,0,0,0.2)]">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
-            <span className="inline-block text-xs font-bold text-brand-violet uppercase tracking-widest mb-3">Fonctionnalités</span>
+            <span className="inline-block text-xs font-bold text-brand-orange uppercase tracking-widest mb-3">Fonctionnalités</span>
             <h2 className="text-3xl font-bold text-gray-900 mb-3">Ce que TerangaSpot organise pour vous</h2>
             <p className="text-gray-500">Sept choses que vous faites déjà à la main aujourd&apos;hui, automatisées ici</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {features.map(f => (
-              <div key={f.title} className="bg-white rounded-2xl p-6 border border-gray-100 transition-colors hover:border-violet-200">
+              <div key={f.title} className="bg-white rounded-2xl p-6 border border-gray-100 transition-colors hover:border-orange-200">
                 <div className="mb-3">
-                  <f.icon className="w-7 h-7 text-brand-violet" />
+                  <f.icon className="w-7 h-7 text-brand-orange" />
                 </div>
                 <h3 className="font-bold text-gray-900 mb-2">{f.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">
@@ -431,20 +431,20 @@ export default async function PourLesBoutiquesPage() {
           basse de la section Features au-dessus. */}
       <section id="tarifs" className="relative -mt-8 sm:-mt-10 pt-16 sm:pt-20 pb-20 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute -top-20 left-1/3 w-[380px] h-[380px] rounded-full opacity-30 blur-[120px]" style={{ backgroundColor: '#9333EA' }} />
-          <div className="absolute bottom-0 -right-24 w-[420px] h-[420px] rounded-full opacity-35 blur-[100px]" style={{ backgroundColor: '#6D28D9' }} />
+          <div className="absolute -top-20 left-1/3 w-[380px] h-[380px] rounded-full opacity-30 blur-[120px]" style={{ backgroundColor: '#FB923C' }} />
+          <div className="absolute bottom-0 -right-24 w-[420px] h-[420px] rounded-full opacity-35 blur-[100px]" style={{ backgroundColor: '#C2410C' }} />
         </div>
         <div className="relative max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
-            <span className="inline-block text-xs font-bold text-violet-300 uppercase tracking-widest mb-3">Tarifs</span>
+            <span className="inline-block text-xs font-bold text-orange-300 uppercase tracking-widest mb-3">Tarifs</span>
             <h2 className="text-3xl font-bold text-white mb-4">Nos tarifs</h2>
             <p style={{ color: 'rgba(255,255,255,0.65)' }}>Commencez gratuitement avec Free, sans limite de durée. Passez à Starter ou Pro quand votre boutique grandit.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
             {(Object.entries(PLANS) as [string, typeof PLANS.starter][]).map(([key, plan]) => (
-              <div key={key} className={`rounded-2xl p-8 border-2 ${key === 'pro' ? 'border-brand-violet bg-violet-50 glow-violet' : 'border-gray-200 bg-white'}`}>
+              <div key={key} className={`rounded-2xl p-8 border-2 ${key === 'pro' ? 'border-brand-orange bg-orange-50 glow-orange' : 'border-gray-200 bg-white'}`}>
                 {key === 'pro' && (
-                  <span className="inline-block bg-brand-violet text-white text-xs px-3 py-1 rounded-full font-medium mb-4">
+                  <span className="inline-block bg-brand-orange text-white text-xs px-3 py-1 rounded-full font-medium mb-4">
                     Recommandé
                   </span>
                 )}
@@ -472,8 +472,8 @@ export default async function PourLesBoutiquesPage() {
                   href="/inscription"
                   className={`block text-center py-3 rounded-xl font-semibold transition-colors ${
                     key === 'pro'
-                      ? 'bg-brand-violet text-white hover:bg-brand-violet-dark'
-                      : 'border-2 border-brand-violet text-brand-violet hover:bg-brand-violet hover:text-white'
+                      ? 'bg-brand-orange text-white hover:bg-brand-orange-dark'
+                      : 'border-2 border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white'
                   }`}
                 >
                   {key === 'free' ? 'Commencer gratuitement' : `Choisir ${plan.name}`}
@@ -483,7 +483,7 @@ export default async function PourLesBoutiquesPage() {
           </div>
           <p className="text-center text-sm mt-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
             Envie de tester Starter ou Pro avant de choisir ?{' '}
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-violet-300 hover:text-white hover:underline">
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-orange-300 hover:text-white hover:underline">
               Écrivez-nous sur WhatsApp
             </a>{' '}
             pour un essai gratuit de 8 jours.
@@ -498,18 +498,18 @@ export default async function PourLesBoutiquesPage() {
         style={{ backgroundColor: '#F9FAFB' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <span className="inline-block text-xs font-bold text-brand-violet uppercase tracking-widest mb-3">Témoignages</span>
+            <span className="inline-block text-xs font-bold text-brand-orange uppercase tracking-widest mb-3">Témoignages</span>
             <h2 className="font-bold text-3xl sm:text-4xl leading-tight tracking-tight" style={{ color: '#111111' }}>
               Ce que racontent nos commerçants
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map(t => (
-              <div key={t.name} className="rounded-2xl p-6 transition-colors hover:border-violet-200"
+              <div key={t.name} className="rounded-2xl p-6 transition-colors hover:border-orange-200"
                 style={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}>
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < t.stars ? 'fill-violet-500 text-violet-500' : 'text-gray-200'}`} />
+                    <Star key={i} className={`w-4 h-4 ${i < t.stars ? 'fill-orange-500 text-orange-500' : 'text-gray-200'}`} />
                   ))}
                 </div>
                 <p className="text-sm leading-relaxed mb-4 italic" style={{ color: '#6B7280' }}>&ldquo;{t.content}&rdquo;</p>
@@ -527,12 +527,12 @@ export default async function PourLesBoutiquesPage() {
           basse des témoignages au-dessus. */}
       <section id="faq" className="relative -mt-8 sm:-mt-10 pt-16 sm:pt-20 pb-20 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute top-0 -left-16 w-[360px] h-[360px] rounded-full opacity-30 blur-[110px]" style={{ backgroundColor: '#6D28D9' }} />
-          <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] rounded-full opacity-35 blur-[105px]" style={{ backgroundColor: '#7C3AED' }} />
+          <div className="absolute top-0 -left-16 w-[360px] h-[360px] rounded-full opacity-30 blur-[110px]" style={{ backgroundColor: '#C2410C' }} />
+          <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] rounded-full opacity-35 blur-[105px]" style={{ backgroundColor: '#F97316' }} />
         </div>
         <div className="relative max-w-3xl mx-auto px-4">
           <div className="text-center mb-12">
-            <span className="inline-block text-xs font-bold text-violet-300 uppercase tracking-widest mb-3">FAQ</span>
+            <span className="inline-block text-xs font-bold text-orange-300 uppercase tracking-widest mb-3">FAQ</span>
             <h2 className="text-3xl font-bold text-white">Questions fréquentes</h2>
           </div>
           <div className="space-y-4">
@@ -540,7 +540,7 @@ export default async function PourLesBoutiquesPage() {
               <details key={faq.q} className="group rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
                 <summary className="flex items-center justify-between px-6 py-4 cursor-pointer font-semibold text-white list-none">
                   {faq.q}
-                  <ChevronDown className="w-4 h-4 text-violet-300 group-open:rotate-180 transition-transform flex-shrink-0 ml-4" />
+                  <ChevronDown className="w-4 h-4 text-orange-300 group-open:rotate-180 transition-transform flex-shrink-0 ml-4" />
                 </summary>
                 <div className="px-6 pb-5 text-sm leading-relaxed pt-4" style={{ color: 'rgba(255,255,255,0.65)', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                   {faq.a}
@@ -554,7 +554,7 @@ export default async function PourLesBoutiquesPage() {
       {/* CTA Final — courbe de début pour se poser sur la FAQ sombre au-dessus. */}
       <section
         className="relative z-10 -mt-8 sm:-mt-10 pt-14 sm:pt-16 pb-16 px-4 rounded-t-[2rem] sm:rounded-t-[2.5rem] shadow-[0_-24px_40px_-28px_rgba(0,0,0,0.35)]"
-        style={{ backgroundColor: '#7C3AED' }}>
+        style={{ backgroundColor: '#F97316' }}>
         <div className="max-w-2xl mx-auto text-center text-white">
           <h2 className="font-black text-3xl sm:text-4xl leading-tight mb-4">
             Prêt à professionnaliser votre activité ?
@@ -565,7 +565,7 @@ export default async function PourLesBoutiquesPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Link href="/rendez-vous"
               className="inline-flex items-center justify-center gap-2 font-bold px-7 py-3.5 rounded-xl transition-all hover:opacity-90 w-full sm:w-auto"
-              style={{ backgroundColor: '#FFFFFF', color: '#7C3AED' }}>
+              style={{ backgroundColor: '#FFFFFF', color: '#F97316' }}>
               <Calendar className="w-4 h-4" />
               Réserver un appel découverte
               <ArrowRight className="w-4 h-4" />

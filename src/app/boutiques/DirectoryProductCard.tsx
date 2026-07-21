@@ -59,7 +59,7 @@ export function DirectoryProductCard({ product: p, boutique: b }: Props) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white text-3xl font-black"
-            style={{ backgroundColor: '#7C3AED' }}>
+            style={{ backgroundColor: '#F97316' }}>
             {p.name.charAt(0)}
           </div>
         )}
@@ -71,14 +71,14 @@ export function DirectoryProductCard({ product: p, boutique: b }: Props) {
       </div>
 
       <div className="p-3 sm:p-4">
-        <h3 className="font-bold text-sm sm:text-base text-gray-900 truncate group-hover:text-brand-violet transition-colors">
+        <h3 className="font-bold text-sm sm:text-base text-gray-900 truncate group-hover:text-brand-orange transition-colors">
           {p.name}
         </h3>
         <div className="flex items-center gap-1.5 mt-1">
           {hasDiscount && (
             <span className="text-xs text-gray-400 line-through">{formatPrice(p.price)}</span>
           )}
-          <span className="text-sm font-bold" style={{ color: '#7C3AED' }}>{formatPrice(price)}</span>
+          <span className="text-sm font-bold" style={{ color: '#F97316' }}>{formatPrice(price)}</span>
         </div>
 
         <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-gray-100">
@@ -87,7 +87,7 @@ export function DirectoryProductCard({ product: p, boutique: b }: Props) {
             <img src={b.logo_url} alt="" loading="lazy" decoding="async" className="w-5 h-5 rounded-md object-cover flex-shrink-0" />
           ) : (
             <div className="w-5 h-5 rounded-md flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
-              style={{ backgroundColor: '#7C3AED' }}>
+              style={{ backgroundColor: '#F97316' }}>
               {b.name.charAt(0)}
             </div>
           )}

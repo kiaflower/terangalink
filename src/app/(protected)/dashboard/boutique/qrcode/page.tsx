@@ -68,7 +68,7 @@ export default function QrCodePage() {
           <button
             onClick={download}
             disabled={!qrGenerated}
-            className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+            className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
           >
             Télécharger PNG
           </button>

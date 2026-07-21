@@ -108,7 +108,7 @@ export function BillingRow({
           {boutiqueName}
           {invoice && <span className="text-gray-400 font-normal"> · {invoice.invoiceNumber}</span>}
           {subscriptionStatus === 'trial' && (
-            <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-violet-50 text-brand-violet border border-violet-100 align-middle">Essai</span>
+            <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-50 text-brand-orange border border-orange-100 align-middle">Essai</span>
           )}
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
@@ -120,7 +120,7 @@ export function BillingRow({
           </p>
         )}
         {!invoice && !discountAmount && availableCredits > 0 && (
-          <p className="text-xs font-medium mt-1 text-brand-violet flex items-center gap-1">
+          <p className="text-xs font-medium mt-1 text-brand-orange flex items-center gap-1">
             <Gift className="w-3 h-3" /> {availableCredits} crédit{availableCredits > 1 ? 's' : ''} disponible{availableCredits > 1 ? 's' : ''} pour ce paiement
           </p>
         )}
@@ -140,7 +140,7 @@ export function BillingRow({
           <a
             href={`/api/super-admin/invoices/${invoice.id}/pdf`}
             title="Télécharger la facture PDF"
-            className="flex items-center gap-1.5 text-xs bg-white border border-gray-200 hover:border-brand-violet text-gray-700 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 text-xs bg-white border border-gray-200 hover:border-brand-orange text-gray-700 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Facture</span>
@@ -150,7 +150,7 @@ export function BillingRow({
           <a
             href={`/api/super-admin/invoices/${invoice.id}/receipt`}
             title="Télécharger le reçu de paiement"
-            className="flex items-center gap-1.5 text-xs bg-white border border-gray-200 hover:border-brand-violet text-gray-700 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 text-xs bg-white border border-gray-200 hover:border-brand-orange text-gray-700 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
           >
             <Receipt className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Reçu</span>
@@ -181,7 +181,7 @@ export function BillingRow({
             </div>
             <a
               href={`/api/super-admin/invoices/${paidInvoiceId}/receipt`}
-              className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-xs font-semibold text-white bg-brand-violet hover:bg-brand-violet-dark transition-colors"
+              className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark transition-colors"
             >
               <Receipt className="w-3.5 h-3.5" />
               Télécharger le reçu
@@ -203,7 +203,7 @@ export function BillingRow({
             <p className="font-semibold text-gray-900 text-sm">Paiement reçu — {boutiqueName}</p>
 
             {hasPredeterminedDiscount ? (
-              <div className="bg-violet-50 border border-violet-100 rounded-xl p-3 text-xs text-brand-violet font-medium">
+              <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 text-xs text-brand-orange font-medium">
                 🎁 {discountReason} déjà prévu — montant final {formatFcfa(finalAmount)}
               </div>
             ) : canChooseCredit ? (
@@ -231,7 +231,7 @@ export function BillingRow({
               <select
                 value={payMethod}
                 onChange={e => setPayMethod(e.target.value)}
-                className="w-full text-sm bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:border-brand-violet"
+                className="w-full text-sm bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:border-brand-orange"
               >
                 {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
               </select>

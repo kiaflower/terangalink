@@ -1,4 +1,4 @@
-export const DEFAULT_ACCENT = '#7C3AED'
+export const DEFAULT_ACCENT = '#F97316'
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
 

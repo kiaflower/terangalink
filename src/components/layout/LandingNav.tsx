@@ -21,11 +21,11 @@ export function LandingNav() {
 
         <div className="hidden sm:flex items-center gap-6">
           {LINKS.map(link => (
-            <Link key={link.label} href={link.href} className="text-sm font-medium text-gray-600 hover:text-brand-violet transition-colors">
+            <Link key={link.label} href={link.href} className="text-sm font-medium text-gray-600 hover:text-brand-orange transition-colors">
               {link.label}
             </Link>
           ))}
-          <Link href="/login" className="text-sm text-brand-violet font-medium">Connexion</Link>
+          <Link href="/login" className="text-sm text-brand-orange font-medium">Connexion</Link>
         </div>
 
         <button
@@ -42,11 +42,11 @@ export function LandingNav() {
           {LINKS.map(link => (
             <Link key={link.label} href={link.href}
               onClick={() => setOpen(false)}
-              className="text-sm font-medium text-gray-600 hover:text-brand-violet transition-colors py-2.5">
+              className="text-sm font-medium text-gray-600 hover:text-brand-orange transition-colors py-2.5">
               {link.label}
             </Link>
           ))}
-          <Link href="/login" onClick={() => setOpen(false)} className="text-sm text-brand-violet font-medium py-2.5">
+          <Link href="/login" onClick={() => setOpen(false)} className="text-sm text-brand-orange font-medium py-2.5">
             Connexion
           </Link>
         </div>

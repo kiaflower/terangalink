@@ -84,12 +84,12 @@ function BannersManager({ boutiqueId }: { boutiqueId: string }) {
             onChange={e => setNewText(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') addBanner() }}
             placeholder="Ex : Livraison gratuite aujourd'hui"
-            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet"
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange"
           />
           <button
             onClick={addBanner}
             disabled={saving || !newText.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl font-semibold text-white bg-brand-violet hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
           >
             <Plus className="w-4 h-4" /> Ajouter
           </button>
@@ -106,7 +106,7 @@ function BannersManager({ boutiqueId }: { boutiqueId: string }) {
               <button
                 onClick={() => toggleBanner(banner)}
                 className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
-                style={{ backgroundColor: banner.is_active ? '#7C3AED' : '#E5E7EB' }}
+                style={{ backgroundColor: banner.is_active ? '#F97316' : '#E5E7EB' }}
                 aria-label={banner.is_active ? 'Désactiver' : 'Activer'}
               >
                 <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"

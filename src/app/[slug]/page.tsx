@@ -72,7 +72,7 @@ export default async function BoutiquePage({ params, searchParams }: Props) {
     .single()
   const isPro = subscription?.plan === 'pro'
   const plan: PlanKey = subscription?.plan === 'pro' || subscription?.plan === 'free' ? subscription.plan : 'starter'
-  const displayBoutique = isPro ? boutique : { ...boutique, primary_color: '#7C3AED', theme: 'light' }
+  const displayBoutique = isPro ? boutique : { ...boutique, primary_color: '#F97316', theme: 'light' }
 
   const { data: categories } = await supabase
     .from('product_categories')

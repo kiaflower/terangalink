@@ -69,7 +69,7 @@ export default function FavorisPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="px-6 py-5 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #F3F4F6' }}>
         <Link href="/"><Logo textClassName="font-bold text-xl" textStyle={{ color: '#111111' }} /></Link>
-        <Link href="/boutiques" className="text-sm text-gray-500 hover:text-brand-violet transition-colors flex items-center gap-1.5">
+        <Link href="/boutiques" className="text-sm text-gray-500 hover:text-brand-orange transition-colors flex items-center gap-1.5">
           <Store className="w-4 h-4" /> Annuaire
         </Link>
       </header>
@@ -87,7 +87,7 @@ export default function FavorisPage() {
             <p className="text-gray-500 font-medium">Aucun favori pour l&apos;instant</p>
             <p className="text-gray-400 text-sm mt-1 mb-6">Ajoutez des produits en cliquant sur le cœur sur les vitrines</p>
             <Link href="/boutiques"
-              className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+              className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
               <Store className="w-4 h-4" /> Découvrir les boutiques
             </Link>
           </div>
@@ -96,7 +96,7 @@ export default function FavorisPage() {
             {Object.values(byBoutique).map(group => (
               <div key={group.slug}>
                 <Link href={`/${group.slug}`}
-                  className="inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-brand-violet transition-colors mb-4">
+                  className="inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-brand-orange transition-colors mb-4">
                   {group.name}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -120,9 +120,9 @@ export default function FavorisPage() {
                       </div>
                       <div className="p-3">
                         <h3 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h3>
-                        <p className="text-sm font-bold text-brand-violet mt-1">{formatPrice(item.price)}</p>
+                        <p className="text-sm font-bold text-brand-orange mt-1">{formatPrice(item.price)}</p>
                         <Link href={`/${item.boutique_slug}`}
-                          className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-semibold py-2 rounded-lg border border-brand-violet text-brand-violet hover:bg-brand-violet hover:text-white transition-colors">
+                          className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-semibold py-2 rounded-lg border border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white transition-colors">
                           Voir la boutique
                         </Link>
                       </div>
@@ -151,14 +151,14 @@ export default function FavorisPage() {
                   </div>
                   <div className="p-2.5">
                     <p className="text-xs font-semibold text-gray-900 truncate">{p.name}</p>
-                    <p className="text-xs font-bold mt-0.5 text-brand-violet">{formatPrice(p.price)}</p>
+                    <p className="text-xs font-bold mt-0.5 text-brand-orange">{formatPrice(p.price)}</p>
                     <p className="text-[10px] text-gray-400 truncate mt-0.5">{p.boutique_name}</p>
                   </div>
                 </Link>
               ))}
             </div>
             <Link href="/boutiques"
-              className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
+              className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
               <Store className="w-4 h-4" /> Découvrir l&apos;annuaire
             </Link>
           </div>

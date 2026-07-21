@@ -9,7 +9,7 @@ import { FicheStatusBadge } from '@/components/ui/FicheStatusBadge'
 import { downloadFichePdf } from '@/lib/pdf/downloadFichePdf'
 import { pdfRegenerateUnlockAt, formatRegenerateRemaining } from '@/lib/pdf/regenerateLock'
 
-const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors'
+const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 const textareaClass = inputClass + ' resize-none'
 const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'
 
@@ -184,13 +184,13 @@ export function FicheForm({ ficheId }: { ficheId?: string }) {
   return (
     <div className="max-w-6xl">
       <div className="flex items-center justify-between mb-6">
-        <Link href="/dashboard/super-admin/fiches" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-violet transition-colors">
+        <Link href="/dashboard/super-admin/fiches" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Retour aux fiches
         </Link>
         {ficheId && nextFicheId && (
           <button type="button" onClick={handleSaveAndNext} disabled={saving !== null}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-violet transition-colors disabled:opacity-50">
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-brand-orange transition-colors disabled:opacity-50">
             {saving === 'save-next' ? 'Enregistrement...' : 'Fiche suivante'}
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -254,10 +254,10 @@ export function FicheForm({ ficheId }: { ficheId?: string }) {
                 {form.key_points.map((point, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <input type="text" value={point} onChange={e => updateKeyPoint(i, e.target.value)} className={inputClass} placeholder={`Point clé ${i + 1}`} />
-                    <button type="button" onClick={() => moveKeyPoint(i, -1)} disabled={i === 0} className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-brand-violet disabled:opacity-30 transition-colors shrink-0">
+                    <button type="button" onClick={() => moveKeyPoint(i, -1)} disabled={i === 0} className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-brand-orange disabled:opacity-30 transition-colors shrink-0">
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
-                    <button type="button" onClick={() => moveKeyPoint(i, 1)} disabled={i === form.key_points.length - 1} className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-brand-violet disabled:opacity-30 transition-colors shrink-0">
+                    <button type="button" onClick={() => moveKeyPoint(i, 1)} disabled={i === form.key_points.length - 1} className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-brand-orange disabled:opacity-30 transition-colors shrink-0">
                       <ArrowDown className="w-3.5 h-3.5" />
                     </button>
                     <button type="button" onClick={() => removeKeyPoint(i)} className="p-2 rounded-lg border border-gray-200 text-gray-400 hover:text-red-500 transition-colors shrink-0">
@@ -267,7 +267,7 @@ export function FicheForm({ ficheId }: { ficheId?: string }) {
                 ))}
               </div>
               <button type="button" onClick={addKeyPoint}
-                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-violet hover:text-brand-violet-dark transition-colors">
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-orange hover:text-brand-orange-dark transition-colors">
                 <Plus className="w-3.5 h-3.5" />
                 Ajouter un point clé
               </button>
@@ -289,11 +289,11 @@ export function FicheForm({ ficheId }: { ficheId?: string }) {
 
           <div className="flex items-center gap-3">
             <button type="button" onClick={handleSave} disabled={saving !== null}
-              className="bg-brand-violet hover:bg-brand-violet-dark text-white text-sm font-semibold rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50">
+              className="bg-brand-orange hover:bg-brand-orange-dark text-white text-sm font-semibold rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50">
               {saving === 'save' ? 'Enregistrement...' : 'Enregistrer'}
             </button>
             <button type="button" onClick={handleSaveAndPdf} disabled={saving !== null || (pdfLocked && form.status !== 'brouillon')}
-              className="inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-brand-violet hover:text-brand-violet text-gray-700 text-sm font-semibold rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50">
+              className="inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-brand-orange hover:text-brand-orange text-gray-700 text-sm font-semibold rounded-xl px-5 py-2.5 transition-colors disabled:opacity-50">
               <Download className="w-4 h-4" />
               {saving === 'save-pdf'
                 ? 'Génération...'
@@ -325,18 +325,18 @@ export function FicheForm({ ficheId }: { ficheId?: string }) {
 
                 {form.why_it_matters && (
                   <div className="mt-4">
-                    <p className="text-[10px] font-bold text-brand-violet uppercase tracking-wider mb-1">Pourquoi c&apos;est important</p>
+                    <p className="text-[10px] font-bold text-brand-orange uppercase tracking-wider mb-1">Pourquoi c&apos;est important</p>
                     <p className="text-xs text-gray-600 leading-relaxed">{form.why_it_matters}</p>
                   </div>
                 )}
 
                 {form.key_points.filter(p => p.trim()).length > 0 && (
                   <div className="mt-4">
-                    <p className="text-[10px] font-bold text-brand-violet uppercase tracking-wider mb-1.5">Points clés</p>
+                    <p className="text-[10px] font-bold text-brand-orange uppercase tracking-wider mb-1.5">Points clés</p>
                     <ul className="space-y-1">
                       {form.key_points.filter(p => p.trim()).map((p, i) => (
                         <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-brand-violet mt-1.5 shrink-0" />
+                          <span className="w-1 h-1 rounded-full bg-brand-orange mt-1.5 shrink-0" />
                           {p}
                         </li>
                       ))}

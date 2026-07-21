@@ -6,12 +6,12 @@ interface StatCardProps {
   subtitle?: string
   icon: React.ReactNode
   trend?: { value: number; positive: boolean }
-  color?: 'violet' | 'green' | 'blue' | 'amber'
+  color?: 'orange' | 'green' | 'blue' | 'amber'
 }
 
-export function StatCard({ title, value, subtitle, icon, trend, color = 'violet' }: StatCardProps) {
+export function StatCard({ title, value, subtitle, icon, trend, color = 'orange' }: StatCardProps) {
   const colors = {
-    violet: { icon: 'bg-brand-violet/10 text-brand-violet', border: 'border-brand-violet/10' },
+    orange: { icon: 'bg-brand-orange/10 text-brand-orange', border: 'border-brand-orange/10' },
     green: { icon: 'bg-green-500/10 text-green-400', border: 'border-green-500/10' },
     blue: { icon: 'bg-blue-500/10 text-blue-400', border: 'border-blue-500/10' },
     amber: { icon: 'bg-amber-500/10 text-amber-400', border: 'border-amber-500/10' },

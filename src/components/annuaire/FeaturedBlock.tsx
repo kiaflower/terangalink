@@ -26,7 +26,7 @@ interface FeaturedBlockProps {
   items: FeaturedItem[] // plusieurs boutiques
 }
 
-const TERANGA_VIOLET = '#7C3AED'
+const TERANGA_VIOLET = '#F97316'
 
 export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -87,12 +87,12 @@ export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
         {total > 1 && (
           <div className="flex items-center gap-1">
             <button onClick={() => navigate(-1)}
-              className="w-6 h-6 rounded-full flex items-center justify-center border border-gray-200 hover:border-violet-300 transition-colors">
+              className="w-6 h-6 rounded-full flex items-center justify-center border border-gray-200 hover:border-orange-300 transition-colors">
               <ChevronLeft className="w-3.5 h-3.5 text-gray-500" />
             </button>
             <span className="text-[10px] text-gray-400 px-1">{activeIndex + 1}/{total}</span>
             <button onClick={() => navigate(1)}
-              className="w-6 h-6 rounded-full flex items-center justify-center border border-gray-200 hover:border-violet-300 transition-colors">
+              className="w-6 h-6 rounded-full flex items-center justify-center border border-gray-200 hover:border-orange-300 transition-colors">
               <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
             </button>
           </div>

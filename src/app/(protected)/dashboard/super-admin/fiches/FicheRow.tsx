@@ -27,7 +27,7 @@ function formatDateTime(iso: string): string {
 }
 
 export function FicheRow({ fiche, onChanged }: { fiche: FicheRowData; onChanged: () => void }) {
-  const color = fiche.category?.color ?? '#7C3AED'
+  const color = fiche.category?.color ?? '#F97316'
   const [markingSent, setMarkingSent] = useState(false)
 
   const subtext = fiche.sentAt
@@ -62,7 +62,7 @@ export function FicheRow({ fiche, onChanged }: { fiche: FicheRowData; onChanged:
 
       <div className="flex items-center gap-2 shrink-0 flex-wrap">
         <Link href={`/dashboard/super-admin/fiches/${fiche.id}`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-brand-violet border border-gray-200 rounded-lg px-3 py-2 transition-colors whitespace-nowrap">
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-brand-orange border border-gray-200 rounded-lg px-3 py-2 transition-colors whitespace-nowrap">
           <Pencil className="w-3.5 h-3.5" />
           Modifier
         </Link>

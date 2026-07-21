@@ -204,14 +204,14 @@ export default function EditCampaignPage() {
             <>
               <button
                 onClick={() => setShowScheduleModal(true)}
-                className="inline-flex items-center gap-1.5 text-sm text-brand-violet border border-brand-violet/30 rounded-xl px-3 py-2 hover:bg-brand-violet/5"
+                className="inline-flex items-center gap-1.5 text-sm text-brand-orange border border-brand-orange/30 rounded-xl px-3 py-2 hover:bg-brand-orange/5"
               >
                 <Clock className="w-4 h-4" /> Programmer
               </button>
               <button
                 onClick={sendNow}
                 disabled={sendingNow}
-                className="inline-flex items-center gap-1.5 text-sm text-white bg-brand-violet rounded-xl px-3 py-2 hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-sm text-white bg-brand-orange rounded-xl px-3 py-2 hover:opacity-90 disabled:opacity-50"
               >
                 {sendingNow ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 Envoyer maintenant
@@ -312,7 +312,7 @@ export default function EditCampaignPage() {
           <button
             onClick={sendTest}
             disabled={sendingTest || !testEmail}
-            className="w-full inline-flex items-center justify-center gap-1.5 text-sm text-white bg-brand-violet rounded-xl px-3 py-2.5 disabled:opacity-50"
+            className="w-full inline-flex items-center justify-center gap-1.5 text-sm text-white bg-brand-orange rounded-xl px-3 py-2.5 disabled:opacity-50"
           >
             {sendingTest ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Envoyer le test
@@ -332,7 +332,7 @@ export default function EditCampaignPage() {
           <button
             onClick={schedule}
             disabled={scheduling || !scheduleValue}
-            className="w-full inline-flex items-center justify-center gap-1.5 text-sm text-white bg-brand-violet rounded-xl px-3 py-2.5 disabled:opacity-50"
+            className="w-full inline-flex items-center justify-center gap-1.5 text-sm text-white bg-brand-orange rounded-xl px-3 py-2.5 disabled:opacity-50"
           >
             {scheduling ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Confirmer la programmation

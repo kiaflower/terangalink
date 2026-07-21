@@ -411,7 +411,7 @@ export default function BoutiquePageClient({ boutique, categories, products, rev
               className="rounded-lg flex-shrink-0"
               style={stories.length > 0 ? {
                 padding: 2,
-                background: allStoriesViewed ? '#D1D5DB' : 'linear-gradient(45deg, #F59E0B, #EC4899, #7C3AED)',
+                background: allStoriesViewed ? '#D1D5DB' : 'linear-gradient(45deg, #F59E0B, #EC4899, #F97316)',
                 cursor: 'pointer',
               } : undefined}
             >
@@ -884,7 +884,7 @@ export default function BoutiquePageClient({ boutique, categories, products, rev
             <a href={referralUrl} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs transition-colors" style={{ color: subtleText }}>
               Propulsé par
-              <Logo iconClassName="w-4 h-4" textClassName="font-bold" textStyle={{ color: '#7C3AED' }} />
+              <Logo iconClassName="w-4 h-4" textClassName="font-bold" textStyle={{ color: '#F97316' }} />
             </a>
           </div>
         )}
@@ -1075,13 +1075,13 @@ export default function BoutiquePageClient({ boutique, categories, products, rev
             <div className="space-y-4 mb-4">
               <input value={customerName} onChange={e => setCustomerName(e.target.value)}
                 placeholder="Votre nom *" required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange" />
               <input value={customerPhone} onChange={e => setCustomerPhone(e.target.value)}
                 placeholder="Votre téléphone *" type="tel" required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange" />
               <input value={customerAddress} onChange={e => setCustomerAddress(e.target.value)}
                 placeholder="Adresse / quartier (optionnel)"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange" />
               <div>
                 <p className="text-xs font-medium text-gray-500 mb-2">Mode de paiement</p>
                 <div className="grid grid-cols-3 gap-2">
@@ -1098,7 +1098,7 @@ export default function BoutiquePageClient({ boutique, categories, products, rev
               </div>
               <textarea value={notes} onChange={e => setNotes(e.target.value)}
                 placeholder="Notes ou instructions (optionnel)" rows={2}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet resize-none" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange resize-none" />
               <div>
                 {appliedPromo ? (
                   <div className="flex items-center justify-between border border-green-200 bg-green-50 rounded-xl px-4 py-3">
@@ -1111,7 +1111,7 @@ export default function BoutiquePageClient({ boutique, categories, products, rev
                   <div className="flex gap-2">
                     <input value={promoCodeInput} onChange={e => setPromoCodeInput(e.target.value)}
                       placeholder="Code promo (optionnel)"
-                      className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet" />
+                      className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange" />
                     <button onClick={applyPromoCode} disabled={promoLoading || !promoCodeInput.trim()}
                       className="px-4 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50">
                       {promoLoading ? '...' : 'Appliquer'}

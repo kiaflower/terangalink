@@ -142,7 +142,7 @@ function StoriesManager({ boutiqueId }: { boutiqueId: string }) {
             value={caption}
             onChange={e => setCaption(e.target.value)}
             placeholder="Un mot pour accompagner votre story..."
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
           />
         </div>
 
@@ -151,7 +151,7 @@ function StoriesManager({ boutiqueId }: { boutiqueId: string }) {
           <select
             value={productId}
             onChange={e => setProductId(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
           >
             <option value="">Aucun produit — bouton &quot;Voir la boutique&quot;</option>
             {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -166,19 +166,19 @@ function StoriesManager({ boutiqueId }: { boutiqueId: string }) {
             max={MAX_DURATION_HOURS}
             value={durationHours}
             onChange={e => setDurationHours(parseInt(e.target.value, 10))}
-            className="w-full accent-brand-violet"
+            className="w-full accent-brand-orange"
           />
         </div>
 
         {uploading ? (
           <div className="border-2 border-dashed border-gray-200 rounded-xl py-8 px-4">
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
-              <div className="h-full bg-brand-violet transition-all" style={{ width: `${uploadProgress}%` }} />
+              <div className="h-full bg-brand-orange transition-all" style={{ width: `${uploadProgress}%` }} />
             </div>
             <p className="text-center text-sm font-medium text-gray-500">Envoi en cours... {uploadProgress}%</p>
           </div>
         ) : (
-          <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl py-8 cursor-pointer transition-colors ${remaining === 0 ? 'opacity-40 pointer-events-none border-gray-200' : 'border-gray-300 hover:border-brand-violet text-gray-400 hover:text-brand-violet'}`}>
+          <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl py-8 cursor-pointer transition-colors ${remaining === 0 ? 'opacity-40 pointer-events-none border-gray-200' : 'border-gray-300 hover:border-brand-orange text-gray-400 hover:text-brand-orange'}`}>
             <input type="file" accept="image/*,video/*" className="hidden"
               disabled={remaining === 0}
               onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelected(f) }} />
@@ -217,7 +217,7 @@ function StoriesManager({ boutiqueId }: { boutiqueId: string }) {
                 </div>
                 <div className="p-3">
                   {story.caption && <p className="text-xs text-gray-700 truncate mb-1">{story.caption}</p>}
-                  {product && <p className="text-[11px] text-brand-violet font-medium truncate mb-2">→ {product.name}</p>}
+                  {product && <p className="text-[11px] text-brand-orange font-medium truncate mb-2">→ {product.name}</p>}
                   <div className="flex items-center justify-between text-xs text-gray-400">
                     <span className="inline-flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{story.views_count}</span>
                     <span className="inline-flex items-center gap-1"><Heart className="w-3.5 h-3.5" />{story.likes_count}</span>

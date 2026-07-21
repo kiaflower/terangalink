@@ -13,7 +13,7 @@ const SUBJECTS = [
   'Autre',
 ]
 
-const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 bg-white transition-colors'
+const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 bg-white transition-colors'
 const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'
 
 interface Slot {
@@ -92,7 +92,7 @@ export default function RendezVousPage() {
             Votre créneau <strong>{selectedSlot && formatDate(selectedSlot.date)}</strong> à <strong>{selectedSlot?.start_time.slice(0, 5)}</strong> est réservé.
           </p>
           <p className="text-gray-400 text-sm mb-6">Nous vous contacterons pour confirmer.</p>
-          <Link href="/" className="text-brand-violet hover:text-brand-violet-dark text-sm font-medium transition-colors">
+          <Link href="/" className="text-brand-orange hover:text-brand-orange-dark text-sm font-medium transition-colors">
             Retour à l&apos;accueil
           </Link>
         </div>
@@ -114,14 +114,14 @@ export default function RendezVousPage() {
       </header>
 
       <div className="max-w-xl mx-auto px-4 py-12">
-        <Link href="/pour-les-boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-violet transition-colors mb-6">
+        <Link href="/pour-les-boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors mb-6">
           <ArrowLeft className="w-4 h-4" />
           Retour
         </Link>
 
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(124,58,237,0.1)' }}>
-            <Calendar className="w-5 h-5 text-brand-violet" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(249,115,22,0.1)' }}>
+            <Calendar className="w-5 h-5 text-brand-orange" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Réserver un appel découverte</h1>
@@ -183,9 +183,9 @@ export default function RendezVousPage() {
                           onClick={() => setSelectedSlot(slot)}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border-2 transition-all"
                           style={{
-                            borderColor: selectedSlot?.id === slot.id ? '#7C3AED' : '#E5E7EB',
-                            backgroundColor: selectedSlot?.id === slot.id ? 'rgba(124,58,237,0.07)' : '#FFFFFF',
-                            color: selectedSlot?.id === slot.id ? '#7C3AED' : '#374151',
+                            borderColor: selectedSlot?.id === slot.id ? '#F97316' : '#E5E7EB',
+                            backgroundColor: selectedSlot?.id === slot.id ? 'rgba(249,115,22,0.07)' : '#FFFFFF',
+                            color: selectedSlot?.id === slot.id ? '#F97316' : '#374151',
                           }}
                         >
                           <Clock className="w-3.5 h-3.5" />
@@ -204,7 +204,7 @@ export default function RendezVousPage() {
             type="submit"
             disabled={loading || !selectedSlot}
             className="w-full py-3.5 rounded-xl font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-            style={{ backgroundColor: '#7C3AED' }}
+            style={{ backgroundColor: '#F97316' }}
           >
             {loading ? 'Envoi en cours...' : 'Confirmer le rendez-vous'}
           </button>

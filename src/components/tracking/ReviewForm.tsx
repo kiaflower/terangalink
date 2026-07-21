@@ -20,7 +20,7 @@ export function ReviewForm({
   boutiqueId,
   customerName,
   onSubmitted,
-  accentColor = '#7C3AED',
+  accentColor = '#F97316',
   cardBg = '#FFFFFF',
   cardBorder = '#E5E7EB',
   pageText = '#111111',
@@ -117,7 +117,7 @@ export function ReviewForm({
             onChange={e => setComment(e.target.value)}
             rows={3}
             placeholder="Partagez votre expérience..."
-            className="w-full rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-violet/30 transition-all border border-gray-200 text-gray-900"
+            className="w-full rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-orange/30 transition-all border border-gray-200 text-gray-900"
           />
         </div>
 
@@ -129,7 +129,7 @@ export function ReviewForm({
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Anonyme"
-            className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-violet/30 transition-all border border-gray-200 text-gray-900"
+            className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 transition-all border border-gray-200 text-gray-900"
           />
         </div>
 

@@ -124,7 +124,7 @@ export default function AnnuairePage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Boutiques total" value={stats.total} icon={Store} color="#7C3AED" />
+        <StatCard label="Boutiques total" value={stats.total} icon={Store} color="#F97316" />
         <StatCard label="Actives dans l'annuaire" value={stats.active} icon={CheckCircle} color="#059669" />
         <StatCard label="Vérifiées" value={stats.verified} icon={CheckCircle} color="#2563EB" />
         <StatCard label="Vues boutiques (total)" value={stats.total_views.toLocaleString('fr-SN')} icon={Eye} color="#D97706" />
@@ -136,7 +136,7 @@ export default function AnnuairePage() {
       <div className="mb-4">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Rechercher par nom ou ville…"
-          className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors" />
+          className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors" />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -184,7 +184,7 @@ export default function AnnuairePage() {
                     {b.is_verified ? '✓ Vérifié' : 'Vérifier'}
                   </button>
                   <a href={`/${b.slug}`} target="_blank" rel="noopener noreferrer"
-                    className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-brand-violet hover:border-brand-violet/30 transition-colors">
+                    className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-brand-orange hover:border-brand-orange/30 transition-colors">
                     <MousePointerClick className="w-3.5 h-3.5 inline" />
                   </a>
                 </div>

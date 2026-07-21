@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     is_active: true,
     is_demo: false,
     is_verified: true, // Badge Vérifié offert — avantage Early Access
-    primary_color: application.plan === 'pro' ? (application.primary_color || '#7C3AED') : '#7C3AED',
+    primary_color: application.plan === 'pro' ? (application.primary_color || '#F97316') : '#F97316',
     theme: application.plan === 'pro' ? (application.theme || 'light') : 'light',
     referral_code,
     referred_by_code: application.referral_code || null,

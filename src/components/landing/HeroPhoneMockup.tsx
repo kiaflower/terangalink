@@ -64,7 +64,7 @@ export function HeroPhoneMockup({ product, orderMessage }: HeroPhoneMockupProps)
       {/* Téléphone arrière — vitrine boutique */}
       <div className="absolute left-2 sm:left-4 top-2 sm:top-4 w-[130px] sm:w-[150px] md:w-[165px] -rotate-6 rounded-[2rem] border-[6px] border-gray-900 bg-white overflow-hidden shadow-2xl">
         <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-gray-100">
-          <div className="w-3.5 h-3.5 rounded-full bg-brand-violet flex-shrink-0" />
+          <div className="w-3.5 h-3.5 rounded-full bg-brand-orange flex-shrink-0" />
           {product ? (
             <p className="text-[7px] font-bold text-gray-800 truncate">{product.boutiqueName}</p>
           ) : (
@@ -75,19 +75,19 @@ export function HeroPhoneMockup({ product, orderMessage }: HeroPhoneMockupProps)
             <span className="text-[6px] font-semibold text-gray-400">4.8</span>
           </div>
         </div>
-        <div className="m-1.5 aspect-[4/3] rounded-lg overflow-hidden bg-gradient-to-br from-violet-100 to-violet-50 flex items-center justify-center">
+        <div className="m-1.5 aspect-[4/3] rounded-lg overflow-hidden bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center">
           {product ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={product.image} alt="" className="w-full h-full object-cover" />
           ) : (
-            <ShoppingBag className="w-5 h-5 text-violet-300" />
+            <ShoppingBag className="w-5 h-5 text-orange-300" />
           )}
         </div>
         <div className="px-2 space-y-0.5 mb-1.5">
           {product && <p className="text-[7px] font-semibold text-gray-700 truncate">{product.name}</p>}
-          <p className="text-[9px] font-bold text-brand-violet">{productPrice}</p>
+          <p className="text-[9px] font-bold text-brand-orange">{productPrice}</p>
         </div>
-        <div className="mx-2 mb-2 rounded-md bg-brand-violet py-1 text-center text-[7px] font-bold text-white">
+        <div className="mx-2 mb-2 rounded-md bg-brand-orange py-1 text-center text-[7px] font-bold text-white">
           Commander sur WhatsApp
         </div>
       </div>

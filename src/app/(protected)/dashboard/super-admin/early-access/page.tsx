@@ -31,7 +31,7 @@ function InfoRow({ label, value, link }: { label: string; value: string; link?: 
     <div className="flex justify-between gap-3 py-1.5 text-sm">
       <span className="text-gray-400">{label}</span>
       {link ? (
-        <a href={value} target="_blank" rel="noopener noreferrer" className="text-brand-violet hover:underline truncate max-w-[60%] text-right">{value}</a>
+        <a href={value} target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:underline truncate max-w-[60%] text-right">{value}</a>
       ) : (
         <span className="text-gray-900 text-right">{value}</span>
       )}
@@ -138,7 +138,7 @@ export default function EarlyAccessPage() {
             role="switch"
             aria-checked={!!config?.is_open}
             className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0"
-            style={{ backgroundColor: config?.is_open ? '#7C3AED' : '#E5E7EB' }}
+            style={{ backgroundColor: config?.is_open ? '#F97316' : '#E5E7EB' }}
           >
             <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
               style={{ transform: config?.is_open ? 'translateX(22px)' : 'translateX(2px)' }} />
@@ -147,7 +147,7 @@ export default function EarlyAccessPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Places restantes" value={placesLeft} icon={<Ticket className="w-4 h-4" />} color="#7C3AED" />
+        <StatCard title="Places restantes" value={placesLeft} icon={<Ticket className="w-4 h-4" />} color="#F97316" />
         <StatCard title="En attente" value={pending} icon={<Clock className="w-4 h-4" />} color="#D97706" />
         <StatCard title="Confirmées" value={confirmed} icon={<CheckCircle className="w-4 h-4" />} color="#059669" />
         <StatCard title="Liste d'attente" value={waitlist.length} icon={<Users className="w-4 h-4" />} color="#2563EB" />
@@ -169,13 +169,13 @@ export default function EarlyAccessPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={app.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-brand-violet flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center font-bold text-brand-orange flex-shrink-0">
                     {app.boutique_name.charAt(0)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-brand-violet shrink-0">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-brand-orange shrink-0">
                       #{app.place_number}
                     </span>
                     <p className="font-semibold text-gray-900 truncate">{app.boutique_name}</p>
@@ -235,14 +235,14 @@ export default function EarlyAccessPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={selected.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center font-bold text-brand-violet">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center font-bold text-brand-orange">
                     {selected.boutique_name.charAt(0)}
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-bold text-gray-900">{selected.boutique_name}</p>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white bg-brand-violet">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white bg-brand-orange">
                       Early Access #{selected.place_number}
                     </span>
                   </div>
@@ -310,7 +310,7 @@ export default function EarlyAccessPage() {
                   onChange={e => setNotesDraft(e.target.value)}
                   onBlur={saveNotes}
                   placeholder="Ajouter une note..."
-                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 resize-none focus:outline-none focus:border-brand-violet"
+                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 resize-none focus:outline-none focus:border-brand-orange"
                   rows={3}
                 />
               </InfoSection>
@@ -360,7 +360,7 @@ export default function EarlyAccessPage() {
                   onClick={() => confirmAndCreateBoutique(selected.id)}
                   disabled={confirming}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50"
-                  style={{ backgroundColor: '#7C3AED' }}>
+                  style={{ backgroundColor: '#F97316' }}>
                   {confirming ? 'Création en cours...' : 'Confirmer & créer la boutique'}
                 </button>
               )}

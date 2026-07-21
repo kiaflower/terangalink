@@ -98,7 +98,7 @@ export function BoutiqueDemoCarousel({ entries }: { entries: DemoEntry[] }) {
               <button key={entry.boutique.id} type="button" onClick={() => scrollToIndex(i)}
                 aria-label={`Voir la boutique ${i + 1}`}
                 className="h-1.5 rounded-full transition-all"
-                style={{ width: i === activeIndex ? 20 : 6, backgroundColor: i === activeIndex ? '#7C3AED' : '#D1D5DB' }} />
+                style={{ width: i === activeIndex ? 20 : 6, backgroundColor: i === activeIndex ? '#F97316' : '#D1D5DB' }} />
             ))}
           </div>
         </>

@@ -10,7 +10,7 @@ import {
   Image as ImageIcon, Images, CheckCircle, X, ArrowLeft, ArrowRight, Check, Eye,
 } from 'lucide-react'
 
-const COLOR_PALETTE = ['#7C3AED', '#2563EB', '#059669', '#DC2626', '#D97706', '#DB2777', '#0891B2', '#111111']
+const COLOR_PALETTE = ['#F97316', '#2563EB', '#059669', '#DC2626', '#D97706', '#DB2777', '#0891B2', '#111111']
 const THEMES = [
   { value: 'light', label: 'Clair', bg: '#FFFFFF', text: '#111111' },
   { value: 'dark', label: 'Sombre', bg: '#111111', text: '#FFFFFF' },
@@ -20,7 +20,7 @@ const THEMES = [
 const TEXT_PRIMARY = '#111111'
 const TEXT_SECONDARY = '#6B7280'
 const TEXT_MUTED = '#9CA3AF'
-const TEXT_PRO = '#7C3AED'
+const TEXT_PRO = '#F97316'
 const BORDER = '#F3F4F6'
 const BORDER_STRONG = '#E5E7EB'
 const SURFACE_2 = '#F9FAFB'
@@ -64,7 +64,7 @@ const emptyForm = {
   boutique_name: '', shop_category: '', city: '', description: '',
   owner_name: '', email: '', phone: '', whatsapp_number: '',
   plan: 'pro' as const,
-  primary_color: '#7C3AED',
+  primary_color: '#F97316',
   theme: 'light',
   referral_code: '',
   wave_number: '', orange_money_number: '',
@@ -259,7 +259,7 @@ export default function EarlyAccessClient() {
       {/* Minimal header */}
       <header className="px-6 py-5 flex items-center justify-between" style={{ borderBottom: `1px solid ${BORDER}` }}>
         <Link href="/"><Logo textClassName="font-bold text-xl" textStyle={{ color: TEXT_PRIMARY }} /></Link>
-        <Link href="/login" className="text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:text-brand-violet"
+        <Link href="/login" className="text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:text-brand-orange"
           style={{ color: TEXT_SECONDARY, border: `1px solid ${BORDER_STRONG}` }}>
           Se connecter
         </Link>
@@ -268,7 +268,7 @@ export default function EarlyAccessClient() {
       {/* HERO */}
       <div className="text-center px-5 pt-10 pb-8" style={{ backgroundColor: '#FAFAFA', borderBottom: `1px solid ${BORDER}` }}>
         <div className="inline-flex items-center gap-1.5 uppercase font-medium text-[11px] tracking-wide rounded-full px-2.5 py-1 mb-5"
-          style={{ backgroundColor: 'rgba(124,58,237,0.08)', color: TEXT_PRO, border: '1px solid rgba(124,58,237,0.15)' }}>
+          style={{ backgroundColor: 'rgba(249,115,22,0.08)', color: TEXT_PRO, border: '1px solid rgba(249,115,22,0.15)' }}>
           <Sparkles className="w-3.5 h-3.5" />
           Offre de lancement
         </div>
@@ -591,7 +591,7 @@ export default function EarlyAccessClient() {
                   <label className="flex items-start gap-2.5 cursor-pointer mb-3">
                     <input type="checkbox" checked={form.consent_images}
                       onChange={e => set('consent_images', e.target.checked)}
-                      className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                      className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                     <span className="text-[13px] leading-relaxed" style={{ color: TEXT_SECONDARY }}>
                       <span className="font-medium text-red-500">*</span> J&apos;autorise TerangaSpot à utiliser les photos et visuels de ma boutique (logo, bannière, produits) pour des publications organiques et des publicités payantes sur les réseaux sociaux.
                     </span>
@@ -599,7 +599,7 @@ export default function EarlyAccessClient() {
                   <label className="flex items-start gap-2.5 cursor-pointer mb-3">
                     <input type="checkbox" checked={form.consent_annuaire}
                       onChange={e => set('consent_annuaire', e.target.checked)}
-                      className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                      className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                     <span className="text-[13px] leading-relaxed" style={{ color: TEXT_SECONDARY }}>
                       <span className="font-medium text-red-500">*</span> J&apos;accepte d&apos;être référencé(e) dans l&apos;annuaire public de TerangaSpot et que mes informations professionnelles soient visibles par tous les utilisateurs.
                     </span>
@@ -607,7 +607,7 @@ export default function EarlyAccessClient() {
                   <label className="flex items-start gap-2.5 cursor-pointer">
                     <input type="checkbox" checked={form.consent_marketing}
                       onChange={e => set('consent_marketing', e.target.checked)}
-                      className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                      className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                     <span className="text-[13px] leading-relaxed" style={{ color: TEXT_SECONDARY }}>
                       J&apos;accepte de recevoir des conseils et offres partenaires par email ou WhatsApp. <span style={{ color: TEXT_MUTED }}>(optionnel)</span>
                     </span>

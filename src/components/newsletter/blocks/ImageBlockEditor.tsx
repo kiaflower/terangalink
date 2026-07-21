@@ -37,7 +37,7 @@ export function ImageBlockEditor({ block, onChange, disabled }: {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={block.url} alt={block.alt ?? ''} className="w-full max-h-48 object-cover rounded-lg border border-gray-200" />
       ) : null}
-      <label className={`flex items-center justify-center gap-2 text-sm border border-dashed border-gray-300 rounded-lg py-3 cursor-pointer hover:border-brand-violet hover:text-brand-violet transition-colors ${disabled ? 'pointer-events-none opacity-50' : 'text-gray-500'}`}>
+      <label className={`flex items-center justify-center gap-2 text-sm border border-dashed border-gray-300 rounded-lg py-3 cursor-pointer hover:border-brand-orange hover:text-brand-orange transition-colors ${disabled ? 'pointer-events-none opacity-50' : 'text-gray-500'}`}>
         <Upload className="w-4 h-4" />
         {uploading ? 'Envoi…' : block.url ? "Changer l'image" : 'Choisir une image'}
         <input type="file" accept="image/*" disabled={disabled || uploading} className="hidden"
@@ -48,7 +48,7 @@ export function ImageBlockEditor({ block, onChange, disabled }: {
         disabled={disabled}
         onChange={e => onChange({ linkUrl: e.target.value })}
         placeholder="Lien au clic (optionnel) — https://…"
-        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-violet/30 disabled:bg-gray-50"
+        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-orange/30 disabled:bg-gray-50"
       />
     </div>
   )

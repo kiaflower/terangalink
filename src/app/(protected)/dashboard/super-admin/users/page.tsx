@@ -19,7 +19,7 @@ interface BoutiqueAdmin {
 
 interface Boutique { id: string; name: string; slug: string }
 
-const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors'
+const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors'
 
 function generatePassword() {
   const c = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'
@@ -123,7 +123,7 @@ export default function UsersPage() {
     .filter(g => g.admins.length > 0)
   const unlinked = admins.filter(a => !a.boutique_id)
 
-  const planColor: Record<string, string> = { pro: '#7C3AED', starter: '#6B7280', trial: '#D97706' }
+  const planColor: Record<string, string> = { pro: '#F97316', starter: '#6B7280', trial: '#D97706' }
 
   return (
     <div>
@@ -137,7 +137,7 @@ export default function UsersPage() {
             <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button onClick={() => { setAddOpen(true); setAddResult(null); setAddError('') }}
-            className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors">
+            className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-orange-dark transition-colors">
             <Plus className="w-4 h-4" /> Ajouter un admin
           </button>
         </div>
@@ -180,7 +180,7 @@ export default function UsersPage() {
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           {a.full_name ?? '—'} {a.admin_role && (
-                            <span className={`ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${a.admin_role === 'principal' ? 'bg-violet-100 text-brand-violet' : 'bg-gray-100 text-gray-500'}`}>
+                            <span className={`ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${a.admin_role === 'principal' ? 'bg-orange-100 text-brand-orange' : 'bg-gray-100 text-gray-500'}`}>
                               {a.admin_role === 'principal' ? 'Principal' : 'Secondaire'}
                             </span>
                           )}
@@ -245,7 +245,7 @@ export default function UsersPage() {
                     <p className="text-green-700">Mot de passe : <span className="font-mono font-bold">{addResult.password}</span></p>
                   </div>
                   <button onClick={() => { setAddOpen(false); setAddResult(null); setAddForm({ boutique_id: '', full_name: '', email: '', password: generatePassword() }) }}
-                    className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm">
+                    className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm">
                     Fermer
                   </button>
                 </div>
@@ -274,7 +274,7 @@ export default function UsersPage() {
                       <label className="block text-xs font-medium text-gray-500 mb-1.5 flex items-center justify-between">
                         <span>Mot de passe temporaire</span>
                         <button type="button" onClick={() => setAddForm(f => ({ ...f, password: generatePassword() }))}
-                          className="text-brand-violet text-xs font-medium hover:underline">Regénérer</button>
+                          className="text-brand-orange text-xs font-medium hover:underline">Regénérer</button>
                       </label>
                       <input type="text" value={addForm.password} onChange={e => setAddForm(f => ({ ...f, password: e.target.value }))}
                         className={`${iCls} font-mono`} />
@@ -285,7 +285,7 @@ export default function UsersPage() {
                     </p>
                   ) : null}
                   <button onClick={addAdmin} disabled={addLoading}
-                    className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50 mt-2">
+                    className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange-dark transition-colors disabled:opacity-50 mt-2">
                     {addLoading ? 'Création…' : 'Créer l\'admin'}
                   </button>
                 </div>

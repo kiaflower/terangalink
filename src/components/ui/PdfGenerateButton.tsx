@@ -70,7 +70,7 @@ export function PdfGenerateButton({ ficheId, status, lastGeneratedAt, onGenerate
   return (
     <div className={className}>
       <button type="button" onClick={handleClick} disabled={downloading}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-violet hover:bg-brand-violet-dark rounded-lg px-3 py-2 transition-colors disabled:opacity-50 whitespace-nowrap w-full justify-center">
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark rounded-lg px-3 py-2 transition-colors disabled:opacity-50 whitespace-nowrap w-full justify-center">
         <Download className="w-3.5 h-3.5" />
         {downloading ? 'Génération...' : 'PDF'}
       </button>

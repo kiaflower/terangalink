@@ -40,9 +40,9 @@ export function BoutiquesHero({ q, category, city, sort, categoryOptions }: Prop
           <rect width="1600" height="500" fill="url(#bgGrad)" />
           {/* Shopping bags, scattered — no people */}
           <g opacity="0.9">
-            <rect x="180" y="220" width="150" height="180" rx="10" fill="#7C3AED" />
-            <rect x="200" y="180" width="20" height="60" rx="8" fill="none" stroke="#7C3AED" strokeWidth="10" />
-            <rect x="290" y="180" width="20" height="60" rx="8" fill="none" stroke="#7C3AED" strokeWidth="10" />
+            <rect x="180" y="220" width="150" height="180" rx="10" fill="#F97316" />
+            <rect x="200" y="180" width="20" height="60" rx="8" fill="none" stroke="#F97316" strokeWidth="10" />
+            <rect x="290" y="180" width="20" height="60" rx="8" fill="none" stroke="#F97316" strokeWidth="10" />
             <rect x="210" y="270" width="110" height="8" fill="rgba(255,255,255,0.25)" />
           </g>
           <g opacity="0.85">
@@ -83,13 +83,13 @@ export function BoutiquesHero({ q, category, city, sort, categoryOptions }: Prop
               name="q"
               defaultValue={q}
               placeholder="Rechercher une boutique ou un article..."
-              className="w-full pl-9 pr-4 py-3 rounded-xl text-sm focus:outline-none bg-gray-50 border border-transparent focus:border-brand-violet"
+              className="w-full pl-9 pr-4 py-3 rounded-xl text-sm focus:outline-none bg-gray-50 border border-transparent focus:border-brand-orange"
             />
           </div>
           <select
             name="category"
             defaultValue={category}
-            className="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet bg-gray-50"
+            className="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange bg-gray-50"
           >
             {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -97,12 +97,12 @@ export function BoutiquesHero({ q, category, city, sort, categoryOptions }: Prop
             name="city"
             defaultValue={city}
             placeholder="Ville..."
-            className="w-full sm:w-36 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet bg-gray-50"
+            className="w-full sm:w-36 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange bg-gray-50"
           />
           <select
             name="sort"
             defaultValue={sort ?? 'score'}
-            className="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet bg-gray-50"
+            className="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange bg-gray-50"
           >
             <option value="score">Pertinence</option>
             <option value="price_asc">Prix croissant</option>
@@ -110,7 +110,7 @@ export function BoutiquesHero({ q, category, city, sort, categoryOptions }: Prop
           </select>
           <button type="submit"
             className="px-6 py-3 rounded-xl text-sm font-semibold text-white transition-colors hover:opacity-90 flex-shrink-0"
-            style={{ backgroundColor: '#7C3AED' }}>
+            style={{ backgroundColor: '#F97316' }}>
             Filtrer
           </button>
         </form>

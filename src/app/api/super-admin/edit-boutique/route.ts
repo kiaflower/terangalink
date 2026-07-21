@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     // Custom colors/theme are a Pro feature — Starter always keeps TerangaSpot's defaults
     const { data: sub } = await supabase.from('subscriptions').select('plan').eq('boutique_id', id).single()
     const isPro = sub?.plan === 'pro'
-    payload.primary_color = isPro && typeof primary_color === 'string' ? primary_color : '#7C3AED'
+    payload.primary_color = isPro && typeof primary_color === 'string' ? primary_color : '#F97316'
     payload.theme = isPro && typeof theme === 'string' ? theme : 'light'
 
     const { error } = await supabase.from('boutiques').update(payload).eq('id', id)

@@ -15,7 +15,7 @@ function layout(title: string, bodyHtml: string): string {
         <td align="center">
           <table width="480" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border-radius:16px;overflow:hidden;border:1px solid #E5E7EB;">
             <tr>
-              <td style="background:#7C3AED;padding:20px 32px;">
+              <td style="background:#F97316;padding:20px 32px;">
                 <table cellpadding="0" cellspacing="0"><tr>
                   <td style="padding-right:10px;"><img src="${logoUrl}" width="28" height="28" alt="" style="border-radius:8px;display:block;" /></td>
                   <td><span style="color:#FFFFFF;font-weight:700;font-size:18px;">TerangaSpot</span></td>

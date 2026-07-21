@@ -72,7 +72,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Colonne gauche — desktop uniquement */}
-      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-violet-900 to-violet-950 flex-col justify-between p-10">
+      <div className="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-orange-900 to-orange-950 flex-col justify-between p-10">
         <div>
           <Logo textClassName="text-white font-bold text-xl" />
         </div>
@@ -80,7 +80,7 @@ export default function LoginPage() {
           <h2 className="text-3xl font-bold text-white leading-tight">
             La plateforme des<br />commerçants du Sénégal.
           </h2>
-          <p className="text-violet-300 text-sm leading-relaxed">
+          <p className="text-orange-300 text-sm leading-relaxed">
             Gérez votre boutique, recevez des commandes via WhatsApp et développez votre visibilité au Sénégal.
           </p>
           <div className="space-y-3">
@@ -95,12 +95,12 @@ export default function LoginPage() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <span className="text-violet-200 text-sm">{item}</span>
+                <span className="text-orange-200 text-sm">{item}</span>
               </div>
             ))}
           </div>
         </div>
-        <p className="text-violet-500 text-xs">&copy; 2026 TerangaSpot</p>
+        <p className="text-orange-500 text-xs">&copy; 2026 TerangaSpot</p>
       </div>
 
       {/* Colonne droite — formulaire */}
@@ -121,14 +121,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="w-full bg-[#1A1A1A] border border-[#2E2E2E] rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-colors"
+                className="w-full bg-[#1A1A1A] border border-[#2E2E2E] rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-colors"
                 placeholder="votre@email.com"
               />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-medium text-zinc-300">Mot de passe</label>
-                <Link href="/mot-de-passe-oublie" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+                <Link href="/mot-de-passe-oublie" className="text-xs text-orange-400 hover:text-orange-300 transition-colors">
                   Mot de passe oublié ?
                 </Link>
               </div>
@@ -137,7 +137,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className="w-full bg-[#1A1A1A] border border-[#2E2E2E] rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-colors"
+                className="w-full bg-[#1A1A1A] border border-[#2E2E2E] rounded-lg px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 transition-colors"
                 placeholder="••••••••"
               />
             </div>
@@ -147,14 +147,14 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>
           <p className="text-center text-sm text-zinc-500 mt-6">
             Pas encore de boutique ?{' '}
-            <Link href="/inscription" className="text-violet-400 hover:text-violet-300 transition-colors">
+            <Link href="/inscription" className="text-orange-400 hover:text-orange-300 transition-colors">
               S&apos;inscrire
             </Link>
           </p>

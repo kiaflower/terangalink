@@ -116,10 +116,10 @@ export function BoutiqueSidebar({ children, boutiqueName, impersonating }: Bouti
                 href={item.href}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
                 style={isActive
-                  ? { backgroundColor: 'rgba(124,58,237,0.08)', color: '#7C3AED' }
+                  ? { backgroundColor: 'rgba(249,115,22,0.08)', color: '#F97316' }
                   : { backgroundColor: 'transparent', color: '#6B7280' }
                 }
-                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'; (e.currentTarget as HTMLElement).style.color = '#7C3AED' } }}
+                onMouseEnter={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = '#F9FAFB'; (e.currentTarget as HTMLElement).style.color = '#F97316' } }}
                 onMouseLeave={e => { if (!isActive) { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = '#6B7280' } }}
               >
                 <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -134,7 +134,7 @@ export function BoutiqueSidebar({ children, boutiqueName, impersonating }: Bouti
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 mx-0 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors mt-2"
-              style={{ color: '#7C3AED', border: '1px solid rgba(124,58,237,0.2)' }}
+              style={{ color: '#F97316', border: '1px solid rgba(249,115,22,0.2)' }}
             >
               <ExternalLink className="w-4 h-4 flex-shrink-0" />
               Voir mon site
@@ -145,7 +145,7 @@ export function BoutiqueSidebar({ children, boutiqueName, impersonating }: Bouti
         <div className="p-4 flex-shrink-0" style={{ borderTop: '1px solid #E5E7EB' }}>
           <div className="flex items-center gap-3 px-3 py-2 mb-2">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 text-white"
-              style={{ backgroundColor: '#7C3AED' }}>
+              style={{ backgroundColor: '#F97316' }}>
               {fullName?.charAt(0).toUpperCase() || 'B'}
             </div>
             <div className="min-w-0">

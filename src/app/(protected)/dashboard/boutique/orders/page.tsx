@@ -236,7 +236,7 @@ function OrdersPageInner() {
             key={f.value}
             onClick={() => setStatusFilter(f.value)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              statusFilter === f.value ? 'bg-brand-violet text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              statusFilter === f.value ? 'bg-brand-orange text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
           >
             {f.label} {f.value !== 'all' ? `(${orders.filter(o => o.status === f.value).length})` : `(${orders.length})`}
@@ -255,7 +255,7 @@ function OrdersPageInner() {
             <div
               key={order.id}
               onClick={() => setSelected(order)}
-              className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-brand-violet/30 transition-colors"
+              className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer hover:border-brand-orange/30 transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -263,7 +263,7 @@ function OrdersPageInner() {
                   <p className="text-gray-500 text-xs mt-0.5">{order.customer_name} · {formatDate(order.created_at)}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-brand-violet font-bold text-sm">{formatPrice(order.total)}</p>
+                  <p className="text-brand-orange font-bold text-sm">{formatPrice(order.total)}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${STATUS_COLORS[order.status]}`}>
                     {STATUS_LABELS[order.status]}
                   </span>
@@ -319,7 +319,7 @@ function OrdersPageInner() {
               )}
               <div className="flex justify-between mt-4 pt-3 border-t border-gray-200">
                 <span className="text-gray-900 font-bold">Total</span>
-                <span className="text-brand-violet font-bold">{formatPrice(selected.total)}</span>
+                <span className="text-brand-orange font-bold">{formatPrice(selected.total)}</span>
               </div>
             </div>
 
@@ -359,7 +359,7 @@ function OrdersPageInner() {
                   <button
                     onClick={() => markPaymentReceived(selected)}
                     disabled={updatingStatus}
-                    className="w-full py-3 rounded-xl font-bold text-sm text-white bg-brand-violet hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white bg-brand-orange hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     Paiement reçu
                   </button>

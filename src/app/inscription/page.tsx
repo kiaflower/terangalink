@@ -14,7 +14,7 @@ import { Check, ArrowLeft, ArrowRight, Store, X, Eye } from 'lucide-react'
 const TOTAL_STEPS = 5
 
 const COLOR_PALETTE = [
-  '#7C3AED', '#2563EB', '#059669', '#DC2626',
+  '#F97316', '#2563EB', '#059669', '#DC2626',
   '#D97706', '#DB2777', '#0891B2', '#111111',
 ]
 
@@ -24,7 +24,7 @@ const THEMES = [
   { value: 'vibrant', label: 'Coloré', bg: 'accent', text: '#FFFFFF' },
 ]
 
-const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 bg-white transition-colors'
+const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 bg-white transition-colors'
 const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'
 
 const STEP_LABELS = ['Boutique', 'Contact', 'Offre', 'Identité', 'Résumé']
@@ -47,7 +47,7 @@ export default function InscriptionPage() {
     phone: '',
     whatsapp_number: '',
     plan: 'starter' as PlanKey,
-    primary_color: '#7C3AED',
+    primary_color: '#F97316',
     theme: 'light',
     facebook_url: '',
     instagram_url: '',
@@ -126,7 +126,7 @@ export default function InscriptionPage() {
           city: form.city,
           description: form.description,
           plan: form.plan,
-          primary_color: form.plan === 'pro' ? form.primary_color : '#7C3AED',
+          primary_color: form.plan === 'pro' ? form.primary_color : '#F97316',
           theme: form.plan === 'pro' ? form.theme : 'light',
           facebook_url: form.facebook_url || null,
           instagram_url: form.instagram_url || null,
@@ -157,7 +157,7 @@ export default function InscriptionPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="px-6 py-5 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #F3F4F6' }}>
         <Link href="/"><Logo textClassName="font-bold text-xl" textStyle={{ color: '#111111' }} /></Link>
-        <Link href="/pour-les-boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-violet transition-colors">← Retour</Link>
+        <Link href="/pour-les-boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors">← Retour</Link>
       </header>
 
       <div className="max-w-5xl mx-auto px-4 py-10">
@@ -177,17 +177,17 @@ export default function InscriptionPage() {
               return (
                 <div key={s} className="flex flex-col items-center gap-1.5">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                    s < step ? 'bg-brand-violet text-white' : s === step ? 'bg-brand-violet text-white' : 'bg-gray-200 text-gray-400'
+                    s < step ? 'bg-brand-orange text-white' : s === step ? 'bg-brand-orange text-white' : 'bg-gray-200 text-gray-400'
                   }`}>
                     {s < step ? <Check className="w-4 h-4" /> : s}
                   </div>
-                  <span className={`text-[10px] font-medium hidden sm:block ${s === step ? 'text-brand-violet' : 'text-gray-400'}`}>{label}</span>
+                  <span className={`text-[10px] font-medium hidden sm:block ${s === step ? 'text-brand-orange' : 'text-gray-400'}`}>{label}</span>
                 </div>
               )
             })}
           </div>
           <div className="relative h-1 bg-gray-200 rounded-full mt-1">
-            <div className="absolute left-0 top-0 h-full bg-brand-violet rounded-full transition-all"
+            <div className="absolute left-0 top-0 h-full bg-brand-orange rounded-full transition-all"
               style={{ width: `${((step - 1) / (TOTAL_STEPS - 1)) * 100}%` }} />
           </div>
           <p className="text-xs text-gray-400 text-center mt-2">Étape {step} sur {TOTAL_STEPS}</p>
@@ -206,7 +206,7 @@ export default function InscriptionPage() {
               </div>
               <div>
                 <label className={labelClass}>Slug (URL) — optionnel</label>
-                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-violet">
+                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-orange">
                   <span className="text-xs text-gray-400 pl-4 pr-1 shrink-0">{siteOrigin.replace(/^https?:\/\//, '')}/</span>
                   <input value={form.slug} onChange={e => { setSlugTouched(true); set('slug', e.target.value) }}
                     className="flex-1 py-3 pr-4 text-sm bg-white focus:outline-none" placeholder="votre-boutique" />
@@ -236,7 +236,7 @@ export default function InscriptionPage() {
                 <div>
                   <label className={labelClass}>Logo de la boutique (optionnel)</label>
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <span className="shrink-0 text-xs font-medium bg-violet-50 text-brand-violet px-3 py-2 rounded-lg hover:bg-violet-100 transition-colors">
+                    <span className="shrink-0 text-xs font-medium bg-orange-50 text-brand-orange px-3 py-2 rounded-lg hover:bg-orange-100 transition-colors">
                       Choisir un fichier
                     </span>
                     <span className="text-sm text-gray-500 truncate">{logoFileName || 'Aucun fichier choisi'}</span>
@@ -258,7 +258,7 @@ export default function InscriptionPage() {
                 <div>
                   <label className={labelClass}>Bannière / photo de couverture (optionnel)</label>
                   <label className="flex items-center gap-3 cursor-pointer">
-                    <span className="shrink-0 text-xs font-medium bg-violet-50 text-brand-violet px-3 py-2 rounded-lg hover:bg-violet-100 transition-colors">
+                    <span className="shrink-0 text-xs font-medium bg-orange-50 text-brand-orange px-3 py-2 rounded-lg hover:bg-orange-100 transition-colors">
                       Choisir un fichier
                     </span>
                     <span className="text-sm text-gray-500 truncate">{coverFileName || 'Aucun fichier choisi'}</span>
@@ -325,11 +325,11 @@ export default function InscriptionPage() {
                 {(Object.entries(PLANS) as [string, typeof PLANS.starter][]).map(([key, plan]) => (
                   <button key={key} type="button"
                     onClick={() => set('plan', key as PlanKey)}
-                    className={`text-left rounded-2xl p-5 border-2 transition-all ${form.plan === key ? 'border-brand-violet bg-violet-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
+                    className={`text-left rounded-2xl p-5 border-2 transition-all ${form.plan === key ? 'border-brand-orange bg-orange-50' : 'border-gray-200 bg-white hover:border-gray-300'}`}>
                     <div className="flex items-center justify-between mb-3">
                       <span className="font-bold text-gray-900">{plan.name}</span>
                       {form.plan === key && (
-                        <span className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-violet">
+                        <span className="w-5 h-5 rounded-full flex items-center justify-center bg-brand-orange">
                           <Check className="w-3 h-3 text-white" />
                         </span>
                       )}
@@ -377,7 +377,7 @@ export default function InscriptionPage() {
                       <button key={t.value} type="button" onClick={() => set('theme', t.value)}
                         className="flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all"
                         style={{
-                          borderColor: form.theme === t.value ? '#7C3AED' : '#E5E7EB',
+                          borderColor: form.theme === t.value ? '#F97316' : '#E5E7EB',
                           backgroundColor: t.bg === 'accent' ? form.primary_color : t.bg,
                           color: t.text,
                         }}>
@@ -460,7 +460,7 @@ export default function InscriptionPage() {
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.consent_images}
                     onChange={e => set('consent_images', e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                    className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                   <span className="text-sm text-gray-700">
                     <span className="font-medium text-red-500">*</span> J&apos;autorise TerangaSpot à utiliser les photos et visuels de ma boutique (logo, bannière, produits) pour des publications organiques et des publicités payantes sur les réseaux sociaux (Instagram, Facebook, TikTok) dans le cadre de la promotion de la plateforme.
                   </span>
@@ -470,7 +470,7 @@ export default function InscriptionPage() {
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.consent_annuaire}
                     onChange={e => set('consent_annuaire', e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                    className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                   <span className="text-sm text-gray-700">
                     <span className="font-medium text-red-500">*</span> J&apos;accepte d&apos;être référencé(e) dans l&apos;annuaire public de TerangaSpot et que mes informations professionnelles (nom, catégorie, ville, contact) soient visibles par tous les utilisateurs.
                   </span>
@@ -480,7 +480,7 @@ export default function InscriptionPage() {
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input type="checkbox" checked={form.consent_marketing}
                     onChange={e => set('consent_marketing', e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-brand-violet shrink-0" />
+                    className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                   <span className="text-sm text-gray-700">
                     J&apos;accepte de recevoir des conseils, des offres partenaires et des actualités de TerangaSpot par email ou WhatsApp. <span className="text-gray-400">(optionnel)</span>
                   </span>
@@ -495,13 +495,13 @@ export default function InscriptionPage() {
                 </div>
               )}
               <button onClick={submit} disabled={loading || !form.consent_images || !form.consent_annuaire}
-                className="w-full mt-6 bg-brand-violet text-white py-3.5 rounded-xl font-bold transition-colors hover:bg-brand-violet-dark disabled:opacity-50 flex items-center justify-center gap-2">
+                className="w-full mt-6 bg-brand-orange text-white py-3.5 rounded-xl font-bold transition-colors hover:bg-brand-orange-dark disabled:opacity-50 flex items-center justify-center gap-2">
                 <Store className="w-4 h-4" />
                 {loading ? 'Envoi en cours...' : 'Envoyer ma demande'}
               </button>
               <p className="text-center text-xs text-gray-400 mt-3">
                 En soumettant, vous acceptez nos{' '}
-                <Link href="/legal" className="underline hover:text-brand-violet">mentions légales</Link>.
+                <Link href="/legal" className="underline hover:text-brand-orange">mentions légales</Link>.
               </p>
             </div>
           )}
@@ -516,7 +516,7 @@ export default function InscriptionPage() {
                 </button>
               )}
               <button onClick={() => setStep(s => s + 1)} disabled={!canGoNext()}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-brand-violet text-white py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                className="flex-1 flex items-center justify-center gap-1.5 bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
                 {step === 4 ? 'Voir le résumé' : 'Suivant'}
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -546,7 +546,7 @@ export default function InscriptionPage() {
             city={form.city}
             logoUrl={form.logo_base64 || undefined}
             coverUrl={form.cover_base64 || undefined}
-            primaryColor={form.plan === 'pro' ? form.primary_color : '#7C3AED'}
+            primaryColor={form.plan === 'pro' ? form.primary_color : '#F97316'}
             theme={form.plan === 'pro' ? form.theme : 'light'}
           />
         </div>
@@ -568,7 +568,7 @@ export default function InscriptionPage() {
               city={form.city}
               logoUrl={form.logo_base64 || undefined}
               coverUrl={form.cover_base64 || undefined}
-              primaryColor={form.plan === 'pro' ? form.primary_color : '#7C3AED'}
+              primaryColor={form.plan === 'pro' ? form.primary_color : '#F97316'}
               theme={form.plan === 'pro' ? form.theme : 'light'}
             />
           </div>

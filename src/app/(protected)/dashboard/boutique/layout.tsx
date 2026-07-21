@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#7C3AED',
+  themeColor: '#F97316',
 }
 
 export default async function BoutiqueDashboardLayout({ children }: { children: React.ReactNode }) {

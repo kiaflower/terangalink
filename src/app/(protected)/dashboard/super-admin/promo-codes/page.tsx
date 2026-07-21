@@ -23,7 +23,7 @@ interface PromoCode {
 
 interface Boutique { id: string; name: string }
 
-const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors'
+const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors'
 
 export default function SuperAdminPromoCodesPage() {
   const supabase = createClient()
@@ -161,7 +161,7 @@ export default function SuperAdminPromoCodesPage() {
             <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button onClick={() => { setCreateOpen(true); setSaveError('') }}
-            className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-violet-dark transition-colors">
+            className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-medium px-4 py-2.5 rounded-xl hover:bg-brand-orange-dark transition-colors">
             <Plus className="w-4 h-4" /> Créer un code promo
           </button>
         </div>
@@ -170,7 +170,7 @@ export default function SuperAdminPromoCodesPage() {
       <div className="mb-4">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Rechercher par code ou boutique…"
-          className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet transition-colors" />
+          className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors" />
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -197,7 +197,7 @@ export default function SuperAdminPromoCodesPage() {
                   </div>
                   <p className="text-xs text-gray-500">
                     {(c.boutique as { name: string } | null)?.name ?? '—'} ·{' '}
-                    <span className="text-brand-violet font-semibold">
+                    <span className="text-brand-orange font-semibold">
                       {c.discount_type === 'percent' ? `${c.discount_value}%` : formatPrice(c.discount_value)}
                     </span>
                     {c.min_order_amount > 0 && ` · min ${formatPrice(c.min_order_amount)}`} · {c.uses_count}{c.max_uses ? `/${c.max_uses}` : ''} util.
@@ -209,7 +209,7 @@ export default function SuperAdminPromoCodesPage() {
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button onClick={() => toggleActive(c.id, c.is_active)}
-                    className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-brand-violet/30 hover:text-brand-violet transition-colors text-gray-500">
+                    className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-brand-orange/30 hover:text-brand-orange transition-colors text-gray-500">
                     {c.is_active ? 'Désactiver' : 'Activer'}
                   </button>
                   <button onClick={() => toggleFeatured(c.id, c.is_featured)}
@@ -232,7 +232,7 @@ export default function SuperAdminPromoCodesPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-              <h3 className="font-bold text-gray-900">Modifier <span className="font-mono text-brand-violet">{editCode.code}</span></h3>
+              <h3 className="font-bold text-gray-900">Modifier <span className="font-mono text-brand-orange">{editCode.code}</span></h3>
               <button onClick={() => setEditCode(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
             </div>
             <div className="p-6 space-y-3">
@@ -282,7 +282,7 @@ export default function SuperAdminPromoCodesPage() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={editForm.is_active}
                     onChange={e => setEditForm(f => ({ ...f, is_active: e.target.checked }))}
-                    className="w-4 h-4 accent-brand-violet" />
+                    className="w-4 h-4 accent-brand-orange" />
                   <span className="text-sm text-gray-700">Actif</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -293,7 +293,7 @@ export default function SuperAdminPromoCodesPage() {
                 </label>
               </div>
               <button onClick={saveEdit} disabled={editSaving}
-                className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
                 {editSaving ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </div>
@@ -367,7 +367,7 @@ export default function SuperAdminPromoCodesPage() {
                 </div>
               </label>
               <button onClick={createCode} disabled={saving}
-                className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50">
+                className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
                 {saving ? 'Création…' : 'Créer le code promo'}
               </button>
             </div>

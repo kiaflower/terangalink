@@ -56,14 +56,14 @@ export function StoriesBar({ boutiques }: Props) {
             <button key={b.id} onClick={() => openStories(b)} className="flex flex-col items-center gap-1.5 flex-shrink-0 w-16">
               <div className="rounded-full" style={{
                 padding: 2.5,
-                background: seen ? '#D1D5DB' : 'linear-gradient(45deg, #F59E0B, #EC4899, #7C3AED)',
+                background: seen ? '#D1D5DB' : 'linear-gradient(45deg, #F59E0B, #EC4899, #F97316)',
               }}>
                 <div className="rounded-full p-0.5 bg-white">
                   {b.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={b.logo_url} alt={b.name} className="w-14 h-14 rounded-full object-cover" />
                   ) : (
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: '#7C3AED' }}>
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: '#F97316' }}>
                       {b.name.charAt(0)}
                     </div>
                   )}

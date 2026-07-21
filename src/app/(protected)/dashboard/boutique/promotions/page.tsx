@@ -99,7 +99,7 @@ export default function PromotionsPage() {
             value={form.code}
             onChange={e => setForm(f => ({ ...f, code: e.target.value }))}
             placeholder="CODE (ex: PROMO20)"
-            className="w-full bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet uppercase"
+            className="w-full bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange uppercase"
           />
           <div className="grid grid-cols-2 gap-3">
             <select
@@ -115,7 +115,7 @@ export default function PromotionsPage() {
               value={form.discount_value}
               onChange={e => setForm(f => ({ ...f, discount_value: e.target.value }))}
               placeholder={form.discount_type === 'percent' ? 'Ex: 20' : 'Ex: 2000'}
-              className="bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+              className="bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -124,21 +124,21 @@ export default function PromotionsPage() {
               value={form.min_order_amount}
               onChange={e => setForm(f => ({ ...f, min_order_amount: e.target.value }))}
               placeholder="Commande min. (FCFA)"
-              className="bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+              className="bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
             />
             <input
               type="number"
               value={form.max_uses}
               onChange={e => setForm(f => ({ ...f, max_uses: e.target.value }))}
               placeholder="Max utilisations"
-              className="bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-violet"
+              className="bg-white/5 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
             />
           </div>
           <div className="flex gap-2">
             <button
               onClick={saveCode}
               disabled={saving || !form.code || !form.discount_value}
-              className="flex-1 bg-brand-violet text-white py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+              className="flex-1 bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
             >
               {saving ? 'Enregistrement...' : editingId ? 'Enregistrer les modifications' : 'Créer le code'}
             </button>
@@ -186,7 +186,7 @@ export default function PromotionsPage() {
                   {c.is_active ? 'Actif' : 'Inactif'}
                 </button>
                 {plan === 'pro' && (
-                  <button onClick={() => startEdit(c)} className="p-1.5 rounded-lg text-gray-400 hover:text-brand-violet hover:bg-gray-50 transition-colors" aria-label="Modifier">
+                  <button onClick={() => startEdit(c)} className="p-1.5 rounded-lg text-gray-400 hover:text-brand-orange hover:bg-gray-50 transition-colors" aria-label="Modifier">
                     <Pencil className="w-4 h-4" />
                   </button>
                 )}

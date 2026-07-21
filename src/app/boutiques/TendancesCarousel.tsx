@@ -34,7 +34,7 @@ export function TendancesCarousel({ items }: Props) {
             <Link
               key={`${item.boutique_slug}-${i}`}
               href={`/${item.boutique_slug}?from=annuaire`}
-              className="flex-shrink-0 flex items-center gap-3 bg-gray-50 hover:bg-violet-50 border border-gray-100 hover:border-violet-200 rounded-2xl px-4 py-3 transition-all group min-w-[220px]"
+              className="flex-shrink-0 flex items-center gap-3 bg-gray-50 hover:bg-orange-50 border border-gray-100 hover:border-orange-200 rounded-2xl px-4 py-3 transition-all group min-w-[220px]"
             >
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0">
                 {item.product_image ? (
@@ -47,11 +47,11 @@ export function TendancesCarousel({ items }: Props) {
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-gray-900 truncate group-hover:text-violet-700 transition-colors">
+                <p className="text-xs font-bold text-gray-900 truncate group-hover:text-orange-700 transition-colors">
                   {item.product_name}
                 </p>
                 <p className="text-xs text-gray-400 truncate">{item.boutique_name}</p>
-                <p className="text-xs font-semibold text-violet-600 mt-0.5">
+                <p className="text-xs font-semibold text-orange-600 mt-0.5">
                   {new Intl.NumberFormat('fr-SN').format(item.product_price)} FCFA
                 </p>
               </div>

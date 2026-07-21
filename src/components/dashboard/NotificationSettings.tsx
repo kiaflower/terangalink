@@ -91,7 +91,7 @@ export function NotificationSettings({ variant = 'boutique' }: { variant?: PushC
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-6">
       <h2 className="font-semibold text-gray-900 text-sm mb-1 flex items-center gap-2">
-        <Bell className="w-4 h-4 text-brand-violet" />
+        <Bell className="w-4 h-4 text-brand-orange" />
         Notifications
       </h2>
       <p className="text-xs text-gray-500 mb-4">
@@ -113,7 +113,7 @@ export function NotificationSettings({ variant = 'boutique' }: { variant?: PushC
           className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 ${
             subState === 'subscribed'
               ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              : 'bg-brand-violet text-white hover:bg-brand-violet-dark'
+              : 'bg-brand-orange text-white hover:bg-brand-orange-dark'
           }`}
         >
           {subState === 'subscribed' ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
@@ -135,7 +135,7 @@ export function NotificationSettings({ variant = 'boutique' }: { variant?: PushC
                 type="checkbox"
                 checked={settings[key]}
                 onChange={e => saveSettings({ ...settings, [key]: e.target.checked })}
-                className="mt-0.5 w-4 h-4 accent-brand-violet"
+                className="mt-0.5 w-4 h-4 accent-brand-orange"
               />
               <span>
                 <span className="block text-sm text-gray-900">{label}</span>

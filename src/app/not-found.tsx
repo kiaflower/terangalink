@@ -8,7 +8,7 @@ export default function NotFound() {
         <p className="text-xl text-gray-600 mb-8">Page introuvable</p>
         <Link
           href="/"
-          className="inline-block bg-brand-violet text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors"
+          className="inline-block bg-brand-orange text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-orange-dark transition-colors"
         >
           Retour à l&apos;accueil
         </Link>

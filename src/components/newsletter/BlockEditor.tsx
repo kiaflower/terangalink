@@ -77,7 +77,7 @@ export function BlockEditor({ blocks, onChange, disabled }: BlockEditorProps) {
                 key={type}
                 type="button"
                 onClick={() => addBlock(type)}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:border-brand-violet hover:text-brand-violet transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:border-brand-orange hover:text-brand-orange transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <Icon className="w-3.5 h-3.5" />

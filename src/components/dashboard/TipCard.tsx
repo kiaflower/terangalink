@@ -41,8 +41,8 @@ export function TipCard() {
 
   return (
     <div className="flex items-start gap-3 rounded-2xl p-4 mb-6"
-      style={{ backgroundColor: '#F5F3FF', border: '1px solid rgba(124,58,237,0.1)' }}>
-      <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#7C3AED' }} />
+      style={{ backgroundColor: '#F5F3FF', border: '1px solid rgba(249,115,22,0.1)' }}>
+      <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#F97316' }} />
       <p className="flex-1 text-sm" style={{ color: '#374151' }}>{TIPS[tipIndex]}</p>
       <button onClick={() => { try { localStorage.setItem(DISMISSED_KEY, String(Date.now())) } catch {} setVisible(false) }}
         className="flex-shrink-0 text-gray-300 hover:text-gray-500 transition-colors" aria-label="Fermer">

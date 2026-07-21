@@ -16,11 +16,11 @@ const THEMES = [
 ]
 
 const COLOR_PALETTE = [
-  '#7C3AED', '#2563EB', '#059669', '#DC2626',
+  '#F97316', '#2563EB', '#059669', '#DC2626',
   '#D97706', '#DB2777', '#0891B2', '#111111',
 ]
 
-const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-violet focus:ring-1 focus:ring-brand-violet/20 transition-colors'
+const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'
 
 function BoutiquePreview({ name, color, theme, logoUrl, coverUrl }: { name: string; color: string; theme: string; logoUrl?: string; coverUrl?: string }) {
@@ -85,7 +85,7 @@ export default function EditBoutiquePage() {
     wave_number: '', orange_money_number: '',
     delivery_info: '', show_delivery_info: false,
     is_verified: false, is_active: true, is_founder: false,
-    primary_color: '#7C3AED', theme: 'light',
+    primary_color: '#F97316', theme: 'light',
     logo_url: '', cover_url: '',
   })
   const [logoPreview, setLogoPreview] = useState('')
@@ -223,7 +223,7 @@ export default function EditBoutiquePage() {
           is_verified: !!(d.is_verified),
           is_active: d.is_active !== false,
           is_founder: !!(d.is_founder),
-          primary_color: (d.primary_color as string) ?? '#7C3AED',
+          primary_color: (d.primary_color as string) ?? '#F97316',
           theme: (d.theme as string) ?? 'light',
           logo_url: (d.logo_url as string) ?? '',
           cover_url: (d.cover_url as string) ?? '',
@@ -256,7 +256,7 @@ export default function EditBoutiquePage() {
     setSaving(true)
     setError('')
     try {
-    const payload = plan === 'pro' ? form : { ...form, primary_color: '#7C3AED', theme: 'light' }
+    const payload = plan === 'pro' ? form : { ...form, primary_color: '#F97316', theme: 'light' }
     const res = await fetch('/api/super-admin/edit-boutique', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -281,7 +281,7 @@ export default function EditBoutiquePage() {
 
   return (
     <div className="max-w-5xl">
-      <Link href="/dashboard/super-admin/boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-violet transition-colors mb-6">
+      <Link href="/dashboard/super-admin/boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors mb-6">
         <ArrowLeft className="w-4 h-4" />
         Retour aux boutiques
       </Link>
@@ -304,7 +304,7 @@ export default function EditBoutiquePage() {
             </div>
             <div>
               <label className={labelClass}>Slug (URL)</label>
-              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-violet transition-colors">
+              <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-orange transition-colors">
                 <span className="px-3 py-2.5 text-sm text-gray-400 bg-gray-50 border-r border-gray-200">{siteOrigin.replace(/^https?:\/\//, '')}/</span>
                 <input type="text" value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
                   className="flex-1 px-3 py-2.5 text-sm text-gray-900 focus:outline-none bg-white" />
@@ -339,11 +339,11 @@ export default function EditBoutiquePage() {
             </div>
             <div className="flex items-center gap-6 pt-1">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_verified} onChange={e => setForm(f => ({ ...f, is_verified: e.target.checked }))} className="w-4 h-4 accent-brand-violet" />
+                <input type="checkbox" checked={form.is_verified} onChange={e => setForm(f => ({ ...f, is_verified: e.target.checked }))} className="w-4 h-4 accent-brand-orange" />
                 <span className="text-sm text-gray-600">Vérifiée</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} className="w-4 h-4 accent-brand-violet" />
+                <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} className="w-4 h-4 accent-brand-orange" />
                 <span className="text-sm text-gray-600">Active</span>
               </label>
             </div>
@@ -353,7 +353,7 @@ export default function EditBoutiquePage() {
                 <p className="text-xs text-gray-500 mt-0.5">Affiche un badge doré sur la page de la boutique</p>
               </div>
               <label className="flex items-center cursor-pointer">
-                <input type="checkbox" checked={form.is_founder} onChange={e => setForm(f => ({ ...f, is_founder: e.target.checked }))} className="w-4 h-4 accent-brand-violet" />
+                <input type="checkbox" checked={form.is_founder} onChange={e => setForm(f => ({ ...f, is_founder: e.target.checked }))} className="w-4 h-4 accent-brand-orange" />
               </label>
             </div>
           </div>
@@ -377,7 +377,7 @@ export default function EditBoutiquePage() {
                 placeholder="Délai, zones, tarifs…" className={`${inputClass} resize-none`} />
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.show_delivery_info} onChange={e => setForm(f => ({ ...f, show_delivery_info: e.target.checked }))} className="w-4 h-4 accent-brand-violet" />
+              <input type="checkbox" checked={form.show_delivery_info} onChange={e => setForm(f => ({ ...f, show_delivery_info: e.target.checked }))} className="w-4 h-4 accent-brand-orange" />
               <span className="text-sm text-gray-600">Afficher les infos livraison sur la vitrine</span>
             </label>
           </div>
@@ -411,13 +411,13 @@ export default function EditBoutiquePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>Logo</label>
-                <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-violet/40 transition-colors group">
+                <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-orange/40 transition-colors group">
                   {logoPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={logoPreview} alt="" className="w-16 h-16 rounded-xl object-cover" />
                   ) : (
                     <>
-                      <Upload className="w-6 h-6 text-gray-300 group-hover:text-brand-violet/50 transition-colors" />
+                      <Upload className="w-6 h-6 text-gray-300 group-hover:text-brand-orange/50 transition-colors" />
                       <span className="text-xs text-gray-400">Cliquer pour uploader</span>
                     </>
                   )}
@@ -426,13 +426,13 @@ export default function EditBoutiquePage() {
               </div>
               <div>
                 <label className={labelClass}>Bannière / Couverture</label>
-                <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-violet/40 transition-colors group h-full min-h-[100px]">
+                <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-gray-200 rounded-xl p-4 hover:border-brand-orange/40 transition-colors group h-full min-h-[100px]">
                   {coverPreview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={coverPreview} alt="" className="w-full h-20 rounded-xl object-cover" />
                   ) : (
                     <>
-                      <Upload className="w-6 h-6 text-gray-300 group-hover:text-brand-violet/50 transition-colors" />
+                      <Upload className="w-6 h-6 text-gray-300 group-hover:text-brand-orange/50 transition-colors" />
                       <span className="text-xs text-gray-400">Bannière (16:9 recommandé)</span>
                     </>
                   )}
@@ -464,7 +464,7 @@ export default function EditBoutiquePage() {
                   {COLOR_PALETTE.map(c => (
                     <button key={c} type="button" onClick={() => setForm(f => ({ ...f, primary_color: c }))}
                       className="w-8 h-8 rounded-lg border-2 transition-all"
-                      style={{ backgroundColor: c, borderColor: form.primary_color === c ? '#7C3AED' : 'transparent', transform: form.primary_color === c ? 'scale(1.15)' : 'scale(1)' }} />
+                      style={{ backgroundColor: c, borderColor: form.primary_color === c ? '#F97316' : 'transparent', transform: form.primary_color === c ? 'scale(1.15)' : 'scale(1)' }} />
                   ))}
                   <input type="color" value={form.primary_color}
                     onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
@@ -479,7 +479,7 @@ export default function EditBoutiquePage() {
                       onClick={() => setForm(f => ({ ...f, theme: t.value }))}
                       className="flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all"
                       style={{
-                        borderColor: form.theme === t.value ? '#7C3AED' : '#E5E7EB',
+                        borderColor: form.theme === t.value ? '#F97316' : '#E5E7EB',
                         backgroundColor: t.bg === 'var(--accent)' ? form.primary_color : t.bg,
                         color: t.text,
                       }}>
@@ -498,7 +498,7 @@ export default function EditBoutiquePage() {
             <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wider">Aperçu en direct</p>
             <BoutiquePreview
               name={form.name}
-              color={plan === 'pro' ? form.primary_color : '#7C3AED'}
+              color={plan === 'pro' ? form.primary_color : '#F97316'}
               theme={plan === 'pro' ? form.theme : 'light'}
               logoUrl={logoPreview || undefined}
               coverUrl={coverPreview || undefined}
@@ -508,7 +508,7 @@ export default function EditBoutiquePage() {
 
         <div className="lg:col-span-2">
           <button type="submit" disabled={saving}
-            className="w-full bg-brand-violet hover:bg-brand-violet-dark text-white py-3 rounded-xl font-semibold transition-colors disabled:opacity-50">
+            className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white py-3 rounded-xl font-semibold transition-colors disabled:opacity-50">
             {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
           </button>
         </div>
@@ -527,7 +527,7 @@ export default function EditBoutiquePage() {
                 const nextPlan = e.target.value
                 setSubForm(f => ({ ...f, plan: nextPlan, status: nextPlan === 'free' && f.status === 'trial' ? 'active' : f.status }))
               }}
-                className="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 focus:outline-none focus:border-brand-violet">
+                className="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 focus:outline-none focus:border-brand-orange">
                 <option value="free">Free</option>
                 <option value="starter">Starter</option>
                 <option value="pro">Pro</option>
@@ -536,7 +536,7 @@ export default function EditBoutiquePage() {
             <div>
               <label className={labelClass}>Statut</label>
               <select value={subForm.status} onChange={e => setSubForm(f => ({ ...f, status: e.target.value }))}
-                className="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 focus:outline-none focus:border-brand-violet">
+                className="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 focus:outline-none focus:border-brand-orange">
                 {/* Le plan Free n'a pas d'essai — toujours actif dès la création */}
                 {subForm.plan !== 'free' && <option value="trial">Essai</option>}
                 <option value="active">Actif</option>
@@ -548,10 +548,10 @@ export default function EditBoutiquePage() {
             <div>
               <label className={labelClass}>Expire le</label>
               <input type="date" value={subForm.ends_at} onChange={e => setSubForm(f => ({ ...f, ends_at: e.target.value }))}
-                className="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 focus:outline-none focus:border-brand-violet" />
+                className="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 focus:outline-none focus:border-brand-orange" />
             </div>
             <button type="submit" disabled={subSaving}
-              className="text-sm bg-brand-violet hover:bg-brand-violet-dark text-white px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50">
+              className="text-sm bg-brand-orange hover:bg-brand-orange-dark text-white px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50">
               {subSaving ? 'Enregistrement…' : subForm.id ? 'Mettre à jour l\'abonnement' : 'Créer l\'abonnement'}
             </button>
           </form>
@@ -585,7 +585,7 @@ export default function EditBoutiquePage() {
               <button
                 onClick={() => { setAddAdminOpen(true); setAddAdminError(''); setAddAdminResult(null); setAddAdminForm({ full_name: '', email: '', password: genPwd() }) }}
                 disabled={admins.length >= (plan === 'pro' ? 5 : 1)}
-                className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-medium px-3 py-2 rounded-xl hover:bg-brand-violet-dark transition-colors disabled:opacity-40">
+                className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-medium px-3 py-2 rounded-xl hover:bg-brand-orange-dark transition-colors disabled:opacity-40">
                 <Plus className="w-4 h-4" /> Ajouter
               </button>
             </div>
@@ -603,7 +603,7 @@ export default function EditBoutiquePage() {
               {admins.map(a => (
                 <div key={a.id} className="flex items-center justify-between py-3 gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-violet-50 flex items-center justify-center text-xs font-bold text-brand-violet">
+                    <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-xs font-bold text-brand-orange">
                       {(a.full_name ?? a.email).charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -640,7 +640,7 @@ export default function EditBoutiquePage() {
                     <p className="text-green-700">Mot de passe : <span className="font-mono font-bold">{addAdminResult.password}</span></p>
                   </div>
                   <button onClick={() => { setAddAdminOpen(false); setAddAdminResult(null) }}
-                    className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm">
+                    className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm">
                     Fermer
                   </button>
                 </div>
@@ -664,7 +664,7 @@ export default function EditBoutiquePage() {
                       <label className="block text-xs font-medium text-gray-500 mb-1.5 flex items-center justify-between">
                         <span>Mot de passe</span>
                         <button type="button" onClick={() => setAddAdminForm(f => ({ ...f, password: genPwd() }))}
-                          className="text-brand-violet text-xs hover:underline">Regénérer</button>
+                          className="text-brand-orange text-xs hover:underline">Regénérer</button>
                       </label>
                       <input type="text" value={addAdminForm.password}
                         onChange={e => setAddAdminForm(f => ({ ...f, password: e.target.value }))}
@@ -676,7 +676,7 @@ export default function EditBoutiquePage() {
                     </p>
                   )}
                   <button onClick={addAdmin} disabled={addAdminLoading}
-                    className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-violet-dark transition-colors disabled:opacity-50 mt-2">
+                    className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold text-sm hover:bg-brand-orange-dark transition-colors disabled:opacity-50 mt-2">
                     {addAdminLoading ? 'Création…' : 'Créer l\'admin'}
                   </button>
                 </div>

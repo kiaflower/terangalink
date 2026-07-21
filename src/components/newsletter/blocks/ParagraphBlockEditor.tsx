@@ -30,7 +30,7 @@ export function ParagraphBlockEditor({ block, onChange, disabled }: {
   return (
     <div>
       <RichTextToolbar editor={editor} disabled={disabled} />
-      <div className="border border-gray-200 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-brand-violet/30">
+      <div className="border border-gray-200 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-brand-orange/30">
         <EditorContent editor={editor} />
       </div>
     </div>

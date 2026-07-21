@@ -67,7 +67,7 @@ export async function Footer({
                 { label: 'Mentions légales', href: '/legal' },
               ].map(link => (
                 <Link key={link.label} href={link.href}
-                  className="block text-sm transition-colors hover:text-brand-violet"
+                  className="block text-sm transition-colors hover:text-brand-orange"
                   style={{ color: '#9CA3AF' }}>
                   {link.label}
                 </Link>
@@ -88,11 +88,11 @@ export async function Footer({
                 +{resolvedWhatsapp}
               </a>
               <a href={`mailto:${resolvedEmail}`}
-                className="flex items-center gap-2.5 text-sm transition-colors hover:text-brand-violet"
+                className="flex items-center gap-2.5 text-sm transition-colors hover:text-brand-orange"
                 style={{ color: '#9CA3AF' }}>
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: 'rgba(124,58,237,0.08)' }}>
-                  <Mail className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
+                  style={{ backgroundColor: 'rgba(249,115,22,0.08)' }}>
+                  <Mail className="w-3.5 h-3.5" style={{ color: '#F97316' }} />
                 </div>
                 {resolvedEmail}
               </a>
@@ -135,8 +135,8 @@ export async function Footer({
             © 2026 TerangaSpot — Fait à Dakar
           </p>
           <div className="flex gap-4 text-xs" style={{ color: '#9CA3AF' }}>
-            <Link href="/legal" className="hover:text-brand-violet transition-colors">Mentions légales</Link>
-            <Link href="/legal#confidentialite" className="hover:text-brand-violet transition-colors">Confidentialité</Link>
+            <Link href="/legal" className="hover:text-brand-orange transition-colors">Mentions légales</Link>
+            <Link href="/legal#confidentialite" className="hover:text-brand-orange transition-colors">Confidentialité</Link>
           </div>
         </div>
       </div>

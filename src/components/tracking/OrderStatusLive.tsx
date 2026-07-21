@@ -63,7 +63,7 @@ export function OrderStatusLive({
   order: initialOrder,
   boutiqueId,
   hasReview: initialHasReview,
-  accentColor = '#7C3AED',
+  accentColor = '#F97316',
   cardBg = '#FFFFFF',
   cardBorder = '#E5E7EB',
   pageText = '#111111',

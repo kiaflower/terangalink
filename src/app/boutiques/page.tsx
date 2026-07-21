@@ -339,7 +339,7 @@ export default async function BoutiquesPage({ searchParams }: Props) {
             </Link>
             <Link href="/pour-les-boutiques"
               className="text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl text-white transition-colors hover:opacity-90 whitespace-nowrap"
-              style={{ backgroundColor: '#7C3AED' }}>
+              style={{ backgroundColor: '#F97316' }}>
               Créer ma boutique
             </Link>
           </div>
@@ -398,7 +398,7 @@ export default async function BoutiquesPage({ searchParams }: Props) {
           <div className="flex items-center justify-center gap-2 mt-8 pb-8 flex-wrap">
             {page > 1 && (
               <Link href={`/boutiques?${buildParams({ ...searchParams, page: page - 1 })}`}
-                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand-violet hover:text-brand-violet transition-colors">
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand-orange hover:text-brand-orange transition-colors">
                 ← Précédent
               </Link>
             )}
@@ -409,7 +409,7 @@ export default async function BoutiquesPage({ searchParams }: Props) {
                 <Link key={n} href={`/boutiques?${buildParams({ ...searchParams, page: n })}`}
                   className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-medium transition-colors"
                   style={n === page
-                    ? { backgroundColor: '#7C3AED', color: '#FFFFFF' }
+                    ? { backgroundColor: '#F97316', color: '#FFFFFF' }
                     : { border: '1px solid #E5E7EB', color: '#6B7280' }}>
                   {n}
                 </Link>
@@ -418,7 +418,7 @@ export default async function BoutiquesPage({ searchParams }: Props) {
             <span className="sm:hidden text-sm font-medium text-gray-500 px-2">Page {page} / {totalPages}</span>
             {page < totalPages && (
               <Link href={`/boutiques?${buildParams({ ...searchParams, page: page + 1 })}`}
-                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand-violet hover:text-brand-violet transition-colors">
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:border-brand-orange hover:text-brand-orange transition-colors">
                 Suivant →
               </Link>
             )}
@@ -434,7 +434,7 @@ export default async function BoutiquesPage({ searchParams }: Props) {
           </p>
           <Link href="/pour-les-boutiques"
             className="inline-flex items-center gap-2 font-bold text-sm px-7 py-3.5 rounded-xl text-white transition-all hover:opacity-90"
-            style={{ backgroundColor: '#7C3AED' }}>
+            style={{ backgroundColor: '#F97316' }}>
             <Store className="w-4 h-4" />
             Rejoindre l&apos;annuaire TerangaSpot
             <ArrowRight className="w-4 h-4" />

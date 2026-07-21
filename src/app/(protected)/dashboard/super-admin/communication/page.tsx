@@ -85,7 +85,7 @@ export default function CommunicationPage() {
         <button
           onClick={() => setShowTemplateModal(true)}
           disabled={creating}
-          className="inline-flex items-center gap-2 bg-brand-violet text-white text-sm font-medium rounded-xl px-4 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+          className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-medium rounded-xl px-4 py-2.5 hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
         >
           <Plus className="w-4 h-4" />
           Nouvelle campagne
@@ -105,7 +105,7 @@ export default function CommunicationPage() {
                   key={t.id}
                   onClick={() => createCampaign(t)}
                   disabled={creating}
-                  className="text-left border border-gray-200 rounded-xl p-3 hover:border-brand-violet hover:bg-brand-violet/5 transition-colors disabled:opacity-50"
+                  className="text-left border border-gray-200 rounded-xl p-3 hover:border-brand-orange hover:bg-brand-orange/5 transition-colors disabled:opacity-50"
                 >
                   <span className="block text-sm font-medium text-gray-900">{t.label}</span>
                   <span className="block text-xs text-gray-400 mt-0.5">{t.description}</span>
@@ -139,7 +139,7 @@ export default function CommunicationPage() {
               <div
                 key={c.id}
                 onClick={() => router.push(href)}
-                className="block border border-gray-200 rounded-xl p-4 hover:border-brand-violet/40 transition-colors bg-white cursor-pointer"
+                className="block border border-gray-200 rounded-xl p-4 hover:border-brand-orange/40 transition-colors bg-white cursor-pointer"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div>

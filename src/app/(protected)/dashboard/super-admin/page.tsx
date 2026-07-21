@@ -97,7 +97,7 @@ export default function SuperAdminDashboard() {
   }, [fetchData])
 
   const statCards = stats ? [
-    { label: 'Total boutiques', value: stats.boutiquesCount, href: '/dashboard/super-admin/boutiques', Icon: Store, color: '#7C3AED' },
+    { label: 'Total boutiques', value: stats.boutiquesCount, href: '/dashboard/super-admin/boutiques', Icon: Store, color: '#F97316' },
     { label: 'Boutiques actives', value: stats.activeCount, href: '/dashboard/super-admin/boutiques', Icon: CheckCircle, color: '#059669' },
     { label: 'Inscriptions en attente', value: stats.inscriptionsCount, href: '/dashboard/super-admin/inscriptions', Icon: ClipboardList, color: '#DC2626', alert: true },
     { label: 'Commandes (24h)', value: stats.ordersCount, href: '/dashboard/super-admin/boutiques', Icon: ShoppingBag, color: '#D97706' },
@@ -113,7 +113,7 @@ export default function SuperAdminDashboard() {
           <p className="text-gray-500 text-sm mt-1">Vue d&apos;ensemble · en temps réel</p>
         </div>
         <button onClick={fetchData}
-          className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-violet border border-gray-200 rounded-lg px-3 py-2 transition-colors">
+          className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-brand-orange border border-gray-200 rounded-lg px-3 py-2 transition-colors">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline">
             {lastRefresh ? lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'}
@@ -160,7 +160,7 @@ export default function SuperAdminDashboard() {
         <div className="bg-white border border-gray-200 rounded-2xl">
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid #F3F4F6' }}>
             <h2 className="text-sm font-semibold text-gray-900">Inscriptions récentes</h2>
-            <Link href="/dashboard/super-admin/inscriptions" className="text-xs text-brand-violet hover:text-brand-violet-dark transition-colors">Voir tout</Link>
+            <Link href="/dashboard/super-admin/inscriptions" className="text-xs text-brand-orange hover:text-brand-orange-dark transition-colors">Voir tout</Link>
           </div>
           <div className="divide-y divide-gray-50">
             {inscriptions.map(ins => (

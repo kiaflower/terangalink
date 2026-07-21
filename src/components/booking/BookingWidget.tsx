@@ -75,7 +75,7 @@ export function BookingWidget() {
   if (done) {
     return (
       <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center max-w-lg mx-auto">
-        <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-brand-violet" />
+        <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-brand-orange" />
         <h3 className="text-lg font-bold text-gray-900 mb-1">Rendez-vous confirmé !</h3>
         <p className="text-sm text-gray-500">
           Nous vous contacterons le {selected && formatDateLabel(selected.date)} à {selected && formatTime(selected.start_time)}.
@@ -87,7 +87,7 @@ export function BookingWidget() {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-lg mx-auto">
       <div className="flex items-center gap-2 mb-4">
-        <CalendarClock className="w-5 h-5 text-brand-violet" />
+        <CalendarClock className="w-5 h-5 text-brand-orange" />
         <h3 className="text-base font-bold text-gray-900">Choisissez un créneau</h3>
       </div>
 
@@ -107,8 +107,8 @@ export function BookingWidget() {
                     onClick={() => setSelected(slot)}
                     className={`rounded-xl border px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${
                       selected?.id === slot.id
-                        ? 'bg-brand-violet text-white border-brand-violet'
-                        : 'border-gray-200 text-gray-700 hover:border-brand-violet'
+                        ? 'bg-brand-orange text-white border-brand-orange'
+                        : 'border-gray-200 text-gray-700 hover:border-brand-orange'
                     }`}
                   >
                     <Clock className="w-3.5 h-3.5" />
@@ -127,25 +127,25 @@ export function BookingWidget() {
             value={boutiqueName}
             onChange={e => setBoutiqueName(e.target.value)}
             placeholder="Nom de votre boutique *"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-violet"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
           />
           <input
             value={ownerName}
             onChange={e => setOwnerName(e.target.value)}
             placeholder="Votre nom *"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-violet"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
           />
           <input
             value={contact}
             onChange={e => setContact(e.target.value)}
             placeholder="Email ou numéro WhatsApp"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-violet"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
           />
           {error && <p className="text-xs text-red-500">{error}</p>}
           <button
             onClick={submit}
             disabled={submitting}
-            className="w-full bg-brand-violet text-white py-3 rounded-xl font-semibold hover:bg-brand-violet-dark transition-colors disabled:opacity-50"
+            className="w-full bg-brand-orange text-white py-3 rounded-xl font-semibold hover:bg-brand-orange-dark transition-colors disabled:opacity-50"
           >
             {submitting ? 'Réservation...' : 'Confirmer le rendez-vous'}
           </button>

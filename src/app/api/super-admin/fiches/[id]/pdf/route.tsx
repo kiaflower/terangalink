@@ -47,7 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         numero={fiche.numero}
         categoryCode={category?.code ?? '—'}
         categoryName={category?.name ?? '—'}
-        categoryColor={category?.color ?? '#7C3AED'}
+        categoryColor={category?.color ?? '#F97316'}
         title={fiche.title}
         subtitle={fiche.subtitle}
         whyItMatters={fiche.why_it_matters}

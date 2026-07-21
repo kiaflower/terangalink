@@ -66,7 +66,7 @@ export default async function HomePage() {
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
           <Link href="/login"
-            className="text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:text-brand-violet"
+            className="text-sm font-medium px-4 py-2 rounded-xl transition-colors hover:text-brand-orange"
             style={{ color: '#6B7280', border: '1px solid #E5E7EB' }}>
             Se connecter
           </Link>
@@ -78,7 +78,7 @@ export default async function HomePage() {
         <section className="px-4 pt-16 pb-12 max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 text-xs font-semibold"
-              style={{ backgroundColor: 'rgba(124,58,237,0.08)', color: '#7C3AED', border: '1px solid rgba(124,58,237,0.15)' }}>
+              style={{ backgroundColor: 'rgba(249,115,22,0.08)', color: '#F97316', border: '1px solid rgba(249,115,22,0.15)' }}>
               <MapPin className="w-3.5 h-3.5" />
               Sénégal
             </div>
@@ -101,7 +101,7 @@ export default async function HomePage() {
               className="group flex flex-col items-center text-center p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               style={{ backgroundColor: '#F5F3FF', border: '2px solid #DDD6FE' }}>
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
-                style={{ backgroundColor: '#7C3AED' }}>
+                style={{ backgroundColor: '#F97316' }}>
                 <ShoppingBag className="w-8 h-8 text-white" />
               </div>
               <h2 className="font-black text-2xl mb-2" style={{ color: '#111111' }}>
@@ -112,13 +112,13 @@ export default async function HomePage() {
               </p>
               {Boolean(boutiqueCount) && Boolean(productCount) && (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold mb-6 px-3 py-1 rounded-full"
-                  style={{ backgroundColor: 'rgba(124,58,237,0.1)', color: '#7C3AED' }}>
+                  style={{ backgroundColor: 'rgba(249,115,22,0.1)', color: '#F97316' }}>
                   <Store className="w-3.5 h-3.5" />
                   {boutiqueCount} boutiques · {productCount} produits
                 </span>
               )}
               <span className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl text-white mt-auto"
-                style={{ backgroundColor: '#7C3AED' }}>
+                style={{ backgroundColor: '#F97316' }}>
                 Voir les boutiques
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </span>
@@ -143,7 +143,7 @@ export default async function HomePage() {
                 Gratuit, sans limite de durée
               </span>
               <span
-                className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl transition-all group-hover:bg-brand-violet group-hover:text-white group-hover:border-brand-violet mt-auto"
+                className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl transition-all group-hover:bg-brand-orange group-hover:text-white group-hover:border-brand-orange mt-auto"
                 style={{ border: '2px solid #111111', color: '#111111' }}>
                 Créer ma boutique
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -176,8 +176,8 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* CTA final — fond violet, un bouton par audience, poids égal des deux côtés. */}
-        <section style={{ backgroundColor: '#7C3AED' }} className="py-16 px-4">
+        {/* CTA final — fond orange, un bouton par audience, poids égal des deux côtés. */}
+        <section style={{ backgroundColor: '#F97316' }} className="py-16 px-4">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="font-black text-2xl sm:text-3xl leading-tight mb-8 text-white">
               Deux façons de profiter de TerangaSpot
@@ -192,7 +192,7 @@ export default async function HomePage() {
               </Link>
               <Link href="/boutiques"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:opacity-90 group w-full sm:w-auto justify-center"
-                style={{ backgroundColor: '#FFFFFF', color: '#7C3AED' }}>
+                style={{ backgroundColor: '#FFFFFF', color: '#F97316' }}>
                 <ShoppingBag className="w-4 h-4" />
                 Je veux commander
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

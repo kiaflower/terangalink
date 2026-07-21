@@ -200,13 +200,13 @@ export function ProductOrderPanel({ product, boutiqueId, boutiqueSlug, boutiqueN
             <div className="space-y-4 mb-4">
               <input value={customerName} onChange={e => setCustomerName(e.target.value)}
                 placeholder="Votre nom *" required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange" />
               <input value={customerPhone} onChange={e => setCustomerPhone(e.target.value)}
                 placeholder="Votre téléphone *" type="tel" required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange" />
               <input value={customerAddress} onChange={e => setCustomerAddress(e.target.value)}
                 placeholder="Adresse / quartier (optionnel)"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange" />
               <div>
                 <p className="text-xs font-medium text-gray-500 mb-2">Mode de paiement</p>
                 <div className="grid grid-cols-3 gap-2">
@@ -223,7 +223,7 @@ export function ProductOrderPanel({ product, boutiqueId, boutiqueSlug, boutiqueN
               </div>
               <textarea value={notes} onChange={e => setNotes(e.target.value)}
                 placeholder="Notes ou instructions (optionnel)" rows={2}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-violet resize-none" />
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange resize-none" />
               <div className="flex justify-between text-lg font-bold border-t border-gray-100 pt-3">
                 <span>Total</span>
                 <span style={{ color: accent }}>{formatPrice(total)}</span>

@@ -31,7 +31,7 @@ export function TitleBlockEditor({ block, onChange, disabled }: {
     <div>
       <RichTextToolbar editor={editor} disabled={disabled} />
       <div className="flex gap-2 items-start">
-        <div className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-brand-violet/30">
+        <div className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-brand-orange/30">
           <EditorContent editor={editor} />
         </div>
         <select

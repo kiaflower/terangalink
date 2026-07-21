@@ -51,12 +51,12 @@ export function SegmentPicker({ campaignId, segment, onChange, disabled }: Segme
         {PRESETS.map(preset => (
           <label
             key={preset.type}
-            className={`flex items-start gap-2 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${segment.type === preset.type ? 'border-brand-violet bg-brand-violet/5' : 'border-gray-200 hover:border-gray-300'}`}
+            className={`flex items-start gap-2 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${segment.type === preset.type ? 'border-brand-orange bg-brand-orange/5' : 'border-gray-200 hover:border-gray-300'}`}
           >
             <input
               type="radio"
               name="segment"
-              className="mt-0.5 accent-brand-violet"
+              className="mt-0.5 accent-brand-orange"
               disabled={disabled}
               checked={segment.type === preset.type}
               onChange={() => onChange({ type: preset.type })}
@@ -67,11 +67,11 @@ export function SegmentPicker({ campaignId, segment, onChange, disabled }: Segme
             </span>
           </label>
         ))}
-        <label className={`flex items-start gap-2 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${segment.type === 'custom' ? 'border-brand-violet bg-brand-violet/5' : 'border-gray-200 hover:border-gray-300'}`}>
+        <label className={`flex items-start gap-2 border rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${segment.type === 'custom' ? 'border-brand-orange bg-brand-orange/5' : 'border-gray-200 hover:border-gray-300'}`}>
           <input
             type="radio"
             name="segment"
-            className="mt-0.5 accent-brand-violet"
+            className="mt-0.5 accent-brand-orange"
             disabled={disabled}
             checked={segment.type === 'custom'}
             onChange={() => onChange({ type: 'custom', plan: 'any', active: 'any', registeredBefore: null, registeredAfter: null })}

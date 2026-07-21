@@ -29,7 +29,7 @@ export function UserRowActions({ boutiqueId, boutiqueName }: { boutiqueId: strin
     <button
       onClick={resetPassword}
       disabled={loading}
-      className="text-xs text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-brand-violet/30 hover:text-brand-violet transition-colors disabled:opacity-50"
+      className="text-xs text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:border-brand-orange/30 hover:text-brand-orange transition-colors disabled:opacity-50"
     >
       {loading ? '...' : 'Réinitialiser le mot de passe'}
     </button>

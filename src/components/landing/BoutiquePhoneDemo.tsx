@@ -57,7 +57,7 @@ async function waitFor<T>(getter: () => T | null | undefined, timeout = 2500, in
 }
 
 export function BoutiquePhoneDemo({ boutique, categories, products, reviews = [], banners = [], plan, label }: BoutiquePhoneDemoProps) {
-  const accentColor = boutique.primary_color || '#7C3AED'
+  const accentColor = boutique.primary_color || '#F97316'
   const planLabel = label ?? (plan === 'pro' ? 'Exemple de boutique Pro' : 'Exemple de boutique Starter')
 
   const [cursor, setCursor] = useState<{ left: number; top: number } | null>(null)

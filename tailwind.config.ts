@@ -10,10 +10,10 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          violet: '#7C3AED',
-          'violet-light': '#8B5CF6',
-          'violet-dark': '#6D28D9',
-          gold: '#A78BFA',
+          orange: '#F97316',
+          'orange-light': '#FB923C',
+          'orange-dark': '#C2410C',
+          gold: '#F59E0B',
         },
         surface: {
           DEFAULT: '#FFFFFF',
