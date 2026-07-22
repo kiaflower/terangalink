@@ -7,6 +7,8 @@ import { runInvoiceGenerationSweepThrottled } from '@/lib/invoices'
 import { InstallPwaBanner } from '@/components/dashboard/InstallPwaBanner'
 import { RegisterServiceWorker } from '@/components/dashboard/RegisterServiceWorker'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   manifest: '/manifest-admin.json',
   icons: { apple: '/icons/admin-180.png' },
