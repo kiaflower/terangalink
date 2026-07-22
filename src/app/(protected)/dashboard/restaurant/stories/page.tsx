@@ -43,7 +43,7 @@ function StoriesManager({ restaurantId }: { restaurantId: string }) {
     const [{ data: storyRows }, { data: prods }] = await Promise.all([
       supabase.from('restaurant_stories').select('*').eq('restaurant_id', bid)
         .gt('expires_at', new Date().toISOString()).order('created_at', { ascending: false }),
-      supabase.from('products').select('id, name, image_url').eq('restaurant_id', bid).eq('is_available', true),
+      supabase.from('menu_items').select('id, name, image_url').eq('restaurant_id', bid).eq('is_available', true),
     ])
     setStories(storyRows ?? [])
     setProducts(prods ?? [])
@@ -96,7 +96,7 @@ function StoriesManager({ restaurantId }: { restaurantId: string }) {
       media_url: pub.publicUrl,
       media_type: mediaType,
       caption: caption || null,
-      product_id: productId || null,
+      menu_item_id: productId || null,
       expires_at: expiresAt,
     })
     if (insertError) {
@@ -197,7 +197,7 @@ function StoriesManager({ restaurantId }: { restaurantId: string }) {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {stories.map(story => {
-            const product = products.find(p => p.id === story.product_id)
+            const product = products.find(p => p.id === story.menu_item_id)
             return (
               <div key={story.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
                 <div className="relative w-full aspect-[9/16] bg-gray-100">

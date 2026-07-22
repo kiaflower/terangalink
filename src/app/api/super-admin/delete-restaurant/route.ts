@@ -31,17 +31,16 @@ export async function POST(request: NextRequest) {
     // leftover reference (e.g. subscriptions) silently blocks the delete.
     const steps: Array<[string, () => PromiseLike<{ error: { message: string } | null }>]> = []
 
-    const { data: productRows } = await admin.from('products').select('id').eq('restaurant_id', restaurant_id)
+    const { data: productRows } = await admin.from('menu_items').select('id').eq('restaurant_id', restaurant_id)
     const productIds = (productRows ?? []).map(p => p.id)
 
-    if (productIds.length) steps.push(['product_variants', () => admin.from('product_variants').delete().in('product_id', productIds)])
+    if (productIds.length) steps.push(['menu_item_variants', () => admin.from('menu_item_variants').delete().in('menu_item_id', productIds)])
     steps.push(
       ['reviews', () => admin.from('reviews').delete().eq('restaurant_id', restaurant_id)],
-      ['products', () => admin.from('products').delete().eq('restaurant_id', restaurant_id)],
+      ['menu_items', () => admin.from('menu_items').delete().eq('restaurant_id', restaurant_id)],
       ['menu_categories', () => admin.from('menu_categories').delete().eq('restaurant_id', restaurant_id)],
       ['orders', () => admin.from('orders').delete().eq('restaurant_id', restaurant_id)],
       ['analytics_events', () => admin.from('analytics_events').delete().eq('restaurant_id', restaurant_id)],
-      ['boost_requests', () => admin.from('boost_requests').delete().eq('restaurant_id', restaurant_id)],
       ['promo_codes', () => admin.from('promo_codes').delete().eq('restaurant_id', restaurant_id)],
       ['payments', () => admin.from('payments').delete().eq('restaurant_id', restaurant_id)],
       ['restaurant_banners', () => admin.from('restaurant_banners').delete().eq('restaurant_id', restaurant_id)],

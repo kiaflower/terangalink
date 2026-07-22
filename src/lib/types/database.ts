@@ -138,7 +138,7 @@ export interface MenuCategoryRow {
   updated_at: string
 }
 
-export interface ProductRow {
+export interface MenuItemRow {
   id: string
   restaurant_id: string
   category_id: string | null
@@ -167,9 +167,9 @@ export interface ProductRow {
   updated_at: string
 }
 
-export interface ProductVariantRow {
+export interface MenuItemVariantRow {
   id: string
-  product_id: string
+  menu_item_id: string
   name: string
   options: string[]
   option_prices: Record<string, number>
@@ -226,17 +226,6 @@ export interface WeeklyReportRow {
   sent_by: string | null
   sent_at: string
   created_at: string
-}
-
-export interface BoostRequestRow {
-  id: string
-  restaurant_id: string
-  status: 'pending' | 'active' | 'expired' | 'rejected'
-  boost_type: string
-  requested_at: string
-  activated_at: string | null
-  expires_at: string | null
-  notes: string | null
 }
 
 export interface InscriptionRow {
@@ -332,7 +321,7 @@ export interface RestaurantStoryRow {
   media_url: string
   media_type: 'image' | 'video'
   caption: string | null
-  product_id: string | null
+  menu_item_id: string | null
   views_count: number
   likes_count: number
   created_at: string
@@ -410,15 +399,15 @@ export interface Database {
         Insert: Partial<MenuCategoryRow> & { restaurant_id: string; name: string }
         Update: Partial<MenuCategoryRow>
       }
-      products: {
-        Row: ProductRow
-        Insert: Partial<ProductRow> & { restaurant_id: string; name: string; price: number }
-        Update: Partial<ProductRow>
+      menu_items: {
+        Row: MenuItemRow
+        Insert: Partial<MenuItemRow> & { restaurant_id: string; name: string; price: number }
+        Update: Partial<MenuItemRow>
       }
-      product_variants: {
-        Row: ProductVariantRow
-        Insert: Partial<ProductVariantRow> & { product_id: string; name: string; options: string[] }
-        Update: Partial<ProductVariantRow>
+      menu_item_variants: {
+        Row: MenuItemVariantRow
+        Insert: Partial<MenuItemVariantRow> & { menu_item_id: string; name: string; options: string[] }
+        Update: Partial<MenuItemVariantRow>
       }
       orders: {
         Row: OrderRow
@@ -434,11 +423,6 @@ export interface Database {
         Row: WeeklyReportRow
         Insert: Partial<WeeklyReportRow> & { restaurant_id: string; period_start: string; period_end: string }
         Update: Partial<WeeklyReportRow>
-      }
-      boost_requests: {
-        Row: BoostRequestRow
-        Insert: Partial<BoostRequestRow> & { restaurant_id: string }
-        Update: Partial<BoostRequestRow>
       }
       inscriptions: {
         Row: InscriptionRow

@@ -41,7 +41,7 @@ async function getData(restaurantSlug: string, platSlug: string) {
   if (!restaurant) return null
 
   const { data: product } = await supabase
-    .from('products')
+    .from('menu_items')
     .select('*, variants:product_variants(*), menu_categories(name)')
     .eq('restaurant_id', restaurant.id)
     .eq('slug', platSlug)
@@ -59,7 +59,7 @@ async function getData(restaurantSlug: string, platSlug: string) {
   const isPro = subscription?.plan === 'pro'
 
   let otherProductsQuery = supabase
-    .from('products')
+    .from('menu_items')
     .select('id, slug, name, price, discount_percent, image_url')
     .eq('restaurant_id', restaurant.id)
     .eq('is_available', true)
@@ -72,7 +72,7 @@ async function getData(restaurantSlug: string, platSlug: string) {
     otherProductsQuery.limit(6),
     restaurant.cuisine_type
       ? supabase
-          .from('products')
+          .from('menu_items')
           .select('id, slug, name, price, discount_percent, image_url, restaurants!inner(slug, name, is_active, is_demo, cuisine_type)')
           .eq('is_available', true)
           .eq('restaurants.cuisine_type', restaurant.cuisine_type)

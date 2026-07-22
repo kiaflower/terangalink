@@ -40,7 +40,7 @@ export default async function RestaurantPage({ params, searchParams }: Props) {
   // vers l'URL canonique pour ne pas perdre les liens déjà partagés/indexés.
   if (searchParams?.product) {
     const { data: legacyProduct } = await supabase
-      .from('products')
+      .from('menu_items')
       .select('slug')
       .eq('id', searchParams.product)
       .eq('restaurant_id', restaurant.id)
@@ -82,7 +82,7 @@ export default async function RestaurantPage({ params, searchParams }: Props) {
     .order('position')
 
   let productsQuery = supabase
-    .from('products')
+    .from('menu_items')
     .select('*, variants:product_variants(*)')
     .eq('restaurant_id', restaurant.id)
     .eq('is_available', true)

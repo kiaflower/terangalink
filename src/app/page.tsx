@@ -29,13 +29,13 @@ export default async function HomePage() {
       .eq('is_active', true)
       .eq('is_demo', false),
     supabase
-      .from('products')
+      .from('menu_items')
       .select('id, restaurants!inner(is_active,is_demo)', { count: 'exact', head: true })
       .eq('is_available', true)
       .eq('restaurants.is_active', true)
       .eq('restaurants.is_demo', false),
     supabase
-      .from('products')
+      .from('menu_items')
       .select('slug, image_url, images_urls, restaurants!inner(slug, is_active, is_demo)')
       .eq('is_available', true)
       .eq('restaurants.is_active', true)

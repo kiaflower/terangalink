@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
       // --- Alertes Super Admin (Phase 3) ---
       if (adminSettings.no_new_product_enabled || adminSettings.product_limit_enabled) {
         const { data: products } = await admin
-          .from('products')
+          .from('menu_items')
           .select('created_at')
           .eq('restaurant_id', restaurant.id)
           .order('created_at', { ascending: false })

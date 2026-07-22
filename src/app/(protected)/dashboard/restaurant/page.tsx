@@ -65,10 +65,10 @@ export default async function RestaurantDashboardHome() {
   ] = await Promise.all([
     supabase.from('orders').select('total, status').eq('restaurant_id', restaurantId).gte('created_at', today.toISOString()),
     supabase.from('orders').select('total').eq('restaurant_id', restaurantId).eq('status', 'delivered').gte('created_at', monthStart),
-    supabase.from('products').select('id', { count: 'exact', head: true }).eq('restaurant_id', restaurantId).eq('is_available', true),
+    supabase.from('menu_items').select('id', { count: 'exact', head: true }).eq('restaurant_id', restaurantId).eq('is_available', true),
     supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('restaurant_id', restaurantId).eq('event_type', 'restaurant_view').gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
     supabase.from('orders').select('*').eq('restaurant_id', restaurantId).order('created_at', { ascending: false }).limit(5),
-    supabase.from('products').select('id, name, image_url, stock_quantity').eq('restaurant_id', restaurantId).eq('track_stock', true).eq('is_available', true).lte('stock_quantity', 5).order('stock_quantity'),
+    supabase.from('menu_items').select('id, name, image_url, stock_quantity').eq('restaurant_id', restaurantId).eq('track_stock', true).eq('is_available', true).lte('stock_quantity', 5).order('stock_quantity'),
   ])
 
   const monthRevenue = (monthOrders ?? []).reduce((sum, o) => sum + (o.total ?? 0), 0)

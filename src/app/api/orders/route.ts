@@ -110,13 +110,13 @@ export async function POST(req: NextRequest) {
 
   // Décrémente le stock des articles commandés (hors précommandes, qui portent
   // sur un stock futur et ne doivent pas toucher le stock disponible actuel).
-  // decrement_product_stock est un no-op si track_stock est désactivé pour
+  // decrement_menu_item_stock est un no-op si track_stock est désactivé pour
   // ce plat, donc aucune vérification préalable n'est nécessaire ici.
   for (const item of items as Array<{ product_id?: string; quantity?: number; isPreorder?: boolean }>) {
     if (!item.product_id || item.isPreorder) continue
     const quantity = Number(item.quantity)
     if (!Number.isFinite(quantity) || quantity <= 0) continue
-    await admin.rpc('decrement_product_stock', { p_product_id: item.product_id, p_quantity: quantity })
+    await admin.rpc('decrement_menu_item_stock', { p_menu_item_id: item.product_id, p_quantity: quantity })
   }
 
   // /c/[slug]/[order_number] is the unified link: it auto-redirects the

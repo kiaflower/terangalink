@@ -97,8 +97,8 @@ export function StoryViewer({ stories, restaurantSlug, restaurantName, restauran
     }
   }
 
-  const ctaHref = story.product_id ? `/${restaurantSlug}?product=${story.product_id}` : `/${restaurantSlug}`
-  const ctaLabel = story.product_id ? 'Voir le plat' : 'Voir le restaurant'
+  const ctaHref = story.menu_item_id ? `/${restaurantSlug}?product=${story.menu_item_id}` : `/${restaurantSlug}`
+  const ctaLabel = story.menu_item_id ? 'Voir le plat' : 'Voir le restaurant'
 
   function handleTouchStart(e: React.TouchEvent) {
     const t = e.touches[0]

@@ -237,7 +237,7 @@ export default function SettingsPage() {
       ? 'order_number, customer_name, customer_phone, total, status, created_at'
       : 'order_number, customer_name, total, status, created_at'
 
-    const { data: products } = await supabase.from('products').select('name, price, is_available').eq('restaurant_id', restaurant.id)
+    const { data: products } = await supabase.from('menu_items').select('name, price, is_available').eq('restaurant_id', restaurant.id)
     const { data: orders } = await supabase.from('orders').select(orderColumns).eq('restaurant_id', restaurant.id).gte('created_at', since).order('created_at', { ascending: false })
 
     const prodCsv = ['Plat,Prix,Disponible', ...(products ?? []).map(p => `"${p.name}",${p.price},${p.is_available ? 'Oui' : 'Non'}`)].join('\n')

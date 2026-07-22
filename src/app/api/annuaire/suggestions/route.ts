@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const supabase = createPublicClient()
 
   let query = supabase
-    .from('products')
+    .from('menu_items')
     .select('id, slug, name, price, discount_percent, image_url, restaurants!inner(slug, name, is_active, is_demo)')
     .eq('is_available', true)
     .eq('restaurants.is_active', true)

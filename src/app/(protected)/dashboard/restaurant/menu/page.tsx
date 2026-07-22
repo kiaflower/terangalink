@@ -89,7 +89,7 @@ export default function MenuPage() {
   const load = useCallback(async (bid: string) => {
     const [{ data: cats }, { data: prods }] = await Promise.all([
       supabase.from('menu_categories').select('*').eq('restaurant_id', bid).order('position'),
-      supabase.from('products').select('*, variants:product_variants(*)').eq('restaurant_id', bid).order('is_pinned', { ascending: false }).order('position'),
+      supabase.from('menu_items').select('*, variants:product_variants(*)').eq('restaurant_id', bid).order('is_pinned', { ascending: false }).order('position'),
     ])
     setCategories(cats ?? [])
     setProducts(prods ?? [])
@@ -325,10 +325,10 @@ export default function MenuPage() {
     let productId = editProduct?.id
     let saveError: { message: string } | null = null
     if (editProduct) {
-      const { error } = await supabase.from('products').update(payload).eq('id', editProduct.id)
+      const { error } = await supabase.from('menu_items').update(payload).eq('id', editProduct.id)
       saveError = error
     } else {
-      const { data: inserted, error } = await supabase.from('products').insert(payload).select('id').single()
+      const { data: inserted, error } = await supabase.from('menu_items').insert(payload).select('id').single()
       productId = inserted?.id
       saveError = error
     }
@@ -340,10 +340,10 @@ export default function MenuPage() {
     }
 
     if (productId && plan === 'pro') {
-      await supabase.from('product_variants').delete().eq('product_id', productId)
+      await supabase.from('menu_item_variants').delete().eq('menu_item_id', productId)
       if (validVariants.length > 0) {
-        await supabase.from('product_variants').insert(
-          validVariants.map(v => ({ product_id: productId, name: v.name, options: v.options, option_prices: v.option_prices, option_images: v.option_images }))
+        await supabase.from('menu_item_variants').insert(
+          validVariants.map(v => ({ menu_item_id: productId, name: v.name, options: v.options, option_prices: v.option_prices, option_images: v.option_images }))
         )
       }
     }
@@ -359,7 +359,7 @@ export default function MenuPage() {
 
   async function deleteProduct(id: string) {
     if (!restaurantId || !confirm('Supprimer ce plat ?')) return
-    await supabase.from('products').delete().eq('id', id)
+    await supabase.from('menu_items').delete().eq('id', id)
     await load(restaurantId)
   }
 
@@ -388,7 +388,7 @@ export default function MenuPage() {
 
   async function deleteCategory(id: string) {
     if (!restaurantId || !confirm('Supprimer cette catégorie ? Les plats associés deviendront "Sans catégorie".')) return
-    await supabase.from('products').update({ category_id: null }).eq('category_id', id)
+    await supabase.from('menu_items').update({ category_id: null }).eq('category_id', id)
     await supabase.from('menu_categories').delete().eq('id', id)
     if (activeCategory === id) setActiveCategory(null)
     await load(restaurantId)

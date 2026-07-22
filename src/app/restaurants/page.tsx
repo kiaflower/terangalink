@@ -109,7 +109,7 @@ export default async function RestaurantsPage({ searchParams }: Props) {
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
 
   let query = supabase
-    .from('products')
+    .from('menu_items')
     .select(PRODUCT_SELECT)
     .eq('is_available', true)
     .eq('restaurants.is_active', true)
@@ -138,7 +138,7 @@ export default async function RestaurantsPage({ searchParams }: Props) {
     let byRestaurant: DirectoryProduct[] = []
     if (restaurantIds.length) {
       let restaurantProductsQuery = supabase
-        .from('products')
+        .from('menu_items')
         .select(PRODUCT_SELECT)
         .eq('is_available', true)
         .in('restaurant_id', restaurantIds)
