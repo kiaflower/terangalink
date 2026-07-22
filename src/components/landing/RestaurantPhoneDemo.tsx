@@ -107,7 +107,7 @@ export function RestaurantPhoneDemo({ restaurant, categories, products, reviews 
     function findFloatingCartButton() {
       const buttons = frameRef.current?.querySelectorAll('button') ?? []
       for (const btn of Array.from(buttons)) {
-        if (/article/.test(btn.textContent ?? '')) return btn as HTMLButtonElement
+        if (/plat/.test(btn.textContent ?? '')) return btn as HTMLButtonElement
       }
       return null
     }

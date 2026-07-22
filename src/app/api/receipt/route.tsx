@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
             </div>
           )}
 
-          {/* Articles */}
+          {/* Plats */}
           <div style={{ display: 'flex', flexDirection: 'column', padding: '20px 0', borderBottom: '1px solid #eee' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#bbb', letterSpacing: 2, marginBottom: 14 }}>ARTICLES</div>
             {items.map((item, i) => (

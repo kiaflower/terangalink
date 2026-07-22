@@ -15,7 +15,7 @@ import { diversify } from '@/lib/utils/ranking'
 
 export const metadata: Metadata = {
   title: 'Annuaire des restaurants — TerangaLink',
-  description: 'Découvrez tous les articles des restaurants du Sénégal sur TerangaLink. Mode, beauté, électronique et plus.',
+  description: 'Découvrez tous les plats des restaurants du Sénégal sur TerangaLink. Cuisine sénégalaise, fast-food, pâtisserie et plus.',
 }
 
 export const dynamic = 'force-dynamic'

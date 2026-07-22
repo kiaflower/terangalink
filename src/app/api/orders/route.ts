@@ -11,7 +11,7 @@ async function generateOrderNumber(restaurantId: string, admin: ReturnType<typeo
     .select('id', { count: 'exact', head: true })
     .eq('restaurant_id', restaurantId)
   const next = ((count ?? 0) + 1).toString().padStart(6, '0')
-  return `TS-${next}`
+  return `TL-${next}`
 }
 
 async function resolveDiscount(
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Décrémente le stock des articles commandés (hors précommandes, qui portent
+  // Décrémente le stock des plats commandés (hors précommandes, qui portent
   // sur un stock futur et ne doivent pas toucher le stock disponible actuel).
   // decrement_menu_item_stock est un no-op si track_stock est désactivé pour
   // ce plat, donc aucune vérification préalable n'est nécessaire ici.

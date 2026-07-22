@@ -20,7 +20,7 @@ function generatePassword(): string {
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
   const random = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-  return `TS-${random}`
+  return `TL-${random}`
 }
 
 // Confirming an Early Access application creates the restaurant straight away —

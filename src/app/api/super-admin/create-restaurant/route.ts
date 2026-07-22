@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const generateReferralCode = (): string => {
       const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
       const random = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-      return `TS-${random}`
+      return `TL-${random}`
     }
     const uniqueReferralCode = async (): Promise<string> => {
       for (let i = 0; i < 10; i++) {

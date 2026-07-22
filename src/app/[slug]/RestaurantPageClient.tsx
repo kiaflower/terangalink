@@ -251,7 +251,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
   function removeFromCart(index: number) {
     setCart(prev => {
       const next = prev.filter((_, i) => i !== index)
-      // Panier volontairement vidé (dernier article retiré sans commander) —
+      // Panier volontairement vidé (dernier plat retiré sans commander) —
       // à exclure du calcul d'abandon de panier.
       if (next.length === 0 && prev.length > 0) trackEvent('cart_cleared')
       return next
@@ -382,7 +382,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
     { href: '#accueil', label: 'Accueil' },
     ...(restaurant.description ? [{ href: '#apropos', label: 'À propos' }] : []),
     ...(categories.length > 0 ? [{ href: '#categories', label: 'Catégories' }] : []),
-    { href: '#plats', label: 'Articles' },
+    { href: '#plats', label: 'Plats' },
     ...(reviews.length > 0 ? [{ href: '#avis', label: 'Avis' }] : []),
     { href: '#contact', label: 'Contact' },
   ]
@@ -639,7 +639,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
 
       {/* Products */}
       <section id="plats" className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
-        <h2 className="text-xl sm:text-2xl font-bold text-center mb-8" style={{ color: pageText }}>Articles</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-center mb-8" style={{ color: pageText }}>Plats</h2>
         {filteredProducts.length === 0 ? (
           <div className="text-center py-20 text-gray-400">Aucun plat disponible</div>
         ) : (
@@ -896,7 +896,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
           <button onClick={() => setCartOpen(true)}
             className="text-white px-6 py-4 rounded-2xl shadow-lg font-semibold flex items-center gap-3 hover:opacity-90 transition-opacity"
             style={{ backgroundColor: accent }}>
-            <ShoppingCart className="w-5 h-5" /> {cartCount} article{cartCount > 1 ? 's' : ''} · {formatPrice(cartTotal)}
+            <ShoppingCart className="w-5 h-5" /> {cartCount} plat{cartCount > 1 ? 's' : ''} · {formatPrice(cartTotal)}
           </button>
         </div>
       )}
@@ -1166,7 +1166,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
               <div className="bg-white p-4 rounded-2xl border border-gray-200">
                 <canvas ref={qrRef} />
               </div>
-              <p className="text-sm text-gray-600 text-center font-medium">Vous avez aimé nos articles ?<br/>Partagez les autour de vous&nbsp;!</p>
+              <p className="text-sm text-gray-600 text-center font-medium">Vous avez aimé nos plats ?<br/>Partagez les autour de vous&nbsp;!</p>
               <button onClick={downloadQr}
                 className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl text-white transition-opacity hover:opacity-90"
                 style={{ backgroundColor: accent }}>

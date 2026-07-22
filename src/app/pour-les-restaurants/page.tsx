@@ -261,7 +261,7 @@ export default async function PourLesRestaurantsPage() {
       address: 'Castors',
       notes: heroVariant ? undefined : 'Je veux la robe en M',
       paymentMethod: 'Wave',
-      dashboardUrl: `${getSiteUrl()}/c/${heroProductSource.restaurantSlug}/TS-000004`,
+      dashboardUrl: `${getSiteUrl()}/c/${heroProductSource.restaurantSlug}/TL-000004`,
     }
   ) : null
 

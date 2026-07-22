@@ -218,7 +218,7 @@ export default function SettingsPage() {
   }
 
   /* ─── Export CSV — étendue par plan : Free (1 mois, basique), Starter
-     (3 mois, + téléphone), Pro (6 mois, complet avec détail des articles) ─── */
+     (3 mois, + téléphone), Pro (6 mois, complet avec détail des plats) ─── */
   function formatOrderItems(items: unknown): string {
     const list = (items as Array<{ name: string; quantity: number }>) ?? []
     return list.map(i => `${i.name} x${i.quantity ?? 1}`).join(' ; ')
@@ -245,7 +245,7 @@ export default function SettingsPage() {
     type OrderExportRow = { order_number: string; customer_name: string; customer_phone?: string; total: number; status: string; items?: unknown; created_at: string }
     const rows = (orders ?? []) as unknown as OrderExportRow[]
     const orderHeader = plan === 'pro'
-      ? 'N° commande,Client,Téléphone,Total,Statut,Date,Articles'
+      ? 'N° commande,Client,Téléphone,Total,Statut,Date,Plats'
       : plan === 'starter'
       ? 'N° commande,Client,Téléphone,Total,Statut,Date'
       : 'N° commande,Client,Total,Statut,Date'
@@ -528,9 +528,9 @@ export default function SettingsPage() {
         <p className="text-xs text-gray-500 mb-4">
           Exportez votre menu et vos commandes au format CSV.{' '}
           {sub?.plan === 'pro'
-            ? 'Détail complet (client, téléphone, articles) sur les 6 derniers mois.'
+            ? 'Détail complet (client, téléphone, plats) sur les 6 derniers mois.'
             : sub?.plan === 'starter'
-            ? 'Client et téléphone inclus, sur les 3 derniers mois. Passez en Pro pour le détail des articles sur 6 mois.'
+            ? 'Client et téléphone inclus, sur les 3 derniers mois. Passez en Pro pour le détail des plats sur 6 mois.'
             : 'Données de base sur le dernier mois. Passez en Starter ou Pro pour plus de données et une période plus longue.'}
         </p>
         <button onClick={handleExport} disabled={exporting || !restaurant}

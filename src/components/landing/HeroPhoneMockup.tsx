@@ -116,7 +116,7 @@ export function HeroPhoneMockup({ product, orderMessage }: HeroPhoneMockupProps)
           ) : (
             <div className="bg-white rounded-lg rounded-tl-none px-2 py-1.5 shadow-sm">
               <p className="text-[7px] font-bold text-gray-900">Nouvelle commande</p>
-              <p className="text-[7px] text-gray-500 mt-0.5">Article — Robe wax</p>
+              <p className="text-[7px] text-gray-500 mt-0.5">Plat — Thiéboudienne</p>
               <p className="text-[8px] font-bold text-gray-900 mt-1 pt-1 border-t border-gray-100">Total — {productPrice}</p>
             </div>
           )}

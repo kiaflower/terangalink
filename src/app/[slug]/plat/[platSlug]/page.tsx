@@ -240,7 +240,7 @@ export default async function ProductPage({ params }: Props) {
 
         {otherProducts.length > 0 && (
           <section className="mt-16">
-            <h2 className="text-lg font-bold mb-5">Autres articles de {restaurant.name}</h2>
+            <h2 className="text-lg font-bold mb-5">Autres plats de {restaurant.name}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {otherProducts.map(p => (
                 <Link key={p.id} href={`/${restaurant.slug}/plat/${p.slug}`}
