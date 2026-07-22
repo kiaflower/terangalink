@@ -467,7 +467,7 @@ export default function MenuPage() {
             type="text"
             value={announcementTitle}
             onChange={e => setAnnouncementTitle(e.target.value)}
-            placeholder="Ex: Validation panier Shein"
+            placeholder="Ex: Menu spécial Tabaski"
             className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
           />
           <p className="text-[11px] text-gray-400 mt-1">
