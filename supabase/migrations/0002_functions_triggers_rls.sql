@@ -145,7 +145,6 @@ $function$;
 CREATE OR REPLACE FUNCTION app.generate_menu_item_slug()
  RETURNS trigger
  LANGUAGE plpgsql
- SET search_path TO 'app, public, extensions'
 AS $function$
 declare
   base_slug text;
