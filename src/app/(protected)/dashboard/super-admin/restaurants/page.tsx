@@ -489,7 +489,7 @@ interface Restaurant {
 
 const PLAN_BADGE_STYLE: Record<string, { bg: string; text: string }> = {
   free: { bg: '#F3F4F6', text: '#4B5563' },
-  starter: { bg: '#EDE9FE', text: '#C2410C' },
+  starter: { bg: '#FFEDD5', text: '#C2410C' },
   pro: { bg: '#F97316', text: '#FFFFFF' },
 }
 const PLAN_LABEL: Record<string, string> = { free: 'Free', starter: 'Starter', pro: 'Pro' }

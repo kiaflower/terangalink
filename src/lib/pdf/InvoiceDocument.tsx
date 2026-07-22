@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   tableValue: { fontFamily: 'Helvetica-Bold', color: '#111827' },
   discountLabel: { color: '#047857' },
   discountValue: { color: '#047857', fontFamily: 'Helvetica-Bold' },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F5F3FF', paddingVertical: 14, paddingHorizontal: 14, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFF7ED', paddingVertical: 14, paddingHorizontal: 14, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
   totalLabel: { fontSize: 12, fontFamily: 'Helvetica-Bold', color: '#111827' },
   totalValue: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#F97316' },
   paymentBox: { marginTop: 28, backgroundColor: '#FAFAFA', borderRadius: 10, padding: 16, borderWidth: 1, borderColor: '#F0F0F0' },

@@ -99,7 +99,7 @@ export default async function HomePage() {
 
             <Link href="/restaurants"
               className="group flex flex-col items-center text-center p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-              style={{ backgroundColor: '#F5F3FF', border: '2px solid #DDD6FE' }}>
+              style={{ backgroundColor: '#FFF7ED', border: '2px solid #FED7AA' }}>
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
                 style={{ backgroundColor: '#F97316' }}>
                 <ShoppingBag className="w-8 h-8 text-white" />

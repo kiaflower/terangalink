@@ -118,7 +118,7 @@ export default async function RestaurantDashboardHome() {
       </div>
 
       {showMonthlyBanner && (
-        <div className="mb-6 rounded-2xl p-5 flex items-center gap-4" style={{ backgroundColor: '#F5F3FF', border: '1.5px solid #DDD6FE' }}>
+        <div className="mb-6 rounded-2xl p-5 flex items-center gap-4" style={{ backgroundColor: '#FFF7ED', border: '1.5px solid #FED7AA' }}>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(249,115,22,0.12)' }}>
             <BarChart2 className="w-5 h-5 text-brand-orange" />
           </div>

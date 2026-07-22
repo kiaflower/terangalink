@@ -425,7 +425,7 @@ export default async function RestaurantsPage({ searchParams }: Props) {
           </div>
         )}
 
-        <section className="mt-16 rounded-3xl p-10 text-center" style={{ backgroundColor: '#F5F3FF', border: '1px solid #DDD6FE' }}>
+        <section className="mt-16 rounded-3xl p-10 text-center" style={{ backgroundColor: '#FFF7ED', border: '1px solid #FED7AA' }}>
           <h2 className="text-2xl sm:text-3xl font-black mb-3" style={{ color: '#111111' }}>
             Vous avez un restaurant ?
           </h2>

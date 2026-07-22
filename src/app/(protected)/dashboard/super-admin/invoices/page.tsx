@@ -42,7 +42,7 @@ export default function InvoicesPage() {
     { label: 'À jour', value: coveredRows.length, icon: CheckCircle, color: '#059669', bg: '#F0FDF4', filter: 'covered' },
     { label: 'À encaisser', value: dueRows.length, icon: Clock, color: '#D97706', bg: '#FFFBEB', filter: 'due' },
     { label: 'En retard', value: overdueRows.length, icon: AlertTriangle, color: '#DC2626', bg: '#FEF2F2', filter: 'overdue' },
-    { label: 'Montant à encaisser', value: `${new Intl.NumberFormat('fr-SN').format(dueRevenue)} FCFA`, icon: RefreshCw, color: '#F97316', bg: '#F5F3FF', filter: 'all' },
+    { label: 'Montant à encaisser', value: `${new Intl.NumberFormat('fr-SN').format(dueRevenue)} FCFA`, icon: RefreshCw, color: '#F97316', bg: '#FFF7ED', filter: 'all' },
   ]
 
   const filtered = rows.filter(r => {

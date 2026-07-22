@@ -20,7 +20,7 @@ export function RealRestaurantsMarquee({ restaurants, dark = false }: RealRestau
   if (restaurants.length === 0) return null
   const items = [...restaurants, ...restaurants, ...restaurants]
   const speed = Math.max(restaurants.length * 5, 20)
-  const edgeColor = dark ? '#0A0A0A' : '#F5F3FF'
+  const edgeColor = dark ? '#0A0A0A' : '#FFF7ED'
 
   return (
     <div className="overflow-hidden py-2 relative">

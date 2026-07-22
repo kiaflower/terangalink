@@ -77,7 +77,7 @@ export default function SubscriptionsPage() {
 
   const statCards = [
     { label: 'Actifs', value: activeCount, icon: TrendingUp, color: '#059669', bg: '#F0FDF4', filter: 'active' },
-    { label: 'En essai', value: trialCount, icon: Clock, color: '#F97316', bg: '#F5F3FF', filter: 'trial' },
+    { label: 'En essai', value: trialCount, icon: Clock, color: '#F97316', bg: '#FFF7ED', filter: 'trial' },
     { label: 'Expirés / suspendus', value: expiredCount, icon: XCircle, color: '#DC2626', bg: '#FEF2F2', filter: 'expired' },
     { label: 'Revenus / mois', value: `${new Intl.NumberFormat('fr-SN').format(estimatedRevenue)} FCFA`, icon: DollarSign, color: '#D97706', bg: '#FFFBEB', filter: 'all' },
   ]

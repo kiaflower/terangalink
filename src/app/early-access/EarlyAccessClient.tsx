@@ -296,7 +296,7 @@ export default function EarlyAccessClient() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
           {OFFER_ITEMS.map(item => (
             <div key={item.title} className="rounded-2xl p-4 flex flex-col gap-2"
-              style={{ backgroundColor: '#F5F3FF', border: '1px solid #DDD6FE' }}>
+              style={{ backgroundColor: '#FFF7ED', border: '1px solid #FED7AA' }}>
               <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: TEXT_PRO }}>
                 <item.icon className="w-[18px] h-[18px] text-white" />
               </div>
