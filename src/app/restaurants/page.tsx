@@ -278,9 +278,9 @@ export default async function RestaurantsPage({ searchParams }: Props) {
   type FeaturedRestaurant = {
     name: string; slug: string; logo_url: string | null; city: string | null
     cuisine_type: string | null; primary_color: string | null
-    products: { name: string; price: number; image_url: string | null; is_available: boolean; position: number }[]
+    menu_items: { name: string; price: number; image_url: string | null; is_available: boolean; position: number }[]
   }
-  type FeaturedItem = { restaurant: FeaturedRestaurant; products: FeaturedRestaurant['products'] }
+  type FeaturedItem = { restaurant: FeaturedRestaurant; products: FeaturedRestaurant['menu_items'] }
   let blocksTop: { id: string; title: string; items: FeaturedItem[] }[] = []
   let blocksMid: { id: string; title: string; items: FeaturedItem[] }[] = []
   try {
@@ -292,7 +292,7 @@ export default async function RestaurantsPage({ searchParams }: Props) {
           sort_order,
           restaurants(
             name, slug, logo_url, city, cuisine_type, primary_color,
-            products(name, price, image_url, is_available, position)
+            menu_items(name, price, image_url, is_available, position)
           )
         )
       `)
@@ -308,7 +308,7 @@ export default async function RestaurantsPage({ searchParams }: Props) {
         .filter((restaurant): restaurant is FeaturedRestaurant => Boolean(restaurant))
         .map(restaurant => ({
           restaurant,
-          products: restaurant.products.filter(p => p.is_available).sort((a, b) => a.position - b.position).slice(0, 4),
+          products: restaurant.menu_items.filter(p => p.is_available).sort((a, b) => a.position - b.position).slice(0, 4),
         }))
 
     const normalized = (featuredBlocks ?? [])

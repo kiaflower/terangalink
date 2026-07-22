@@ -42,7 +42,7 @@ async function getData(restaurantSlug: string, platSlug: string) {
 
   const { data: product } = await supabase
     .from('menu_items')
-    .select('*, variants:product_variants(*), menu_categories(name)')
+    .select('*, variants:menu_item_variants(*), menu_categories(name)')
     .eq('restaurant_id', restaurant.id)
     .eq('slug', platSlug)
     .single()

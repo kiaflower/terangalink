@@ -89,7 +89,7 @@ export default function MenuPage() {
   const load = useCallback(async (bid: string) => {
     const [{ data: cats }, { data: prods }] = await Promise.all([
       supabase.from('menu_categories').select('*').eq('restaurant_id', bid).order('position'),
-      supabase.from('menu_items').select('*, variants:product_variants(*)').eq('restaurant_id', bid).order('is_pinned', { ascending: false }).order('position'),
+      supabase.from('menu_items').select('*, variants:menu_item_variants(*)').eq('restaurant_id', bid).order('is_pinned', { ascending: false }).order('position'),
     ])
     setCategories(cats ?? [])
     setProducts(prods ?? [])

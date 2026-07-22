@@ -149,7 +149,7 @@ async function loadDemoShowcase(): Promise<DemoShowcaseEntry[]> {
 
     let productsQuery = supabase
       .from('menu_items')
-      .select('*, variants:product_variants(*)')
+      .select('*, variants:menu_item_variants(*)')
       .eq('restaurant_id', b.id)
       .eq('is_available', true)
     productsQuery = isPro

@@ -83,7 +83,7 @@ export default async function RestaurantPage({ params, searchParams }: Props) {
 
   let productsQuery = supabase
     .from('menu_items')
-    .select('*, variants:product_variants(*)')
+    .select('*, variants:menu_item_variants(*)')
     .eq('restaurant_id', restaurant.id)
     .eq('is_available', true)
   // L'épinglage en tête de vitrine est une fonctionnalité Pro : si le restaurant
