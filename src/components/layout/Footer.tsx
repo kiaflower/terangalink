@@ -53,7 +53,7 @@ export async function Footer({
           <div>
             <Logo textClassName="font-bold text-lg" textStyle={{ color: '#111111' }} />
             <p className="text-sm leading-relaxed mt-3" style={{ color: '#9CA3AF' }}>
-              La plateforme de vente pour les commerçants du Sénégal.
+              La plateforme de vente pour les restaurateurs du Sénégal.
             </p>
           </div>
 

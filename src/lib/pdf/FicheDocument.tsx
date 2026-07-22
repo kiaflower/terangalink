@@ -54,7 +54,7 @@ export function FicheDocument({
         <View style={styles.header}>
           <View>
             <Text style={styles.brand}>TerangaLink</Text>
-            <Text style={styles.brandSubtitle}>Fiche pratique commerçant</Text>
+            <Text style={styles.brandSubtitle}>Fiche pratique restaurateur</Text>
           </View>
           <View>
             <Text style={styles.numero}>{formatNumero(numero)}</Text>

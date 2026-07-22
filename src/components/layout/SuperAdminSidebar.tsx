@@ -34,7 +34,7 @@ function NavContent({ onClose, counts }: { onClose?: () => void; counts: Counts 
     { href: '/dashboard/super-admin/users', label: 'Utilisateurs', icon: Users },
     { href: '/dashboard/super-admin/annuaire', label: 'Annuaire', icon: BookOpen },
     { href: '/dashboard/super-admin/featured', label: 'Coups de cœur', icon: Star },
-    { href: '/dashboard/super-admin/fiches', label: 'Fiches Business', icon: FileText },
+    { href: '/dashboard/super-admin/fiches', label: 'Fiches Restaurateur', icon: FileText },
     { href: '/dashboard/super-admin/communication', label: 'Communication', icon: Mail },
     { href: '/dashboard/super-admin/appointments', label: 'Rendez-vous', icon: CalendarClock, badge: counts.rdv },
     { href: '/dashboard/super-admin/settings', label: 'Paramètres', icon: Settings },

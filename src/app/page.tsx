@@ -87,7 +87,7 @@ export default async function HomePage() {
               Tout le <span className="text-gradient">Sénégal</span>, un seul endroit.
             </h1>
             <p className="text-lg max-w-md mx-auto" style={{ color: '#6B7280' }}>
-              La plateforme qui connecte les commerçants et leurs clients
+              La plateforme qui connecte les restaurateurs et leurs clients
             </p>
           </div>
 

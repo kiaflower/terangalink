@@ -415,7 +415,7 @@ export default function EarlyAccessClient() {
 
       {/* FOOTER NOTE */}
       <div className="px-5 py-6 text-center text-xs leading-relaxed" style={{ color: TEXT_MUTED }}>
-        <strong style={{ color: TEXT_SECONDARY }}>TerangaLink</strong> — La plateforme des commerçants du Sénégal<br />
+        <strong style={{ color: TEXT_SECONDARY }}>TerangaLink</strong> — La plateforme des restaurateurs du Sénégal<br />
         Des questions ?{' '}
         <a href="https://wa.me/221774739266" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: TEXT_PRO }}>
           Écrivez-nous sur WhatsApp

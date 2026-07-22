@@ -206,7 +206,7 @@ export default function MenuPage() {
   // active. Si le plat avait déjà des variantes à l'ouverture de
   // l'éditeur, on ne déduit jamais silencieusement ce prix — on demande une
   // confirmation explicite (voir reactivationModalOpen) pour ne jamais
-  // fixer un prix que la commerçante n'a pas choisi elle-même.
+  // fixer un prix que le restaurateur n'a pas choisi lui-même.
   function applyVariantsChange(next: VariantForm[]) {
     const stillActive = next.some(isActiveVariant)
     const wasActive = variants.some(isActiveVariant)

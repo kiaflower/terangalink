@@ -78,7 +78,7 @@ export default function LoginPage() {
         </div>
         <div className="space-y-6">
           <h2 className="text-3xl font-bold text-white leading-tight">
-            La plateforme des<br />commerçants du Sénégal.
+            La plateforme des<br />restaurateurs du Sénégal.
           </h2>
           <p className="text-orange-300 text-sm leading-relaxed">
             Gérez votre restaurant, recevez des commandes via WhatsApp et développez votre visibilité au Sénégal.

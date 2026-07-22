@@ -210,7 +210,7 @@ const faqs = [
   { q: 'Et si ça ne marche pas pour moi, je perds mon argent ?', a: "Non — vous pouvez créer votre restaurant gratuitement avec TerangaLink Free et l'utiliser sans limite de temps. Vous ne payez que si vous décidez d'aller plus loin." },
   { q: "Je n'ai pas beaucoup de plats, ça vaut le coup pour une petite restaurant ?", a: "Oui. Avec la formule gratuite, vous pouvez déjà publier jusqu'à 10 plats — largement de quoi tester et avoir une vraie restaurant professionnel en ligne." },
   { q: 'Mes clients vont devoir télécharger une application ?', a: "Non, jamais. Ils commandent depuis leur navigateur, comme un lien qu'ils ouvrent normalement." },
-  { q: "Si j'arrête, qu'est-ce qui se passe ?", a: "Rien n'est supprimé. Votre restaurant reste en pause jusqu'à réabonnement, et vous pouvez télécharger toutes vos données (commandes, comptabilité) en Excel depuis votre espace commerçant." },
+  { q: "Si j'arrête, qu'est-ce qui se passe ?", a: "Rien n'est supprimé. Votre restaurant reste en pause jusqu'à réabonnement, et vous pouvez télécharger toutes vos données (commandes, comptabilité) en Excel depuis votre espace restaurateur." },
 ]
 
 export default async function PourLesRestaurantsPage() {
@@ -299,7 +299,7 @@ export default async function PourLesRestaurantsPage() {
         <div className="relative max-w-6xl mx-auto px-4 py-20 sm:py-28 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
           <div className="text-center lg:text-left">
             <span className="inline-block text-xs font-bold text-orange-300 uppercase tracking-widest mb-4">
-              Pour les restaurants et commerçants
+              Pour les restaurants et restaurateurs
             </span>
             <h1 className="font-black text-4xl sm:text-5xl text-white mb-6 leading-tight tracking-tight">
               Fini les commandes<br />
@@ -500,7 +500,7 @@ export default async function PourLesRestaurantsPage() {
           <div className="text-center mb-14">
             <span className="inline-block text-xs font-bold text-brand-orange uppercase tracking-widest mb-3">Témoignages</span>
             <h2 className="font-bold text-3xl sm:text-4xl leading-tight tracking-tight" style={{ color: '#111111' }}>
-              Ce que racontent nos commerçants
+              Ce que racontent nos restaurateurs
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

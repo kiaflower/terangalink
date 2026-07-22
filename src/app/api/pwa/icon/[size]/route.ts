@@ -10,7 +10,7 @@ const ALLOWED_SIZES = [180, 192, 512]
 
 // Icône d'écran d'accueil (manifest + apple-touch-icon) redimensionnée à la
 // volée depuis le logo du restaurant connecté — pas de génération/stockage
-// à maintenir quand un commerçant change son logo. Coûte un fetch + un resize
+// à maintenir quand un restaurateur change son logo. Coûte un fetch + un resize
 // sharp par ajout à l'écran d'accueil, ce qui est rare, donc pas de souci de
 // perf malgré l'absence de cache HTTP (nécessaire ici car le contenu dépend
 // de la session).

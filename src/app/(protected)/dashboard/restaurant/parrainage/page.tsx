@@ -86,7 +86,7 @@ export default function ParrainagePage() {
     <div className="max-w-xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Parrainage</h1>
-        <p className="text-gray-500 text-sm mt-1">Invitez d&apos;autres commerçants et gagnez des crédits de réduction</p>
+        <p className="text-gray-500 text-sm mt-1">Invitez d&apos;autres restaurateurs et gagnez des crédits de réduction</p>
       </div>
 
       {loading ? (
@@ -109,7 +109,7 @@ export default function ParrainagePage() {
             <ol className="space-y-3 text-sm text-gray-600">
               <li className="flex gap-3">
                 <span className="w-5 h-5 rounded-full bg-orange-100 text-brand-orange text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-                Partagez votre lien de parrainage à un commerçant
+                Partagez votre lien de parrainage à un restaurateur
               </li>
               <li className="flex gap-3">
                 <span className="w-5 h-5 rounded-full bg-orange-100 text-brand-orange text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>

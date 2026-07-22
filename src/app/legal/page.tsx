@@ -24,11 +24,11 @@ export default async function LegalPage() {
 
         <h3>Objet du service</h3>
         <p>
-          TerangaLink est une plateforme de mise en relation entre des commerçants et leurs clients au
-          Sénégal. Elle permet à chaque commerçant de créer une vitrine en ligne présentant son
+          TerangaLink est une plateforme de mise en relation entre des restaurateurs et leurs clients au
+          Sénégal. Elle permet à chaque restaurateur de créer une vitrine en ligne présentant son
           menu, et de recevoir des commandes directement sur WhatsApp. TerangaLink n&apos;intervient
           pas dans la transaction commerciale elle-même (paiement, livraison), qui se règle directement
-          entre le commerçant et son client.
+          entre le restaurateur et son client.
         </p>
 
         <h3>Responsabilité des vendeurs</h3>
@@ -36,14 +36,14 @@ export default async function LegalPage() {
           Chaque restaurant inscrit sur TerangaLink est seul responsable de l&apos;exactitude de son
           menu (plats, prix, descriptions, disponibilité), du traitement de ses commandes et de
           la bonne exécution de ses transactions avec ses clients. TerangaLink ne garantit ni la qualité
-          des plats vendus, ni la conformité des transactions effectuées entre commerçants et clients.
+          des plats vendus, ni la conformité des transactions effectuées entre restaurateurs et clients.
         </p>
 
         <h3>Propriété intellectuelle</h3>
         <p>
           La marque TerangaLink, son logo, son interface et l&apos;ensemble des éléments graphiques du site
           sont la propriété de TerangaLink et ne peuvent être replats sans autorisation. Chaque
-          commerçant reste propriétaire des contenus (textes, photos, logo) qu&apos;il publie sur sa
+          restaurateur reste propriétaire des contenus (textes, photos, logo) qu&apos;il publie sur sa
           vitrine.
         </p>
 
@@ -53,15 +53,15 @@ export default async function LegalPage() {
         <p>
           Nous collectons les informations nécessaires au fonctionnement du service : nom, adresse email,
           numéro de téléphone et de WhatsApp, ainsi que le contenu du menu (plats, images,
-          descriptions) renseigné par chaque commerçant. Les commandes passées par les clients
+          descriptions) renseigné par chaque restaurateur. Les commandes passées par les clients
           (nom, téléphone, adresse de livraison) sont également enregistrées afin d&apos;être transmises au
-          commerçant concerné.
+          restaurateur concerné.
         </p>
 
         <h3>Utilisation des données</h3>
         <p>
           Ces données servent exclusivement au fonctionnement de TerangaLink : affichage des vitrines,
-          transmission des commandes aux commerçants, statistiques internes et support client. Elles ne
+          transmission des commandes aux restaurateurs, statistiques internes et support client. Elles ne
           sont ni vendues, ni louées, ni transmises à des tiers à des fins commerciales.
         </p>
 

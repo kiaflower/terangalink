@@ -95,8 +95,8 @@ export default function FichesPage() {
     <div>
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fiches Business</h1>
-          <p className="text-gray-500 text-sm mt-1">{fiches.length} fiche{fiches.length !== 1 ? 's' : ''} · bibliothèque éducative pour les commerçants</p>
+          <h1 className="text-2xl font-bold text-gray-900">Fiches Restaurateur</h1>
+          <p className="text-gray-500 text-sm mt-1">{fiches.length} fiche{fiches.length !== 1 ? 's' : ''} · bibliothèque éducative pour les restaurateurs</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link href="/dashboard/super-admin/fiches/new"
