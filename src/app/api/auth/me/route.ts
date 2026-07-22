@@ -21,7 +21,7 @@ export async function GET() {
     return NextResponse.json({ restaurant_id: imp, impersonating: true })
   }
 
-  // Alimente le segment de ciblage newsletter "restaurants inactives" — throttlé
+  // Alimente le segment de ciblage newsletter "restaurants inactifs" — throttlé
   // (condition dans le WHERE) pour ne pas écrire à chaque appel de cette route,
   // qui est faite à chaque chargement de page du dashboard restaurant.
   if (profile?.role === 'restaurant_admin' && profile.restaurant_id) {

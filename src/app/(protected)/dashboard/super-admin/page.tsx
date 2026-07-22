@@ -98,7 +98,7 @@ export default function SuperAdminDashboard() {
 
   const statCards = stats ? [
     { label: 'Total restaurants', value: stats.restaurantsCount, href: '/dashboard/super-admin/restaurants', Icon: Store, color: '#F97316' },
-    { label: 'Restaurants actives', value: stats.activeCount, href: '/dashboard/super-admin/restaurants', Icon: CheckCircle, color: '#059669' },
+    { label: 'Restaurants actifs', value: stats.activeCount, href: '/dashboard/super-admin/restaurants', Icon: CheckCircle, color: '#059669' },
     { label: 'Inscriptions en attente', value: stats.inscriptionsCount, href: '/dashboard/super-admin/inscriptions', Icon: ClipboardList, color: '#DC2626', alert: true },
     { label: 'Commandes (24h)', value: stats.ordersCount, href: '/dashboard/super-admin/restaurants', Icon: ShoppingBag, color: '#D97706' },
     { label: 'Abonnements actifs/essai', value: stats.activeSubsCount, href: '/dashboard/super-admin/subscriptions', Icon: CreditCard, color: '#2563EB' },

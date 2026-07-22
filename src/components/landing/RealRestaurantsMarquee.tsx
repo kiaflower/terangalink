@@ -12,7 +12,7 @@ interface RealRestaurantsMarqueeProps {
   dark?: boolean
 }
 
-// Défilement horizontal en continu des logos des vraies restaurants actives — inspiré de
+// Défilement horizontal en continu des logos des vrais restaurants actifs — inspiré de
 // MarqueeRestaurants (texte, décoratif) mais ici chaque logo est un vrai lien cliquable
 // vers /[slug]. Fond de dégradé calé sur la couleur de la section qui l'entoure (claire
 // par défaut, sombre quand `dark` — bandeau logos sous le hero).

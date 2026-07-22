@@ -154,7 +154,7 @@ function CreateRestaurantModal({ onClose, onCreated }: { onClose: () => void; on
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid #F3F4F6' }}>
           <div>
             <h2 className="text-lg font-bold text-gray-900">Créer un restaurant</h2>
-            <p className="text-xs text-gray-400 mt-0.5">Onboardez un restaurant complète en quelques étapes</p>
+            <p className="text-xs text-gray-400 mt-0.5">Onboardez un restaurant complet en quelques étapes</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
             <X className="w-5 h-5 text-gray-500" />
@@ -559,7 +559,7 @@ export default function SuperAdminRestaurantsPage() {
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Restaurants</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{restaurants.length} restaurant{restaurants.length !== 1 ? 's' : ''} enregistrée{restaurants.length !== 1 ? 's' : ''}</p>
+          <p className="text-gray-500 text-sm mt-0.5">{restaurants.length} restaurant{restaurants.length !== 1 ? 's' : ''} enregistré{restaurants.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={fetchRestaurants} className="p-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
@@ -609,7 +609,7 @@ export default function SuperAdminRestaurantsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <p className="text-center text-gray-500 py-20 text-sm">
-            {search ? 'Aucun restaurant trouvée' : 'Aucun restaurant'}
+            {search ? 'Aucun restaurant trouvé' : 'Aucun restaurant'}
           </p>
         ) : (
           filtered.map((b, i) => (

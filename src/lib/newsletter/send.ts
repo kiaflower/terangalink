@@ -103,7 +103,7 @@ export async function prepareCampaignForSending(admin: AdminClient, campaignId: 
   if (campaign.status !== 'draft' && campaign.status !== 'scheduled') return { error: 'Cette campagne a déjà été envoyée' }
 
   const recipients = await resolveSegmentRecipients(admin, campaign.segment)
-  if (recipients.length === 0) return { error: 'Aucun destinataire pour ce segment (vérifiez le consentement newsletter des restaurants ciblées)' }
+  if (recipients.length === 0) return { error: 'Aucun destinataire pour ce segment (vérifiez le consentement newsletter des restaurants ciblés)' }
 
   await enqueueCampaignRecipients(admin, campaignId, recipients)
   return { campaign, recipientCount: recipients.length }

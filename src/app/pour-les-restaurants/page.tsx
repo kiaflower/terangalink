@@ -83,7 +83,7 @@ const features = [
 ]
 
 // TODO: témoignages fictifs — à remplacer par de vrais retours clients dès qu'on en aura.
-// On n'a que 5 restaurants actives à ce jour (cf. section "Elles vendent déjà sur TerangaLink"
+// On n'a que 5 restaurants actifs à ce jour (cf. section "Elles vendent déjà sur TerangaLink"
 // plus haut sur la page, qui sert de vraie preuve sociale en attendant).
 const testimonials = [
   { name: 'Fatou', role: 'Restaurant mode, Dakar', stars: 5, content: "Mes clients commandent maintenant directement sur mon lien. Je reçois moins d'appels et des commandes beaucoup plus claires." }, // TODO: témoignage fictif
@@ -186,7 +186,7 @@ async function loadDemoShowcase(): Promise<DemoShowcaseEntry[]> {
   }))
 }
 
-// Restaurants réelles et actives (is_demo = false) — la vraie preuve sociale de la page.
+// Restaurants réels et actifs (is_demo = false) — la vraie preuve sociale de la page.
 // On est encore petits (quelques restaurants), donc on montre de la profondeur (des vraies
 // restaurants cliquables) plutôt que d'inventer du volume.
 async function loadRealRestaurants(): Promise<RealRestaurantPreview[]> {
@@ -208,7 +208,7 @@ const faqs = [
   { q: "Je ne suis pas doué avec la technologie, c'est compliqué à utiliser ?", a: "Non. Si vous savez publier une photo sur Instagram, vous savez utiliser TerangaLink." },
   { q: "Est-ce que ça va me coûter cher en internet/data pour gérer mon restaurant ?", a: "Non, le tableau de bord est très léger, pensé pour fonctionner même avec une petite connexion." },
   { q: 'Et si ça ne marche pas pour moi, je perds mon argent ?', a: "Non — vous pouvez créer votre restaurant gratuitement avec TerangaLink Free et l'utiliser sans limite de temps. Vous ne payez que si vous décidez d'aller plus loin." },
-  { q: "Je n'ai pas beaucoup de plats, ça vaut le coup pour une petite restaurant ?", a: "Oui. Avec la formule gratuite, vous pouvez déjà publier jusqu'à 10 plats — largement de quoi tester et avoir une vraie restaurant professionnelle en ligne." },
+  { q: "Je n'ai pas beaucoup de plats, ça vaut le coup pour une petite restaurant ?", a: "Oui. Avec la formule gratuite, vous pouvez déjà publier jusqu'à 10 plats — largement de quoi tester et avoir une vraie restaurant professionnel en ligne." },
   { q: 'Mes clients vont devoir télécharger une application ?', a: "Non, jamais. Ils commandent depuis leur navigateur, comme un lien qu'ils ouvrent normalement." },
   { q: "Si j'arrête, qu'est-ce qui se passe ?", a: "Rien n'est supprimé. Votre restaurant reste en pause jusqu'à réabonnement, et vous pouvez télécharger toutes vos données (commandes, comptabilité) en Excel depuis votre espace commerçant." },
 ]
@@ -331,7 +331,7 @@ export default async function PourLesRestaurantsPage() {
         </div>
       </section>
 
-      {/* Preuve réelle — logos des restaurants actives qui défilent, pas une grosse section */}
+      {/* Preuve réelle — logos des restaurants actifs qui défilent, pas une grosse section */}
       {realRestaurants.length > 0 && (
         <section style={{ backgroundColor: '#0A0A0A' }}>
           <div className="max-w-5xl mx-auto px-4 pt-10 pb-16 sm:pb-20" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>

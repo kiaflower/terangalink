@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     }
   } else {
     const restaurant = await getConnectedRestaurantPwa()
-    if (!restaurant) return NextResponse.json({ error: 'Aucun restaurant associée' }, { status: 400 })
+    if (!restaurant) return NextResponse.json({ error: 'Aucun restaurant associé' }, { status: 400 })
     restaurantId = restaurant.id
   }
 

@@ -71,7 +71,7 @@ export type PlanKey = keyof typeof PLANS
 export type BillablePlanKey = Exclude<PlanKey, 'free'>
 
 // Feature flags par plan — source de vérité pour le gating (FeatureGate / canUseFeature).
-// NB: `free` n'est pour l'instant qu'une carte marketing (aucun restaurant réelle n'a ce plan
+// NB: `free` n'est pour l'instant qu'une carte marketing (aucun restaurant réel n'a ce plan
 // en base — l'inscription en libre-service qui le créerait n'existe pas encore). Ces valeurs
 // documentent l'intention pour quand l'application réelle des limites sera construite.
 export const PLAN_FEATURES = {

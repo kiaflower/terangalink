@@ -11,7 +11,7 @@ async function requireRestaurant() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }), restaurantId: null }
   const restaurant = await getConnectedRestaurantPwa()
-  if (!restaurant) return { error: NextResponse.json({ error: 'Aucun restaurant associée' }, { status: 400 }), restaurantId: null }
+  if (!restaurant) return { error: NextResponse.json({ error: 'Aucun restaurant associé' }, { status: 400 }), restaurantId: null }
   return { error: null, restaurantId: restaurant.id }
 }
 

@@ -12,7 +12,7 @@ export const revalidate = 0
 export default async function HomePage() {
   const supabase = createClient()
 
-  // Chiffres réels (annuaire) et restaurants réelles (vendeurs) chargés côté serveur pour
+  // Chiffres réels (annuaire) et restaurants réels (vendeurs) chargés côté serveur pour
   // que les deux moitiés de la page — acheteur et vendeur — s'appuient sur des faits
   // vérifiables plutôt qu'une seule preuve sociale unilatérale (côté vendeur uniquement).
   const [{ data: marqueeRestaurants }, { count: restaurantCount }, { count: productCount }, { data: photoProducts }] = await Promise.all([

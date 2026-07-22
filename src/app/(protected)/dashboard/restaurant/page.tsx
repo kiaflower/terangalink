@@ -33,7 +33,7 @@ export default async function RestaurantDashboardHome() {
         <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center mb-4">
           <AlertCircle className="w-5 h-5 text-amber-500" />
         </div>
-        <p className="text-gray-700 font-medium mb-1">Aucun restaurant associée</p>
+        <p className="text-gray-700 font-medium mb-1">Aucun restaurant associé</p>
         <p className="text-sm text-gray-400">Contactez le support TerangaLink.</p>
       </div>
     )

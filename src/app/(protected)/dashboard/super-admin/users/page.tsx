@@ -202,7 +202,7 @@ export default function UsersPage() {
           {unlinked.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
               <div className="px-5 py-3.5 border-b border-gray-100">
-                <p className="text-sm font-semibold text-gray-500">Sans restaurant associée</p>
+                <p className="text-sm font-semibold text-gray-500">Sans restaurant associé</p>
               </div>
               {unlinked.map((a, i) => (
                 <div key={a.id} className={`px-5 py-3.5 flex items-center justify-between gap-4 ${i < unlinked.length - 1 ? 'border-b border-gray-50' : ''}`}>

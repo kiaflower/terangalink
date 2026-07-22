@@ -33,7 +33,7 @@ export default async function LegalPage() {
 
         <h3>Responsabilité des vendeurs</h3>
         <p>
-          Chaque restaurant inscrite sur TerangaLink est seule responsable de l&apos;exactitude de son
+          Chaque restaurant inscrit sur TerangaLink est seul responsable de l&apos;exactitude de son
           menu (plats, prix, descriptions, disponibilité), du traitement de ses commandes et de
           la bonne exécution de ses transactions avec ses clients. TerangaLink ne garantit ni la qualité
           des plats vendus, ni la conformité des transactions effectuées entre commerçants et clients.

@@ -39,7 +39,7 @@ export default async function AnalyticsPage() {
   if (!user) return null
 
   const restaurantId = await getRestaurantId(user.id, supabase)
-  if (!restaurantId) return <div className="text-gray-500 py-20 text-center">Aucun restaurant associée</div>
+  if (!restaurantId) return <div className="text-gray-500 py-20 text-center">Aucun restaurant associé</div>
 
   const { data: sub } = await supabase.from('subscriptions').select('plan').eq('restaurant_id', restaurantId).single()
   const plan: PlanKey = sub?.plan === 'pro' || sub?.plan === 'free' ? sub.plan : 'starter'

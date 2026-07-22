@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Évite de re-signaler la même restaurant pour le même type d'alerte tant que
 // la condition reste vraie d'un run à l'autre du cron quotidien — sinon une
-// restaurant inactive depuis 60 jours déclencherait la même alerte tous les
+// restaurant inactif depuis 60 jours déclencherait la même alerte tous les
 // jours. S'appuie sur push_notifications_log (déjà écrit par sendPush.ts),
 // pas de table de dédoublonnage séparée à maintenir.
 export async function shouldSendAdminAlert(

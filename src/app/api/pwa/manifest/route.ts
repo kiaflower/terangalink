@@ -4,7 +4,7 @@ import { getConnectedRestaurantPwa } from '@/lib/pwa/connectedRestaurant'
 // Manifest par restaurant : Next.js n'a pas de convention de fichier pour un
 // manifest.json qui varie selon la session (le dashboard restaurant n'a pas de
 // slug dans l'URL), donc on le génère ici à la demande à partir des données
-// du restaurant connectée. `cookies()` dans getConnectedRestaurantPwa() exclut
+// du restaurant connecté. `cookies()` dans getConnectedRestaurantPwa() exclut
 // automatiquement cette route du cache statique/edge de Next.
 export const dynamic = 'force-dynamic'
 

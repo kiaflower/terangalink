@@ -9,7 +9,7 @@ const PRESETS: { type: 'all' | 'pro' | 'starter' | 'founder' | 'trial' | 'inacti
   { type: 'starter', label: 'Restaurants Starter', description: 'Abonnement Starter actif.' },
   { type: 'founder', label: 'Restaurants fondatrices', description: 'Badge Early Access / fondateur.' },
   { type: 'trial', label: "Restaurants en période d'essai", description: 'Abonnement en statut essai.' },
-  { type: 'inactive', label: 'Restaurants inactives', description: 'Aucune connexion au dashboard depuis 30 jours.' },
+  { type: 'inactive', label: 'Restaurants inactifs', description: 'Aucune connexion au dashboard depuis 30 jours.' },
 ]
 
 interface SegmentPickerProps {

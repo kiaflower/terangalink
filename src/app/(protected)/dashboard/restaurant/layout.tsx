@@ -11,7 +11,7 @@ import { RegisterServiceWorker } from '@/components/dashboard/RegisterServiceWor
 export const dynamic = 'force-dynamic'
 
 // Manifest servi par une route API (pas un fichier statique) car il doit
-// varier selon le restaurant connectée — voir src/app/api/pwa/manifest/route.ts.
+// varier selon le restaurant connecté — voir src/app/api/pwa/manifest/route.ts.
 export const metadata: Metadata = {
   manifest: '/api/pwa/manifest',
   icons: { apple: '/api/pwa/icon/180' },

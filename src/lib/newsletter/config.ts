@@ -1,5 +1,5 @@
 /**
- * Seuil "restaurant inactive" pour le segment de ciblage — nombre de jours sans
+ * Seuil "restaurant inactif" pour le segment de ciblage — nombre de jours sans
  * connexion au dashboard restaurant. Centralisé ici plutôt qu'en dur dans les
  * requêtes, au cas où ce nombre doive changer plus tard.
  */
