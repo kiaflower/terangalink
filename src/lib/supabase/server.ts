@@ -20,6 +20,7 @@ export function createClient() {
           } catch {}
         },
       },
+      db: { schema: 'app' },
     }
   )
 }

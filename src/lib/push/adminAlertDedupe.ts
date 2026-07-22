@@ -6,7 +6,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 // jours. S'appuie sur push_notifications_log (déjà écrit par sendPush.ts),
 // pas de table de dédoublonnage séparée à maintenir.
 export async function shouldSendAdminAlert(
-  admin: SupabaseClient,
+  admin: SupabaseClient<any, any, any>,
   type: string,
   restaurantId: string,
   cooldownDays: number

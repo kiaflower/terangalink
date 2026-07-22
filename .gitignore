@@ -41,3 +41,4 @@ next-env.d.ts
 # Supabase local
 supabase/.branches
 supabase/.temp
+supabase/_a_coller_dans_sql_editor.sql

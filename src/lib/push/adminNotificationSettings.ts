@@ -32,7 +32,7 @@ const NUMERIC_KEYS = new Set(['no_new_product_days', 'no_product_ever_days', 'in
 // maintenance et la config générale) plutôt qu'une nouvelle table — un seul
 // super admin, pas besoin d'un réglage par utilisateur. Clés préfixées
 // `admin_notif_` pour rester repérables au milieu des autres réglages.
-export async function getAdminNotificationSettings(admin: SupabaseClient): Promise<AdminNotificationSettings> {
+export async function getAdminNotificationSettings(admin: SupabaseClient<any, any, any>): Promise<AdminNotificationSettings> {
   const { data } = await admin.from('platform_settings').select('key, value').like('key', 'admin_notif_%')
 
   const result: Record<string, number | boolean> = { ...DEFAULTS }

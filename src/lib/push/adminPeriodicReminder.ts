@@ -29,7 +29,7 @@ function plural(count: number, word: string, pluralWord = `${word}s`): string {
  * platform_settings), pas un nombre de jours fixe — ça reste juste même si un
  * run est manqué ou que le cron change de créneau.
  */
-export async function sendAdminPeriodicReminder(admin: SupabaseClient, now: Date, dayOfWeek: number): Promise<void> {
+export async function sendAdminPeriodicReminder(admin: SupabaseClient<any, any, any>, now: Date, dayOfWeek: number): Promise<void> {
   const copy = DAY_COPY[dayOfWeek]
   if (!copy) return
 

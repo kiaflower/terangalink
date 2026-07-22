@@ -1,7 +1,7 @@
 import webpush from 'web-push'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { createAdminClient } from '@/lib/supabase/admin'
 
-type AdminClient = SupabaseClient
+type AdminClient = ReturnType<typeof createAdminClient>
 
 let vapidConfigured = false
 

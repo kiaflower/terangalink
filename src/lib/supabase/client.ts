@@ -11,6 +11,7 @@ export function createClient() {
         autoRefreshToken: true,
         detectSessionInUrl: true,
       },
+      db: { schema: 'app' },
     }
   )
 }

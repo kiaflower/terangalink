@@ -21,7 +21,7 @@ export type SessionCheckResult =
  * amont via le cookie sa_impersonate, séparément.
  */
 export async function checkRestaurantSession(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<any, any, any>,
   userId: string
 ): Promise<SessionCheckResult> {
   const { data: profileData } = await supabase

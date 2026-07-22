@@ -29,7 +29,7 @@ export interface RestaurantNotificationSettings {
 // n'est créée qu'au premier changement de réglage ou au premier passage du
 // cron qui doit persister un timestamp (last_checked_at / last_sent_at).
 export async function getRestaurantNotificationSettings(
-  admin: SupabaseClient,
+  admin: SupabaseClient<any, any, any>,
   restaurantId: string
 ): Promise<RestaurantNotificationSettings> {
   const { data } = await admin

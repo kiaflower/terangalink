@@ -12,5 +12,6 @@ export function createAdminClient() {
 
   return createClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
+    db: { schema: 'app' },
   })
 }

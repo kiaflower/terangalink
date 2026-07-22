@@ -15,7 +15,7 @@ export interface RestaurantAdminProfile {
   admin_role: 'principal' | 'secondaire' | null
 }
 
-export async function getActiveAdmins(admin: SupabaseClient, restaurantId: string): Promise<RestaurantAdminProfile[]> {
+export async function getActiveAdmins(admin: SupabaseClient<any, any, any>, restaurantId: string): Promise<RestaurantAdminProfile[]> {
   const { data } = await admin
     .from('profiles')
     .select('id, email, full_name, admin_role')
@@ -26,7 +26,7 @@ export async function getActiveAdmins(admin: SupabaseClient, restaurantId: strin
   return (data ?? []) as RestaurantAdminProfile[]
 }
 
-export async function getPrincipalAdmin(admin: SupabaseClient, restaurantId: string): Promise<RestaurantAdminProfile | null> {
+export async function getPrincipalAdmin(admin: SupabaseClient<any, any, any>, restaurantId: string): Promise<RestaurantAdminProfile | null> {
   const { data } = await admin
     .from('profiles')
     .select('id, email, full_name, admin_role')
@@ -39,7 +39,7 @@ export async function getPrincipalAdmin(admin: SupabaseClient, restaurantId: str
 }
 
 /** Déchiffre le mot de passe partagé actuel, ou null s'il n'a jamais été défini. */
-export async function getCurrentPassword(admin: SupabaseClient, restaurantId: string): Promise<string | null> {
+export async function getCurrentPassword(admin: SupabaseClient<any, any, any>, restaurantId: string): Promise<string | null> {
   const { data } = await admin.from('restaurants').select('admin_password_enc').eq('id', restaurantId).single()
   const enc = (data as { admin_password_enc: string | null } | null)?.admin_password_enc
   if (!enc) return null
@@ -74,7 +74,7 @@ interface RotateResult {
  * admin_password_enc ne soient mis à jour en conséquence.
  */
 export async function rotateRestaurantPassword(
-  admin: SupabaseClient,
+  admin: SupabaseClient<any, any, any>,
   restaurantId: string,
   newPassword: string,
   actingUserId: string | null

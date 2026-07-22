@@ -19,7 +19,7 @@ export interface AbandonedCartsScanResult {
  * l'historique de le restaurant.
  */
 export async function detectNewlyAbandonedCarts(
-  admin: SupabaseClient,
+  admin: SupabaseClient<any, any, any>,
   restaurantId: string,
   delayHours: number,
   lastCheckedAt: string | null

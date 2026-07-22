@@ -1,7 +1,7 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { createAdminClient } from '@/lib/supabase/admin'
 import { ANALYTICS_THRESHOLDS } from './thresholds'
 
-type AdminClient = SupabaseClient
+type AdminClient = ReturnType<typeof createAdminClient>
 
 export interface ProductInterestStat {
   itemId: string

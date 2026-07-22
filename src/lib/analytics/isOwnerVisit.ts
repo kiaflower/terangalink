@@ -6,7 +6,7 @@ import { cookies } from 'next/headers'
 // ne doit jamais être compté dans les analytics (visites, funnel, rapport
 // hebdomadaire). Mêmes règles de résolution du propriétaire que /api/auth/me
 // et dashboard/restaurant/page.tsx.
-export async function isOwnerVisit(supabase: SupabaseClient, restaurantId: string): Promise<boolean> {
+export async function isOwnerVisit(supabase: SupabaseClient<any, any, any>, restaurantId: string): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return false
 
