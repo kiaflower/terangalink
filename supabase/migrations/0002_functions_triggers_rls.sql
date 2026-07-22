@@ -13,7 +13,11 @@
 -- utilisé par l'ancien TerangaLink pour ses factures).
 
 -- ─── Extension unaccent (utilisée par generate_menu_item_slug) ────────────
-CREATE EXTENSION IF NOT EXISTS unaccent;
+-- Schéma explicite requis : generate_menu_item_slug() a `search_path TO 'app,
+-- public, extensions'` — sans WITH SCHEMA, CREATE EXTENSION peut installer la
+-- fonction ailleurs (selon le search_path de la session au moment du CREATE),
+-- et l'appel bare `unaccent(...)` échoue alors avec "function does not exist".
+CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA extensions;
 
 -- ─── Séquence fiches_numero_seq + numero par défaut sur app.fiches ────────
 CREATE SEQUENCE app.fiches_numero_seq;
