@@ -19,8 +19,8 @@ import { buildWhatsAppMessage } from '@/lib/utils'
 import type { Restaurant, MenuCategory, ProductWithVariants } from '@/lib/types'
 
 export const metadata: Metadata = {
-  title: 'Organisez vos commandes Instagram et WhatsApp — TerangaLink',
-  description: "Vous vendez déjà sur Instagram, TikTok et WhatsApp. TerangaLink range vos commandes dans un lien unique — sans rien changer à votre façon de vendre.",
+  title: 'Arrêtez de gérer vos commandes en pleine cuisine — TerangaLink',
+  description: "DM Instagram, appels au téléphone en plein coup de feu, tickets perdus : TerangaLink range les commandes de votre restaurant dans un lien unique — sans rien changer à votre façon de vendre.",
 }
 
 export const dynamic = 'force-dynamic'
@@ -35,12 +35,12 @@ const steps = [
   {
     icon: Link2,
     title: 'Ils commandent sur votre lien',
-    text: "Un seul lien en bio renvoie vers votre restaurant TerangaLink. Vos clients choisissent et commandent seuls — sans vous écrire pour demander le prix ou si c'est toujours dispo.",
+    text: "Un seul lien en bio renvoie vers votre restaurant TerangaLink. Vos clients choisissent leur plat et commandent seuls — sans vous appeler en pleine préparation pour demander le prix ou si c'est toujours disponible.",
   },
   {
     icon: MessageCircle,
     title: 'La commande arrive organisée sur WhatsApp',
-    text: "Plats, variantes, coordonnées : tout y est déjà. Vous confirmez et vous livrez, exactement comme avant — mais sans reconstituer la commande dans une conversation.",
+    text: "Plats, variantes, coordonnées : tout y est déjà. Vous confirmez et vous préparez, exactement comme avant — mais sans reconstituer la commande à partir d'un appel ou d'un ticket griffonné à la volée.",
   },
 ]
 
@@ -57,13 +57,13 @@ const features = [
   },
   {
     icon: Package,
-    title: 'Vos « bientôt disponible », sans repost',
-    description: "Ajoutez vos plats une fois, gérez votre stock et activez les précommandes pour vos nouveautés — sans avoir à republier une story à chaque fois qu'on vous demande si c'est arrivé.",
+    title: 'Un plat épuisé, réglé en un clic',
+    description: "Marquez un plat indisponible dès qu'il est épuisé — il disparaît de la vitrine automatiquement. Fini de répondre dix fois \"c'est fini\" en plein service.",
   },
   {
     icon: BarChart3,
-    title: 'Vos ventes, sans les noter dans un cahier',
-    description: "Vues, commandes, revenus, meilleurs plats : tout est déjà calculé dans votre tableau de bord.",
+    title: 'Vos plats qui marchent, sans demander en cuisine',
+    description: "Vues, commandes, revenus, meilleurs plats : tout est déjà calculé dans votre tableau de bord — plus besoin de deviner ce qui se vend.",
   },
   {
     icon: BookOpen,
@@ -86,9 +86,9 @@ const features = [
 // On n'a que 5 restaurants actifs à ce jour (cf. section "Elles vendent déjà sur TerangaLink"
 // plus haut sur la page, qui sert de vraie preuve sociale en attendant).
 const testimonials = [
-  { name: 'Fatou', role: 'Restaurant mode, Dakar', stars: 5, content: "Mes clients commandent maintenant directement sur mon lien. Je reçois moins d'appels et des commandes beaucoup plus claires." }, // TODO: témoignage fictif
-  { name: 'Moussa', role: 'Téléphonie, Thiès', stars: 4, content: "Le QR code posé à la caisse m'a amené de nouveaux clients. Les gens scannent et commandent facilement." }, // TODO: témoignage fictif
-  { name: 'Aïda', role: 'Cosmétiques, Dakar', stars: 5, content: "J'ai activé la gestion de stock et les précommandes pour mes nouveautés. Mes ventes sont mieux organisées qu'avant." }, // TODO: témoignage fictif
+  { name: 'Fatou', role: 'Restaurant sénégalais, Parcelles Assainies', stars: 5, content: "Mes clients commandent maintenant directement sur mon lien, même en plein coup de feu en cuisine. Je reçois moins d'appels et des commandes beaucoup plus claires." }, // TODO: témoignage fictif
+  { name: 'Moussa', role: 'Grillades, Thiès', stars: 4, content: "Le QR code posé sur mes tables m'a amené de nouveaux clients. Les gens scannent et commandent facilement, sans attendre qu'on vienne prendre la commande." }, // TODO: témoignage fictif
+  { name: 'Aïda', role: 'Pâtisserie, Ouakam', stars: 5, content: "J'ai activé la gestion de stock pour marquer mes gâteaux épuisés en un clic. Je ne réponds plus dix fois par jour que c'est fini." }, // TODO: témoignage fictif
 ]
 
 interface DemoShowcaseEntry {
@@ -204,11 +204,11 @@ async function loadRealRestaurants(): Promise<RealRestaurantPreview[]> {
 
 const faqs = [
   { q: 'Est-ce que je vais perdre le contact direct avec mes clients ?', a: "Non. Les commandes arrivent toujours sur votre WhatsApp, exactement comme aujourd'hui. TerangaLink organise juste ce qui arrive avant — vous gardez toute la conversation avec vos clients." },
-  { q: "Je vends déjà bien sur Instagram, pourquoi j'aurais besoin de ça ?", a: "Parce que le problème n'est pas de vendre, c'est de gérer ce que vous vendez déjà. Si vous répondez encore \"c'est combien ?\" en message privé dix fois par jour, ou si vous avez déjà perdu une commande dans vos DM, TerangaLink règle ça." },
+  { q: "Je vends déjà bien sur Instagram, pourquoi j'aurais besoin de ça ?", a: "Parce que le problème n'est pas de vendre, c'est de gérer ce que vous vendez déjà. Si vous répondez encore au téléphone en pleine préparation, ou si vous avez déjà perdu un ticket ou une commande dans vos DM, TerangaLink règle ça." },
   { q: "Je ne suis pas doué avec la technologie, c'est compliqué à utiliser ?", a: "Non. Si vous savez publier une photo sur Instagram, vous savez utiliser TerangaLink." },
   { q: "Est-ce que ça va me coûter cher en internet/data pour gérer mon restaurant ?", a: "Non, le tableau de bord est très léger, pensé pour fonctionner même avec une petite connexion." },
   { q: 'Et si ça ne marche pas pour moi, je perds mon argent ?', a: "Non — vous pouvez créer votre restaurant gratuitement avec TerangaLink Free et l'utiliser sans limite de temps. Vous ne payez que si vous décidez d'aller plus loin." },
-  { q: "Je n'ai pas beaucoup de plats, ça vaut le coup pour une petite restaurant ?", a: "Oui. Avec la formule gratuite, vous pouvez déjà publier jusqu'à 10 plats — largement de quoi tester et avoir une vraie restaurant professionnel en ligne." },
+  { q: "Je n'ai pas beaucoup de plats, ça vaut le coup pour un petit restaurant ?", a: "Oui. Avec la formule gratuite, vous pouvez déjà publier jusqu'à 10 plats — largement de quoi tester et avoir un vrai restaurant professionnel en ligne." },
   { q: 'Mes clients vont devoir télécharger une application ?', a: "Non, jamais. Ils commandent depuis leur navigateur, comme un lien qu'ils ouvrent normalement." },
   { q: "Si j'arrête, qu'est-ce qui se passe ?", a: "Rien n'est supprimé. Votre restaurant reste en pause jusqu'à réabonnement, et vous pouvez télécharger toutes vos données (commandes, comptabilité) en Excel depuis votre espace restaurateur." },
 ]
@@ -303,10 +303,10 @@ export default async function PourLesRestaurantsPage() {
             </span>
             <h1 className="font-black text-4xl sm:text-5xl text-white mb-6 leading-tight tracking-tight">
               Fini les commandes<br />
-              <span className="text-gradient">perdues dans vos DM</span>
+              <span className="text-gradient">perdues en pleine cuisine</span>
             </h1>
             <p className="text-lg sm:text-xl mb-8" style={{ color: 'rgba(255,255,255,0.65)' }}>
-              Vous vendez déjà sur Instagram, TikTok et WhatsApp. TerangaLink range vos commandes dans un lien unique — vos clients commandent seuls, vous recevez tout, organisé, sur WhatsApp.
+              DM Instagram en plein service, appels qu&apos;on ne peut pas prendre les mains dans la farine, tickets griffonnés qui disparaissent — TerangaLink range tout ça dans un lien unique. Vos clients commandent seuls, vous recevez tout, organisé, sur WhatsApp.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
               <Link href="/inscription"
