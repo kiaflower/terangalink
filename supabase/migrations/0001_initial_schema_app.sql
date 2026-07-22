@@ -528,13 +528,14 @@ CREATE TABLE app.fiche_categories (
   CONSTRAINT fiche_categories_pkey PRIMARY KEY (id)
 );
 
-CREATE SEQUENCE app.fiche_numero_seq;
-CREATE FUNCTION app.next_fiche_numero() RETURNS integer
-  LANGUAGE sql AS $$ SELECT nextval('app.fiche_numero_seq')::integer $$;
-
+-- fiches_numero_seq + app.next_fiche_numero() sont définis dans
+-- 0002_functions_triggers_rls.sql (doit s'exécuter avant cette table —
+-- voir la note en tête de ce fichier). CREATE SEQUENCE retiré d'ici pour
+-- éviter la duplication : la vraie définition de next_fiche_numero(),
+-- récupérée depuis TerangaSpot, vit dans 0002.
 CREATE TABLE app.fiches (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  numero integer NOT NULL DEFAULT app.next_fiche_numero() UNIQUE,
+  numero integer NOT NULL UNIQUE, -- DEFAULT app.next_fiche_numero() ajouté par ALTER TABLE en 0002, une fois la fonction/séquence créées
   category_id uuid NOT NULL,
   title text NOT NULL,
   pitch text NOT NULL DEFAULT ''::text,
