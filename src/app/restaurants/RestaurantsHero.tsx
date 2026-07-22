@@ -33,7 +33,7 @@ export function RestaurantsHero({ q, category, city, sort, categoryOptions }: Pr
         <svg viewBox="0 0 1600 500" preserveAspectRatio="xMidYMid slice" className="w-full h-full" aria-hidden="true">
           <defs>
             <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#4C1D95" />
+              <stop offset="0%" stopColor="#7C2D12" />
               <stop offset="100%" stopColor="#111111" />
             </linearGradient>
           </defs>

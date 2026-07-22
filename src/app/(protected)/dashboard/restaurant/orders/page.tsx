@@ -29,7 +29,7 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-50 text-yellow-700',
   confirmed: 'bg-blue-50 text-blue-700',
-  in_delivery: 'bg-purple-50 text-purple-700',
+  in_delivery: 'bg-cyan-50 text-cyan-700',
   delivered: 'bg-green-50 text-green-700',
   cancelled: 'bg-red-50 text-red-700',
 }
@@ -378,7 +378,7 @@ function OrdersPageInner() {
                   <button
                     onClick={() => updateStatus(selected.id, 'delivered')}
                     disabled={updatingStatus}
-                    className="w-full py-3 rounded-xl font-bold text-sm text-white bg-purple-600 hover:bg-purple-700 transition-colors disabled:opacity-50"
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white bg-cyan-600 hover:bg-cyan-700 transition-colors disabled:opacity-50"
                   >
                     Marquer comme Livré
                   </button>
