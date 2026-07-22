@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getBoutiqueNotificationSettings } from '@/lib/push/notificationSettings'
+import { getRestaurantNotificationSettings } from '@/lib/push/notificationSettings'
 import { computeWeeklyStats } from '@/lib/analytics/weeklyStats'
-import { sendPushToBoutique } from '@/lib/push/sendPush'
+import { sendPushToRestaurant } from '@/lib/push/sendPush'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
 
 /**
  * Cron hebdomadaire (lundi, voir vercel.json) : envoie le rapport de la
- * semaine écoulée en notification push aux boutiques qui l'ont activé.
+ * semaine écoulée en notification push aux restaurants qui l'ont activé.
  * Complète — sans le remplacer — le bouton d'envoi manuel WhatsApp du
- * super admin (src/app/api/super-admin/boutiques/[id]/send-weekly-report).
+ * super admin (src/app/api/super-admin/restaurants/[id]/send-weekly-report).
  */
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET
@@ -23,15 +23,15 @@ export async function GET(request: NextRequest) {
   const periodEnd = new Date()
   const periodStart = new Date(periodEnd.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-  const { data: boutiques } = await admin.from('boutiques').select('id, name').eq('is_active', true)
+  const { data: restaurants } = await admin.from('restaurants').select('id, name').eq('is_active', true)
 
   let sent = 0
-  for (const boutique of boutiques ?? []) {
+  for (const restaurant of restaurants ?? []) {
     try {
-      const settings = await getBoutiqueNotificationSettings(admin, boutique.id)
+      const settings = await getRestaurantNotificationSettings(admin, restaurant.id)
       if (!settings.weekly_report_auto_enabled) continue
 
-      const stats = await computeWeeklyStats(admin, boutique.id, periodStart, periodEnd)
+      const stats = await computeWeeklyStats(admin, restaurant.id, periodStart, periodEnd)
 
       const body = [
         `${stats.visits} visite${stats.visits > 1 ? 's' : ''}, ${stats.ordersTotal} commande${stats.ordersTotal > 1 ? 's' : ''}`,
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       ].filter(Boolean).join(' · ')
 
       await admin.from('weekly_reports').insert({
-        boutique_id: boutique.id,
+        restaurant_id: restaurant.id,
         period_start: stats.periodStart,
         period_end: stats.periodEnd,
         status: 'sent',
@@ -49,17 +49,17 @@ export async function GET(request: NextRequest) {
         sent_at: new Date().toISOString(),
       })
 
-      await sendPushToBoutique(admin, boutique.id, {
+      await sendPushToRestaurant(admin, restaurant.id, {
         type: 'weekly_report',
         title: 'Votre rapport hebdomadaire est prêt',
         body,
-        url: '/dashboard/boutique/analytics',
+        url: '/dashboard/restaurant/analytics',
       })
       sent++
     } catch (err) {
-      console.error(`push-weekly error for boutique ${boutique.id}:`, err)
+      console.error(`push-weekly error for restaurant ${restaurant.id}:`, err)
     }
   }
 
-  return NextResponse.json({ success: true, boutiquesProcessed: boutiques?.length ?? 0, sent })
+  return NextResponse.json({ success: true, restaurantsProcessed: restaurants?.length ?? 0, sent })
 }

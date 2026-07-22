@@ -8,7 +8,7 @@ export interface Recommendation {
 
 /**
  * Règles simples (pas de ML) appliquées aux métriques déjà calculées par
- * computeWeeklyStats. Consommé par le dashboard boutique et le rapport
+ * computeWeeklyStats. Consommé par le dashboard restaurant et le rapport
  * hebdomadaire — une seule implémentation, deux affichages.
  */
 export function computeRecommendations(stats: WeeklyStats): Recommendation[] {
@@ -22,7 +22,7 @@ export function computeRecommendations(stats: WeeklyStats): Recommendation[] {
   ) {
     recos.push({
       type: 'low_conversion_views',
-      message: "Beaucoup de vues produit mais peu d'ajouts au panier : vérifiez vos prix, descriptions et photos.",
+      message: "Beaucoup de vues plat mais peu d'ajouts au panier : vérifiez vos prix, descriptions et photos.",
     })
   }
 

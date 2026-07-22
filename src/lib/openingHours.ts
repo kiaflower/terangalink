@@ -12,7 +12,7 @@ export const DAYS: { key: keyof OpeningHours; label: string }[] = [
 
 const JS_DAY_TO_KEY: (keyof OpeningHours)[] = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
 
-// Miroir du DEFAULT de la colonne boutiques.opening_hours (migration 0017) — sert
+// Miroir du DEFAULT de la colonne restaurants.opening_hours (migration 0017) — sert
 // à préremplir le formulaire des paramètres tant que rien n'a encore été chargé
 // depuis la base, pour ne jamais afficher "Fermé" par défaut à tort.
 export const DEFAULT_OPENING_HOURS: OpeningHours = {
@@ -47,8 +47,8 @@ export interface OpenStatus {
 
 /**
  * Statut détaillé "Ouvert maintenant" / "Fermé — Ouvre [jour] à HH:MM", utilisé
- * sous la description de la boutique. Cherche la prochaine ouverture jusqu'à 7
- * jours en avant si la boutique est fermée aujourd'hui ou n'a plus d'horaires définis.
+ * sous la description de le restaurant. Cherche la prochaine ouverture jusqu'à 7
+ * jours en avant si le restaurant est fermée aujourd'hui ou n'a plus d'horaires définis.
  */
 export function getOpenStatus(hours: OpeningHours | null | undefined, date = new Date()): OpenStatus | null {
   if (!hours) return null

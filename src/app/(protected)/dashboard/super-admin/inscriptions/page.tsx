@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react'
 import { X, FileText, ExternalLink, ShieldCheck, Tag, Truck, Sparkles, CheckCircle2 } from 'lucide-react'
 
 interface Inscription {
-  id: string; boutique_name: string; owner_name: string; email: string; phone: string
-  whatsapp_number: string; shop_category?: string; city?: string; description?: string
+  id: string; restaurant_name: string; owner_name: string; email: string; phone: string
+  whatsapp_number: string; cuisine_type?: string; city?: string; description?: string
   plan?: string; primary_color?: string; facebook_url?: string; instagram_url?: string
   tiktok_url?: string; snapchat_url?: string; referral_code?: string
   logo_base64?: string; cover_base64?: string; status: string; created_at: string
   want_verified_badge?: boolean; partner_offer_type?: string; partner_offer_custom?: string
   consent_images?: boolean; consent_annuaire?: boolean; consent_marketing?: boolean
-  created_boutique_id?: string; created_admin_password?: string
+  created_restaurant_id?: string; created_admin_password?: string
 }
 
 const STATUS_LABELS: Record<string, string> = { pending: 'En attente', approved: 'Approuvée', rejected: 'Rejetée' }
@@ -37,12 +37,12 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
   const [rejecting, setRejecting] = useState(false)
 
   const rows = [
-    { label: 'Boutique', value: ins.boutique_name },
+    { label: 'Restaurant', value: ins.restaurant_name },
     { label: 'Responsable', value: ins.owner_name },
     { label: 'Email', value: ins.email },
     { label: 'Téléphone', value: ins.phone },
     { label: 'WhatsApp', value: ins.whatsapp_number },
-    { label: 'Catégorie', value: ins.shop_category },
+    { label: 'Catégorie', value: ins.cuisine_type },
     { label: 'Ville', value: ins.city },
     { label: 'Description', value: ins.description },
     { label: 'Plan', value: ins.plan === 'pro' ? 'Pro — 19 900 FCFA/mois' : 'Starter — 9 900 FCFA/mois' },
@@ -87,7 +87,7 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white px-6 py-4 flex items-center justify-between border-b border-gray-100 rounded-t-2xl">
           <div>
-            <h2 className="font-bold text-gray-900">{ins.boutique_name}</h2>
+            <h2 className="font-bold text-gray-900">{ins.restaurant_name}</h2>
             <p className="text-xs text-gray-400 mt-0.5">Fiche d&apos;inscription complète</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -168,12 +168,12 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
             ) : null)}
           </div>
 
-          {/* Boutique créée */}
-          {ins.created_boutique_id && (
+          {/* Restaurant créée */}
+          {ins.created_restaurant_id && (
             <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
                 <CheckCircle2 className="w-4 h-4 text-green-600" />
-                <p className="text-sm font-semibold text-green-700">Boutique créée automatiquement</p>
+                <p className="text-sm font-semibold text-green-700">Restaurant créée automatiquement</p>
               </div>
               {ins.created_admin_password && (
                 <>
@@ -181,7 +181,7 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
                   <button
                     type="button"
                     onClick={() => {
-                      const msg = `Bonjour ${ins.owner_name}, votre boutique ${ins.boutique_name} est prête sur TerangaSpot !\n\nEmail : ${ins.email}\nMot de passe : ${ins.created_admin_password}\n\nConnectez-vous sur : ${window.location.origin}/login`
+                      const msg = `Bonjour ${ins.owner_name}, votre restaurant ${ins.restaurant_name} est prête sur TerangaLink !\n\nEmail : ${ins.email}\nMot de passe : ${ins.created_admin_password}\n\nConnectez-vous sur : ${window.location.origin}/login`
                       window.open(`https://wa.me/${ins.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank')
                     }}
                     className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
@@ -199,7 +199,7 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
             <>
               <button type="button" onClick={handleApprove} disabled={approving}
                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50">
-                {approving ? 'Approbation...' : '✓ Approuver & créer boutique'}
+                {approving ? 'Approbation...' : '✓ Approuver & créer restaurant'}
               </button>
               <button type="button" onClick={handleReject} disabled={rejecting}
                 className="flex-1 border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50">
@@ -207,11 +207,11 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
               </button>
             </>
           )}
-          {ins.status === 'approved' && ins.created_boutique_id && (
-            <a href={`/dashboard/super-admin/boutiques`}
+          {ins.status === 'approved' && ins.created_restaurant_id && (
+            <a href={`/dashboard/super-admin/restaurants`}
               className="flex-1 flex items-center justify-center gap-2 bg-brand-orange text-white text-sm font-medium px-4 py-2.5 rounded-xl transition-opacity hover:opacity-90">
               <ExternalLink className="w-4 h-4" />
-              Voir les boutiques
+              Voir les restaurants
             </a>
           )}
         </div>
@@ -290,7 +290,7 @@ export default function InscriptionsPage() {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Inscriptions</h1>
-        <p className="text-gray-500 text-sm mt-1">Gérez les demandes d&apos;inscription des boutiques</p>
+        <p className="text-gray-500 text-sm mt-1">Gérez les demandes d&apos;inscription des restaurants</p>
       </div>
 
       <div className="flex gap-2 mb-6 overflow-x-auto -mx-1 px-1 pb-1" style={{ scrollbarWidth: 'thin' }}>
@@ -316,14 +316,14 @@ export default function InscriptionsPage() {
                   {ins.primary_color && (
                     <div className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: ins.primary_color }} />
                   )}
-                  <h3 className="text-base font-semibold text-gray-900 truncate">{ins.boutique_name}</h3>
+                  <h3 className="text-base font-semibold text-gray-900 truncate">{ins.restaurant_name}</h3>
                   {ins.want_verified_badge && (
                     <ShieldCheck className="w-4 h-4 text-brand-orange shrink-0" />
                   )}
                 </div>
                 <p className="text-sm text-gray-500">{ins.owner_name} · {ins.email}</p>
                 <p className="text-sm text-gray-500">{ins.phone}</p>
-                {ins.shop_category && <p className="text-xs text-gray-400 mt-0.5">{ins.shop_category}{ins.city && ` · ${ins.city}`}</p>}
+                {ins.cuisine_type && <p className="text-xs text-gray-400 mt-0.5">{ins.cuisine_type}{ins.city && ` · ${ins.city}`}</p>}
                 <p className="text-xs text-gray-400 mt-0.5">
                   Plan: <span className="font-medium">{ins.plan === 'pro' ? 'Pro' : 'Starter'}</span> · {new Date(ins.created_at).toLocaleDateString('fr-SN')}
                 </p>
@@ -361,7 +361,7 @@ export default function InscriptionsPage() {
                     handleApproved(ins.id, 'approve')
                   }}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                  ✓ Approuver & créer boutique
+                  ✓ Approuver & créer restaurant
                 </button>
                 <button type="button"
                   onClick={async () => {

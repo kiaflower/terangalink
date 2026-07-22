@@ -6,13 +6,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 
 interface FeaturedItem {
-  boutique: {
+  restaurant: {
     name: string
     slug: string
     logo_url?: string | null
     primary_color?: string | null
     city?: string | null
-    shop_category?: string | null
+    cuisine_type?: string | null
   }
   products: Array<{
     name: string
@@ -23,7 +23,7 @@ interface FeaturedItem {
 
 interface FeaturedBlockProps {
   title: string
-  items: FeaturedItem[] // plusieurs boutiques
+  items: FeaturedItem[] // plusieurs restaurants
 }
 
 const TERANGA_VIOLET = '#F97316'
@@ -69,7 +69,7 @@ export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
 
   if (!items.length) return null
   const current = items[activeIndex]
-  const accent = current.boutique.primary_color || TERANGA_VIOLET
+  const accent = current.restaurant.primary_color || TERANGA_VIOLET
 
   return (
     <div
@@ -99,35 +99,35 @@ export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
         )}
       </div>
 
-      {/* Corps — layout horizontal logo + produits */}
+      {/* Corps — layout horizontal logo + plats */}
       <div className="flex gap-0 transition-opacity duration-300">
 
-        {/* Colonne gauche — logo + nom boutique */}
+        {/* Colonne gauche — logo + nom restaurant */}
         <div className="w-[30%] flex-shrink-0 flex flex-col items-center justify-center px-3 py-3 gap-2">
-          {current.boutique.logo_url
+          {current.restaurant.logo_url
             ? // eslint-disable-next-line @next/next/no-img-element
-              <img src={current.boutique.logo_url} alt={current.boutique.name}
+              <img src={current.restaurant.logo_url} alt={current.restaurant.name}
                 className="w-14 h-14 rounded-xl object-cover border border-gray-100" />
             : <div className="w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl font-black"
                 style={{ backgroundColor: accent }}>
-                {current.boutique.name.charAt(0)}
+                {current.restaurant.name.charAt(0)}
               </div>
           }
           <div className="text-center">
             <p className="font-bold text-gray-900 text-xs leading-tight truncate max-w-[80px]">
-              {current.boutique.name}
+              {current.restaurant.name}
             </p>
             <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">
-              {current.boutique.shop_category}
+              {current.restaurant.cuisine_type}
             </p>
-            <p className="text-[10px] text-gray-400 leading-tight">{current.boutique.city}</p>
+            <p className="text-[10px] text-gray-400 leading-tight">{current.restaurant.city}</p>
           </div>
         </div>
 
         {/* Séparateur vertical */}
         <div className="w-px bg-gray-100 my-3" />
 
-        {/* Colonne droite — produits 2×2 + bouton */}
+        {/* Colonne droite — plats 2×2 + bouton */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="grid grid-cols-2 gap-px bg-gray-100 flex-1">
             {current.products.slice(0, 4).map((p, i) => (
@@ -149,11 +149,11 @@ export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
             ))}
           </div>
 
-          {/* Bouton voir catalogue */}
-          <Link href={`/${current.boutique.slug}?from=annuaire`}
+          {/* Bouton voir menu */}
+          <Link href={`/${current.restaurant.slug}?from=annuaire`}
             className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold text-white transition-opacity hover:opacity-90"
             style={{ backgroundColor: accent }}>
-            Voir le catalogue
+            Voir le menu
             <ChevronRight className="w-3 h-3" />
           </Link>
         </div>

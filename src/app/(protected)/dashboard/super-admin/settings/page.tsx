@@ -5,29 +5,29 @@ import { Settings as SettingsIcon, Check, AlertTriangle, Bell } from 'lucide-rea
 import { NotificationSettings } from '@/components/dashboard/NotificationSettings'
 
 const NOTIF_FIELDS = [
-  { key: 'admin_notif_no_new_product_days', label: 'Pas de nouveau produit depuis (jours)', placeholder: '14' },
-  { key: 'admin_notif_no_product_ever_days', label: "Boutique jamais publiée après (jours)", placeholder: '7' },
-  { key: 'admin_notif_inactive_boutique_days', label: 'Boutique inactive depuis (jours)', placeholder: '30' },
+  { key: 'admin_notif_no_new_product_days', label: 'Pas de nouveau plat depuis (jours)', placeholder: '14' },
+  { key: 'admin_notif_no_product_ever_days', label: "Restaurant jamais publiée après (jours)", placeholder: '7' },
+  { key: 'admin_notif_inactive_restaurant_days', label: 'Restaurant inactive depuis (jours)', placeholder: '30' },
   { key: 'admin_notif_product_limit_percent', label: 'Alerte limite de plan atteinte à (%)', placeholder: '80' },
 ]
 
 const NOTIF_TOGGLES: Array<{ key: string; label: string; hint: string }> = [
   { key: 'admin_notif_new_signup_enabled', label: 'Nouvelle inscription', hint: 'Dès qu\'une demande d\'inscription est soumise' },
-  { key: 'admin_notif_no_new_product_enabled', label: 'Catalogue figé / boutique sans produit', hint: 'Pas de nouveau produit, ou aucun produit jamais publié' },
-  { key: 'admin_notif_inactive_boutique_enabled', label: 'Boutique inactive', hint: 'Pas de connexion depuis le seuil configuré' },
+  { key: 'admin_notif_no_new_product_enabled', label: 'Menu figé / restaurant sans plat', hint: 'Pas de nouveau plat, ou aucun plat jamais publié' },
+  { key: 'admin_notif_inactive_restaurant_enabled', label: 'Restaurant inactive', hint: 'Pas de connexion depuis le seuil configuré' },
   { key: 'admin_notif_overdue_invoice_enabled', label: 'Facture impayée', hint: 'Facture au statut "en retard"' },
-  { key: 'admin_notif_product_limit_enabled', label: 'Proche de la limite de plan', hint: 'Free/Starter proches de leur limite de produits' },
+  { key: 'admin_notif_product_limit_enabled', label: 'Proche de la limite de plan', hint: 'Free/Starter proches de leur limite de plats' },
   { key: 'admin_notif_periodic_reminder_enabled', label: 'Rappel périodique', hint: 'Lundi, mercredi et vendredi — bilan + suggestion' },
 ]
 
 const FIELDS = [
-  { key: 'platform_url', label: 'URL de la plateforme', placeholder: 'https://terangaspot.com' },
+  { key: 'platform_url', label: 'URL de la plateforme', placeholder: 'https://terangalink.com' },
   { key: 'support_phone', label: 'Téléphone support', placeholder: '+221 77 000 00 00' },
   { key: 'support_whatsapp', label: 'WhatsApp support', placeholder: '+221 77 000 00 00' },
-  { key: 'support_email', label: 'Email support', placeholder: 'support@terangaspot.com' },
-  { key: 'instagram_url', label: 'Lien Instagram', placeholder: 'https://instagram.com/terangaspot' },
-  { key: 'facebook_url', label: 'Lien Facebook', placeholder: 'https://facebook.com/terangaspot' },
-  { key: 'tiktok_url', label: 'Lien TikTok', placeholder: 'https://tiktok.com/@terangaspot' },
+  { key: 'support_email', label: 'Email support', placeholder: 'support@terangalink.com' },
+  { key: 'instagram_url', label: 'Lien Instagram', placeholder: 'https://instagram.com/terangalink' },
+  { key: 'facebook_url', label: 'Lien Facebook', placeholder: 'https://facebook.com/terangalink' },
+  { key: 'tiktok_url', label: 'Lien TikTok', placeholder: 'https://tiktok.com/@terangalink' },
   { key: 'plan_starter_price', label: 'Prix plan Starter (FCFA/mois)', placeholder: '9900' },
   { key: 'plan_pro_price', label: 'Prix plan Pro (FCFA/mois)', placeholder: '19900' },
   { key: 'subscription_payment_number', label: 'Numéro de paiement abonnement (Wave / Orange Money)', placeholder: '77 000 00 00' },

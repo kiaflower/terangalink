@@ -51,7 +51,7 @@ export async function sendCampaignBatch(admin: AdminClient, campaignId: string, 
       const html = await renderCampaignHtml(campaign, {
         siteUrl,
         recipientId: recipient.id,
-        boutiqueId: recipient.boutique_id,
+        restaurantId: recipient.restaurant_id,
       })
       await transporter.sendMail({
         from: `${campaign.from_name} <${from}>`,
@@ -103,7 +103,7 @@ export async function prepareCampaignForSending(admin: AdminClient, campaignId: 
   if (campaign.status !== 'draft' && campaign.status !== 'scheduled') return { error: 'Cette campagne a déjà été envoyée' }
 
   const recipients = await resolveSegmentRecipients(admin, campaign.segment)
-  if (recipients.length === 0) return { error: 'Aucun destinataire pour ce segment (vérifiez le consentement newsletter des boutiques ciblées)' }
+  if (recipients.length === 0) return { error: 'Aucun destinataire pour ce segment (vérifiez le consentement newsletter des restaurants ciblées)' }
 
   await enqueueCampaignRecipients(admin, campaignId, recipients)
   return { campaign, recipientCount: recipients.length }
@@ -113,11 +113,11 @@ export async function prepareCampaignForSending(admin: AdminClient, campaignId: 
 export async function enqueueCampaignRecipients(
   admin: AdminClient,
   campaignId: string,
-  recipients: { boutique_id: string; email: string }[]
+  recipients: { restaurant_id: string; email: string }[]
 ): Promise<number> {
   if (recipients.length === 0) return 0
-  const rows = recipients.map(r => ({ campaign_id: campaignId, boutique_id: r.boutique_id, email: r.email, status: 'queued' as const }))
-  const { error } = await admin.from('newsletter_recipients').upsert(rows, { onConflict: 'campaign_id,boutique_id', ignoreDuplicates: true })
+  const rows = recipients.map(r => ({ campaign_id: campaignId, restaurant_id: r.restaurant_id, email: r.email, status: 'queued' as const }))
+  const { error } = await admin.from('newsletter_recipients').upsert(rows, { onConflict: 'campaign_id,restaurant_id', ignoreDuplicates: true })
   if (error) throw new Error(error.message)
   return rows.length
 }

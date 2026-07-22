@@ -1,6 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[]
 
-export interface BoutiqueRow {
+export interface RestaurantRow {
   id: string
   name: string
   slug: string
@@ -12,7 +12,7 @@ export interface BoutiqueRow {
   whatsapp_number: string
   address: string | null
   city: string | null
-  shop_category: string | null
+  cuisine_type: string | null
   is_active: boolean
   is_verified: boolean
   is_demo: boolean
@@ -51,8 +51,8 @@ export interface ProfileRow {
   id: string
   email: string
   full_name: string | null
-  role: 'super_admin' | 'boutique_admin'
-  boutique_id: string | null
+  role: 'super_admin' | 'restaurant_admin'
+  restaurant_id: string | null
   admin_role: 'principal' | 'secondaire' | null
   phone: string | null
   created_at: string
@@ -61,7 +61,7 @@ export interface ProfileRow {
 
 export interface SubscriptionRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   plan: 'free' | 'starter' | 'pro'
   status: 'active' | 'trial' | 'overdue' | 'suspended' | 'cancelled'
   started_at: string
@@ -79,7 +79,7 @@ export interface SubscriptionRow {
 export interface PaymentRow {
   id: string
   subscription_id: string
-  boutique_id: string
+  restaurant_id: string
   amount: number
   method: string
   paid_at: string
@@ -89,8 +89,8 @@ export interface PaymentRow {
 
 export interface ReferralRewardRow {
   id: string
-  referrer_boutique_id: string
-  referred_boutique_id: string
+  referrer_restaurant_id: string
+  referred_restaurant_id: string
   discount_percent: number
   status: 'pending' | 'completed'
   triggered_at: string | null
@@ -99,8 +99,8 @@ export interface ReferralRewardRow {
 
 export interface ReferralCreditRow {
   id: string
-  boutique_id: string
-  referred_boutique_id: string
+  restaurant_id: string
+  referred_restaurant_id: string
   status: 'available' | 'consumed'
   consumed_reason: 'discount' | 'free_month' | null
   consumed_at: string | null
@@ -111,7 +111,7 @@ export interface ReferralCreditRow {
 export interface InvoiceRow {
   id: string
   invoice_number: string
-  boutique_id: string
+  restaurant_id: string
   subscription_id: string
   period_start: string
   period_end: string
@@ -128,9 +128,9 @@ export interface InvoiceRow {
   created_at: string
 }
 
-export interface ProductCategoryRow {
+export interface MenuCategoryRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   name: string
   position: number
   is_active: boolean
@@ -140,7 +140,7 @@ export interface ProductCategoryRow {
 
 export interface ProductRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   category_id: string | null
   name: string
   slug: string
@@ -179,7 +179,7 @@ export interface ProductVariantRow {
 
 export interface OrderRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   order_number: string
   customer_name: string | null
   customer_phone: string | null
@@ -197,7 +197,7 @@ export interface OrderRow {
 
 export interface ReviewRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   order_id: string | null
   customer_name: string | null
   rating: number
@@ -208,7 +208,7 @@ export interface ReviewRow {
 
 export interface AnalyticsEventRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   event_type: string
   item_id: string | null
   item_name: string | null
@@ -218,7 +218,7 @@ export interface AnalyticsEventRow {
 
 export interface WeeklyReportRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   period_start: string
   period_end: string
   status: 'sent' | 'failed'
@@ -230,7 +230,7 @@ export interface WeeklyReportRow {
 
 export interface BoostRequestRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   status: 'pending' | 'active' | 'expired' | 'rejected'
   boost_type: string
   requested_at: string
@@ -241,21 +241,21 @@ export interface BoostRequestRow {
 
 export interface InscriptionRow {
   id: string
-  boutique_name: string
+  restaurant_name: string
   owner_name: string
   email: string
   phone: string
   whatsapp_number: string
-  shop_category: string | null
+  cuisine_type: string | null
   city: string | null
   message: string | null
   status: 'pending' | 'approved' | 'rejected'
   created_at: string
 }
 
-export interface BoutiqueBannerRow {
+export interface RestaurantBannerRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   text: string
   is_active: boolean
   created_at: string
@@ -263,8 +263,8 @@ export interface BoutiqueBannerRow {
 
 export interface EarlyAccessApplicationRow {
   id: string
-  boutique_name: string
-  shop_category: string
+  restaurant_name: string
+  cuisine_type: string
   city: string
   description: string | null
   owner_name: string
@@ -291,7 +291,7 @@ export interface EarlyAccessApplicationRow {
   status: 'pending' | 'contacted' | 'confirmed' | 'rejected'
   place_number: number | null
   notes_admin: string | null
-  created_boutique_id: string | null
+  created_restaurant_id: string | null
   created_admin_password: string | null
   created_at: string
 }
@@ -314,7 +314,7 @@ export interface WaitlistRow {
 
 export interface PromoCodeRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   code: string
   discount_type: 'percent' | 'fixed'
   discount_value: number
@@ -326,9 +326,9 @@ export interface PromoCodeRow {
   created_at: string
 }
 
-export interface BoutiqueStoryRow {
+export interface RestaurantStoryRow {
   id: string
-  boutique_id: string
+  restaurant_id: string
   media_url: string
   media_type: 'image' | 'video'
   caption: string | null
@@ -375,7 +375,7 @@ export interface NewsletterCampaignRow {
 export interface NewsletterRecipientRow {
   id: string
   campaign_id: string
-  boutique_id: string
+  restaurant_id: string
   email: string
   status: 'queued' | 'sent' | 'opened' | 'clicked' | 'failed' | 'unsubscribed'
   error_message: string | null
@@ -390,10 +390,10 @@ export interface NewsletterRecipientRow {
 export interface Database {
   public: {
     Tables: {
-      boutiques: {
-        Row: BoutiqueRow
-        Insert: Partial<BoutiqueRow> & { name: string; slug: string; whatsapp_number: string }
-        Update: Partial<BoutiqueRow>
+      restaurants: {
+        Row: RestaurantRow
+        Insert: Partial<RestaurantRow> & { name: string; slug: string; whatsapp_number: string }
+        Update: Partial<RestaurantRow>
       }
       profiles: {
         Row: ProfileRow
@@ -402,17 +402,17 @@ export interface Database {
       }
       subscriptions: {
         Row: SubscriptionRow
-        Insert: Partial<SubscriptionRow> & { boutique_id: string }
+        Insert: Partial<SubscriptionRow> & { restaurant_id: string }
         Update: Partial<SubscriptionRow>
       }
-      product_categories: {
-        Row: ProductCategoryRow
-        Insert: Partial<ProductCategoryRow> & { boutique_id: string; name: string }
-        Update: Partial<ProductCategoryRow>
+      menu_categories: {
+        Row: MenuCategoryRow
+        Insert: Partial<MenuCategoryRow> & { restaurant_id: string; name: string }
+        Update: Partial<MenuCategoryRow>
       }
       products: {
         Row: ProductRow
-        Insert: Partial<ProductRow> & { boutique_id: string; name: string; price: number }
+        Insert: Partial<ProductRow> & { restaurant_id: string; name: string; price: number }
         Update: Partial<ProductRow>
       }
       product_variants: {
@@ -422,53 +422,53 @@ export interface Database {
       }
       orders: {
         Row: OrderRow
-        Insert: Partial<OrderRow> & { boutique_id: string; order_number: string; items: Json; total: number }
+        Insert: Partial<OrderRow> & { restaurant_id: string; order_number: string; items: Json; total: number }
         Update: Partial<OrderRow>
       }
       analytics_events: {
         Row: AnalyticsEventRow
-        Insert: Partial<AnalyticsEventRow> & { boutique_id: string; event_type: string }
+        Insert: Partial<AnalyticsEventRow> & { restaurant_id: string; event_type: string }
         Update: Partial<AnalyticsEventRow>
       }
       weekly_reports: {
         Row: WeeklyReportRow
-        Insert: Partial<WeeklyReportRow> & { boutique_id: string; period_start: string; period_end: string }
+        Insert: Partial<WeeklyReportRow> & { restaurant_id: string; period_start: string; period_end: string }
         Update: Partial<WeeklyReportRow>
       }
       boost_requests: {
         Row: BoostRequestRow
-        Insert: Partial<BoostRequestRow> & { boutique_id: string }
+        Insert: Partial<BoostRequestRow> & { restaurant_id: string }
         Update: Partial<BoostRequestRow>
       }
       inscriptions: {
         Row: InscriptionRow
-        Insert: Partial<InscriptionRow> & { boutique_name: string; owner_name: string; email: string; phone: string; whatsapp_number: string }
+        Insert: Partial<InscriptionRow> & { restaurant_name: string; owner_name: string; email: string; phone: string; whatsapp_number: string }
         Update: Partial<InscriptionRow>
       }
       promo_codes: {
         Row: PromoCodeRow
-        Insert: Partial<PromoCodeRow> & { boutique_id: string; code: string; discount_type: 'percent' | 'fixed'; discount_value: number }
+        Insert: Partial<PromoCodeRow> & { restaurant_id: string; code: string; discount_type: 'percent' | 'fixed'; discount_value: number }
         Update: Partial<PromoCodeRow>
       }
       reviews: {
         Row: ReviewRow
-        Insert: Partial<ReviewRow> & { boutique_id: string; rating: number }
+        Insert: Partial<ReviewRow> & { restaurant_id: string; rating: number }
         Update: Partial<ReviewRow>
       }
       referral_rewards: {
         Row: ReferralRewardRow
-        Insert: Partial<ReferralRewardRow> & { referrer_boutique_id: string; referred_boutique_id: string }
+        Insert: Partial<ReferralRewardRow> & { referrer_restaurant_id: string; referred_restaurant_id: string }
         Update: Partial<ReferralRewardRow>
       }
       referral_credits: {
         Row: ReferralCreditRow
-        Insert: Partial<ReferralCreditRow> & { boutique_id: string; referred_boutique_id: string }
+        Insert: Partial<ReferralCreditRow> & { restaurant_id: string; referred_restaurant_id: string }
         Update: Partial<ReferralCreditRow>
       }
       invoices: {
         Row: InvoiceRow
         Insert: Partial<InvoiceRow> & {
-          invoice_number: string; boutique_id: string; subscription_id: string
+          invoice_number: string; restaurant_id: string; subscription_id: string
           period_start: string; period_end: string; plan: 'starter' | 'pro'
           full_amount: number; final_amount: number; due_at: string
         }
@@ -476,18 +476,18 @@ export interface Database {
       }
       payments: {
         Row: PaymentRow
-        Insert: Partial<PaymentRow> & { subscription_id: string; boutique_id: string; amount: number }
+        Insert: Partial<PaymentRow> & { subscription_id: string; restaurant_id: string; amount: number }
         Update: Partial<PaymentRow>
       }
-      boutique_banners: {
-        Row: BoutiqueBannerRow
-        Insert: Partial<BoutiqueBannerRow> & { boutique_id: string; text: string }
-        Update: Partial<BoutiqueBannerRow>
+      restaurant_banners: {
+        Row: RestaurantBannerRow
+        Insert: Partial<RestaurantBannerRow> & { restaurant_id: string; text: string }
+        Update: Partial<RestaurantBannerRow>
       }
       early_access_applications: {
         Row: EarlyAccessApplicationRow
         Insert: Partial<EarlyAccessApplicationRow> & {
-          boutique_name: string; shop_category: string; city: string
+          restaurant_name: string; cuisine_type: string; city: string
           owner_name: string; email: string; phone: string; whatsapp_number: string
         }
         Update: Partial<EarlyAccessApplicationRow>
@@ -502,10 +502,10 @@ export interface Database {
         Insert: Partial<WaitlistRow> & { phone: string }
         Update: Partial<WaitlistRow>
       }
-      boutique_stories: {
-        Row: BoutiqueStoryRow
-        Insert: Partial<BoutiqueStoryRow> & { boutique_id: string; media_url: string; media_type: 'image' | 'video' }
-        Update: Partial<BoutiqueStoryRow>
+      restaurant_stories: {
+        Row: RestaurantStoryRow
+        Insert: Partial<RestaurantStoryRow> & { restaurant_id: string; media_url: string; media_type: 'image' | 'video' }
+        Update: Partial<RestaurantStoryRow>
       }
     }
   }

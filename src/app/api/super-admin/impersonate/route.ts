@@ -18,16 +18,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
-    const { boutique_id } = await request.json()
-    if (!boutique_id) return NextResponse.json({ error: 'boutique_id requis' }, { status: 400 })
+    const { restaurant_id } = await request.json()
+    if (!restaurant_id) return NextResponse.json({ error: 'restaurant_id requis' }, { status: 400 })
 
     const adminClient = createAdminClient()
-    const { data: boutique } = await adminClient.from('boutiques').select('id, name').eq('id', boutique_id).single()
-    if (!boutique) return NextResponse.json({ error: 'Boutique introuvable' }, { status: 404 })
+    const { data: restaurant } = await adminClient.from('restaurants').select('id, name').eq('id', restaurant_id).single()
+    if (!restaurant) return NextResponse.json({ error: 'Restaurant introuvable' }, { status: 404 })
 
     // Fix: set cookie on NextResponse directly (cookies() is read-only in Route Handlers in Next.js 14+)
-    const response = NextResponse.json({ success: true, boutique_name: boutique.name })
-    response.cookies.set(COOKIE, boutique_id, {
+    const response = NextResponse.json({ success: true, restaurant_name: restaurant.name })
+    response.cookies.set(COOKIE, restaurant_id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

@@ -25,7 +25,7 @@ function NavContent({ onClose, counts }: { onClose?: () => void; counts: Counts 
   const pathname = usePathname()
   const navItems = [
     { href: '/dashboard/super-admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-    { href: '/dashboard/super-admin/boutiques', label: 'Boutiques', icon: Store },
+    { href: '/dashboard/super-admin/restaurants', label: 'Restaurants', icon: Store },
     { href: '/dashboard/super-admin/inscriptions', label: 'Inscriptions', icon: ClipboardList, badge: counts.inscriptions },
     { href: '/dashboard/super-admin/early-access', label: 'Early Access', icon: Sparkles, badge: counts.earlyAccess },
     { href: '/dashboard/super-admin/subscriptions', label: 'Abonnements', icon: CreditCard },

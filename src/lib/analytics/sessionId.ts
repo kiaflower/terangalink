@@ -13,13 +13,13 @@ function generateId(): string {
 }
 
 /**
- * Id anonyme par visiteur/boutique, persisté en localStorage (même pattern
+ * Id anonyme par visiteur/restaurant, persisté en localStorage (même pattern
  * que usePersistedCart). Réutilisé tant que le visiteur revient dans la
  * fenêtre d'abandon — au-delà, un nouvel id est généré, ce qui est cohérent :
  * passé ce délai, la session précédente était de toute façon déjà abandonnée.
  */
-export function getOrCreateSessionId(boutiqueSlug: string): string {
-  const key = `terangaspot_session_${boutiqueSlug}`
+export function getOrCreateSessionId(restaurantSlug: string): string {
+  const key = `terangalink_session_${restaurantSlug}`
   try {
     const raw = localStorage.getItem(key)
     if (raw) {

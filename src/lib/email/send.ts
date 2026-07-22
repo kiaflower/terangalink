@@ -7,7 +7,7 @@ interface SendMailArgs {
 }
 
 /**
- * Envoie un email via la boîte SMTP contact@teranga-spot.com. N'échoue
+ * Envoie un email via la boîte SMTP contact@teranga-link.com. N'échoue
  * jamais bruyamment : si SMTP n'est pas configuré ou que l'envoi échoue, on
  * logue et on continue — un email non envoyé ne doit jamais faire échouer
  * un changement de mot de passe ou une gestion d'admin.
@@ -22,7 +22,7 @@ export async function sendMail({ to, subject, html }: SendMailArgs): Promise<voi
   }
 
   try {
-    await transporter.sendMail({ from: `TerangaSpot <${from}>`, to, subject, html })
+    await transporter.sendMail({ from: `TerangaLink <${from}>`, to, subject, html })
   } catch (err) {
     console.error(`[email] Échec d'envoi "${subject}" à ${to}:`, err)
   }

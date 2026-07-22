@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const { boutique_id, code, subtotal } = await req.json()
+  const { restaurant_id, code, subtotal } = await req.json()
 
-  if (!boutique_id || !code || typeof subtotal !== 'number') {
+  if (!restaurant_id || !code || typeof subtotal !== 'number') {
     return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
   }
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const { data: subscription } = await admin
     .from('subscriptions')
     .select('plan')
-    .eq('boutique_id', boutique_id)
+    .eq('restaurant_id', restaurant_id)
     .single()
   if (subscription?.plan !== 'pro') {
     return NextResponse.json({ error: 'Code promo invalide' }, { status: 404 })
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   const { data: promo } = await admin
     .from('promo_codes')
     .select('*')
-    .eq('boutique_id', boutique_id)
+    .eq('restaurant_id', restaurant_id)
     .ilike('code', code.trim())
     .single()
 

@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!email) return NextResponse.json({ error: 'Adresse email requise' }, { status: 400 })
 
     const subject = typeof body.subject === 'string' && body.subject.trim() ? body.subject.trim() : '(sans objet)'
-    const fromName = typeof body.from_name === 'string' && body.from_name.trim() ? body.from_name.trim() : 'TerangaSpot'
+    const fromName = typeof body.from_name === 'string' && body.from_name.trim() ? body.from_name.trim() : 'TerangaLink'
     const previewText = typeof body.preview_text === 'string' ? body.preview_text : null
     const blocks = sanitizeBlocks(body.blocks)
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const html = await renderCampaignHtml(
       { blocks, preview_text: previewText },
-      { siteUrl: getSiteUrl(), recipientId: null, boutiqueId: null }
+      { siteUrl: getSiteUrl(), recipientId: null, restaurantId: null }
     )
 
     await transporter.sendMail({ from: `${fromName} <${from}>`, to: email, subject: `[TEST] ${subject}`, html })

@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
   // Le filtre profile_id empêche un utilisateur de supprimer l'abonnement
-  // d'un autre admin de la même boutique en devinant son endpoint.
+  // d'un autre admin de la même restaurant en devinant son endpoint.
   await admin.from('push_subscriptions').delete().eq('endpoint', endpoint).eq('profile_id', user.id)
 
   return NextResponse.json({ success: true })

@@ -5,7 +5,7 @@ import { Star, Send, CheckCircle2 } from 'lucide-react'
 
 interface ReviewFormProps {
   orderId: string
-  boutiqueId: string
+  restaurantId: string
   customerName: string
   onSubmitted?: () => void
   accentColor?: string
@@ -17,7 +17,7 @@ interface ReviewFormProps {
 
 export function ReviewForm({
   orderId,
-  boutiqueId,
+  restaurantId,
   customerName,
   onSubmitted,
   accentColor = '#F97316',
@@ -43,7 +43,7 @@ export function ReviewForm({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        boutique_id: boutiqueId,
+        restaurant_id: restaurantId,
         order_id: orderId,
         customer_name: name.trim() || null,
         rating,
@@ -66,7 +66,7 @@ export function ReviewForm({
       <div className="rounded-2xl px-5 py-6 text-center space-y-2" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
         <CheckCircle2 className="w-8 h-8 mx-auto" style={{ color: accentColor }} />
         <p className="font-bold text-sm" style={{ color: pageText }}>Merci pour votre avis !</p>
-        <p className="text-xs" style={{ color: subtleText }}>Votre retour aide la boutique à s&apos;améliorer.</p>
+        <p className="text-xs" style={{ color: subtleText }}>Votre retour aide le restaurant à s&apos;améliorer.</p>
       </div>
     )
   }

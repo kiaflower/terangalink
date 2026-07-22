@@ -5,13 +5,13 @@ export const PLANS = {
     currency: 'FCFA',
     period: 'mois',
     features: [
-      "Listée dans l'annuaire TerangaSpot",
+      "Listée dans l'annuaire TerangaLink",
       'Vitrine publique avec lien unique',
-      "Jusqu'à 10 produits",
+      "Jusqu'à 10 plats",
       'Commandes WhatsApp illimitées',
       'Tableau de bord simple',
       'Statistiques de base',
-      'Badge TerangaSpot visible sur la vitrine',
+      'Badge TerangaLink visible sur la vitrine',
     ],
     limits: { products: 10, categories: 3, images_per_product: 1 },
     brandingVisible: true,
@@ -22,9 +22,9 @@ export const PLANS = {
     currency: 'FCFA',
     period: 'mois',
     features: [
-      "Listée dans l'annuaire TerangaSpot",
+      "Listée dans l'annuaire TerangaLink",
       'Vitrine publique avec lien unique',
-      "Catalogue jusqu'à 30 produits",
+      "Menu jusqu'à 30 plats",
       'Commandes WhatsApp illimitées',
       'QR Code téléchargeable',
       'Avis clients visibles',
@@ -33,8 +33,8 @@ export const PLANS = {
       'Bannières promotionnelles',
       'Stories (photo/vidéo, 24h)',
       'Tableau de bord',
-      "Parcours d'achat & produits populaires",
-      'Badge TerangaSpot visible sur la vitrine',
+      "Parcours d'achat & plats populaires",
+      'Badge TerangaLink visible sur la vitrine',
     ],
     limits: { products: 30, categories: 5, images_per_product: 1 },
     brandingVisible: true,
@@ -46,17 +46,17 @@ export const PLANS = {
     period: 'mois',
     features: [
       'Tout Starter +',
-      'Catalogue illimité',
-      "Jusqu'à 5 images par produit",
-      'Variantes produit (taille, couleur...)',
-      'Épingler 2 produits en tête de vitrine',
+      'Menu illimité',
+      "Jusqu'à 5 images par plat",
+      'Variantes plat (taille, couleur...)',
+      'Épingler 2 plats en tête de vitrine',
       'Gestion de stock',
       'Codes promo clients',
       'Précommandes',
       'Génération de reçus de commande',
-      'Analytiques complètes (abandon de panier, produits à surveiller, recommandations)',
+      'Analytiques complètes (abandon de panier, plats à surveiller, recommandations)',
       'Couleurs personnalisées sur la vitrine',
-      'Suppression du badge TerangaSpot',
+      'Suppression du badge TerangaLink',
     ],
     limits: { products: -1, categories: -1, images_per_product: 5 },
     brandingVisible: false,
@@ -71,15 +71,15 @@ export type PlanKey = keyof typeof PLANS
 export type BillablePlanKey = Exclude<PlanKey, 'free'>
 
 // Feature flags par plan — source de vérité pour le gating (FeatureGate / canUseFeature).
-// NB: `free` n'est pour l'instant qu'une carte marketing (aucune boutique réelle n'a ce plan
+// NB: `free` n'est pour l'instant qu'une carte marketing (aucun restaurant réelle n'a ce plan
 // en base — l'inscription en libre-service qui le créerait n'existe pas encore). Ces valeurs
 // documentent l'intention pour quand l'application réelle des limites sera construite.
 export const PLAN_FEATURES = {
   free: {
-    maxProduits: 10,
+    maxPlats: 10,
     maxCategories: 3,
-    imagesParProduit: 1,
-    variantesProduits: false,
+    imagesParPlat: 1,
+    variantesPlats: false,
     gestionStock: false,
     codePromo: false,
     bannieres: false,
@@ -89,7 +89,7 @@ export const PLAN_FEATURES = {
     couleursPersonnalisees: false,
     suppressionBranding: false,
     badgeVerifie: false,
-    epinglageProduits: false,
+    epinglagePlats: false,
     qrCode: false,
     avisClients: false,
     suiviCommande: false,
@@ -98,10 +98,10 @@ export const PLAN_FEATURES = {
     stories: false,
   },
   starter: {
-    maxProduits: 30,
+    maxPlats: 30,
     maxCategories: 5,
-    imagesParProduit: 1,
-    variantesProduits: false,
+    imagesParPlat: 1,
+    variantesPlats: false,
     gestionStock: false,
     codePromo: false,
     bannieres: true,
@@ -111,7 +111,7 @@ export const PLAN_FEATURES = {
     couleursPersonnalisees: false,
     suppressionBranding: false,
     badgeVerifie: true, // option payante séparée, disponible sur les deux plans
-    epinglageProduits: false,
+    epinglagePlats: false,
     qrCode: true,
     avisClients: true,
     suiviCommande: true,
@@ -120,10 +120,10 @@ export const PLAN_FEATURES = {
     stories: true,
   },
   pro: {
-    maxProduits: -1,
+    maxPlats: -1,
     maxCategories: -1,
-    imagesParProduit: 5,
-    variantesProduits: true,
+    imagesParPlat: 5,
+    variantesPlats: true,
     gestionStock: true,
     codePromo: true,
     bannieres: true,
@@ -133,7 +133,7 @@ export const PLAN_FEATURES = {
     couleursPersonnalisees: true,
     suppressionBranding: true,
     badgeVerifie: true,
-    epinglageProduits: true,
+    epinglagePlats: true,
     qrCode: true,
     avisClients: true,
     suiviCommande: true,
@@ -151,9 +151,9 @@ export function canUseFeature(plan: PlanKey, feature: FeatureKey): boolean {
 }
 
 // -1 = illimité (Pro). Utilisé par Free (10) et Starter (30) pour bloquer
-// réellement l'ajout de produit une fois la limite atteinte.
+// réellement l'ajout de plat une fois la limite atteinte.
 export function getProductLimit(plan: PlanKey): number {
-  return PLAN_FEATURES[plan].maxProduits
+  return PLAN_FEATURES[plan].maxPlats
 }
 
 export function hasReachedProductLimit(plan: PlanKey, currentProductCount: number): boolean {
@@ -164,5 +164,5 @@ export function hasReachedProductLimit(plan: PlanKey, currentProductCount: numbe
 export function productLimitMessage(plan: PlanKey): string {
   const limit = getProductLimit(plan)
   const upgradeTarget = plan === 'free' ? 'Starter ou Pro' : 'Pro'
-  return `Vous avez atteint votre limite de ${limit} produits. Passez à ${upgradeTarget} pour continuer à développer votre catalogue.`
+  return `Vous avez atteint votre limite de ${limit} plats. Passez à ${upgradeTarget} pour continuer à développer votre menu.`
 }

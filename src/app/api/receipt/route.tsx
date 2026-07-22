@@ -6,9 +6,9 @@ export const runtime = 'edge'
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
 
-  const boutiqueName = searchParams.get('boutiqueName') || 'Boutique'
-  const boutiqueAddress = searchParams.get('boutiqueAddress') || ''
-  const boutiquePhone = searchParams.get('boutiquePhone') || ''
+  const restaurantName = searchParams.get('restaurantName') || 'Restaurant'
+  const restaurantAddress = searchParams.get('restaurantAddress') || ''
+  const restaurantPhone = searchParams.get('restaurantPhone') || ''
   const orderNumber = searchParams.get('orderNumber') || ''
   const date = searchParams.get('date') || ''
   const customerName = searchParams.get('customerName') || '-'
@@ -45,11 +45,11 @@ export async function GET(req: NextRequest) {
           }}
         >
           <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', marginBottom: 6 }}>
-            {boutiqueName}
+            {restaurantName}
           </div>
-          {boutiqueAddress && (
+          {restaurantAddress && (
             <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', marginBottom: 18 }}>
-              {boutiqueAddress.toUpperCase()}
+              {restaurantAddress.toUpperCase()}
             </div>
           )}
           <div
@@ -176,12 +176,12 @@ export async function GET(req: NextRequest) {
             <div style={{ fontSize: 16, fontWeight: 700, color: '#111', marginBottom: 6 }}>
               Merci pour votre commande !
             </div>
-            {boutiquePhone && (
-              <div style={{ fontSize: 12, color: '#aaa', marginBottom: 4 }}>{boutiquePhone}</div>
+            {restaurantPhone && (
+              <div style={{ fontSize: 12, color: '#aaa', marginBottom: 4 }}>{restaurantPhone}</div>
             )}
             <div style={{ display: 'flex', fontSize: 11, color: '#ccc', marginTop: 6 }}>
               Propulsé par{' '}
-              <span style={{ color: accentColor, fontWeight: 700 }}>TerangaSpot</span>
+              <span style={{ color: accentColor, fontWeight: 700 }}>TerangaLink</span>
             </div>
           </div>
         </div>

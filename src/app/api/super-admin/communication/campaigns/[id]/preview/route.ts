@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     const html = await renderCampaignHtml(
       { blocks, preview_text: previewText },
-      { siteUrl: getSiteUrl(), recipientId: null, boutiqueId: null }
+      { siteUrl: getSiteUrl(), recipientId: null, restaurantId: null }
     )
 
     return NextResponse.json({ html })

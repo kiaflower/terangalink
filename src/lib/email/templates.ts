@@ -18,7 +18,7 @@ function layout(title: string, bodyHtml: string): string {
               <td style="background:#F97316;padding:20px 32px;">
                 <table cellpadding="0" cellspacing="0"><tr>
                   <td style="padding-right:10px;"><img src="${logoUrl}" width="28" height="28" alt="" style="border-radius:8px;display:block;" /></td>
-                  <td><span style="color:#FFFFFF;font-weight:700;font-size:18px;">TerangaSpot</span></td>
+                  <td><span style="color:#FFFFFF;font-weight:700;font-size:18px;">TerangaLink</span></td>
                 </tr></table>
               </td>
             </tr>
@@ -30,7 +30,7 @@ function layout(title: string, bodyHtml: string): string {
             </tr>
             <tr>
               <td style="padding:16px 32px;background:#F9FAFB;">
-                <p style="margin:0;font-size:12px;color:#9CA3AF;">TerangaSpot — cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+                <p style="margin:0;font-size:12px;color:#9CA3AF;">TerangaLink — cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
               </td>
             </tr>
           </table>
@@ -52,57 +52,57 @@ function credentialsBlock(email: string, password: string): string {
   </table>`
 }
 
-export function welcomeEmail(boutiqueName: string, email: string, password: string): EmailContent {
+export function welcomeEmail(restaurantName: string, email: string, password: string): EmailContent {
   return {
-    subject: `Bienvenue sur TerangaSpot, ${boutiqueName} !`,
-    html: layout('Votre boutique est prête 🎉', `
-      <p style="margin:0 0 12px;font-size:14px;color:#374151;">Votre boutique <strong>${boutiqueName}</strong> a été validée. Voici vos identifiants pour accéder à votre dashboard :</p>
+    subject: `Bienvenue sur TerangaLink, ${restaurantName} !`,
+    html: layout('Votre restaurant est prête 🎉', `
+      <p style="margin:0 0 12px;font-size:14px;color:#374151;">Votre restaurant <strong>${restaurantName}</strong> a été validée. Voici vos identifiants pour accéder à votre dashboard :</p>
       ${credentialsBlock(email, password)}
       <p style="margin:0;font-size:13px;color:#6B7280;">Conservez ces informations en lieu sûr. Vous pourrez modifier ce mot de passe à tout moment depuis les Paramètres de votre dashboard.</p>
     `),
   }
 }
 
-export function adminAddedEmail(boutiqueName: string, email: string, password: string): EmailContent {
+export function adminAddedEmail(restaurantName: string, email: string, password: string): EmailContent {
   return {
-    subject: `Vous êtes désormais admin de ${boutiqueName} sur TerangaSpot`,
+    subject: `Vous êtes désormais admin de ${restaurantName} sur TerangaLink`,
     html: layout('Accès dashboard ajouté', `
-      <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'admin principal de <strong>${boutiqueName}</strong> vous a ajouté comme administrateur secondaire. Voici vos identifiants :</p>
+      <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'admin principal de <strong>${restaurantName}</strong> vous a ajouté comme administrateur secondaire. Voici vos identifiants :</p>
       ${credentialsBlock(email, password)}
-      <p style="margin:0;font-size:13px;color:#6B7280;">Ce mot de passe est partagé avec les autres admins de la boutique. Seul l'admin principal peut le modifier.</p>
+      <p style="margin:0;font-size:13px;color:#6B7280;">Ce mot de passe est partagé avec les autres admins de le restaurant. Seul l'admin principal peut le modifier.</p>
     `),
   }
 }
 
-export function passwordChangedEmail(boutiqueName: string, email: string, newPassword: string): EmailContent {
+export function passwordChangedEmail(restaurantName: string, email: string, newPassword: string): EmailContent {
   return {
-    subject: `Le mot de passe de ${boutiqueName} a changé`,
+    subject: `Le mot de passe de ${restaurantName} a changé`,
     html: layout('Mot de passe mis à jour', `
-      <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'admin principal de <strong>${boutiqueName}</strong> vient de changer le mot de passe partagé du dashboard. Voici le nouveau :</p>
+      <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'admin principal de <strong>${restaurantName}</strong> vient de changer le mot de passe partagé du dashboard. Voici le nouveau :</p>
       ${credentialsBlock(email, newPassword)}
       <p style="margin:0;font-size:13px;color:#6B7280;">Vous avez été déconnecté(e) de vos sessions actives. Utilisez ce nouveau mot de passe pour vous reconnecter.</p>
     `),
   }
 }
 
-export function forgotPasswordPrincipalEmail(boutiqueName: string, email: string, newPassword: string): EmailContent {
+export function forgotPasswordPrincipalEmail(restaurantName: string, email: string, newPassword: string): EmailContent {
   return {
-    subject: `Nouveau mot de passe pour ${boutiqueName}`,
+    subject: `Nouveau mot de passe pour ${restaurantName}`,
     html: layout('Mot de passe réinitialisé', `
-      <p style="margin:0 0 12px;font-size:14px;color:#374151;">Vous avez demandé la réinitialisation du mot de passe de <strong>${boutiqueName}</strong>. Voici le nouveau mot de passe :</p>
+      <p style="margin:0 0 12px;font-size:14px;color:#374151;">Vous avez demandé la réinitialisation du mot de passe de <strong>${restaurantName}</strong>. Voici le nouveau mot de passe :</p>
       ${credentialsBlock(email, newPassword)}
-      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives de la boutique ont été déconnectées. Si vous n'êtes pas à l'origine de cette demande, contactez le support TerangaSpot.</p>
+      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives de le restaurant ont été déconnectées. Si vous n'êtes pas à l'origine de cette demande, contactez le support TerangaLink.</p>
     `),
   }
 }
 
-export function supportResetEmail(boutiqueName: string, email: string, newPassword: string): EmailContent {
+export function supportResetEmail(restaurantName: string, email: string, newPassword: string): EmailContent {
   return {
-    subject: `Mot de passe réinitialisé par le support TerangaSpot`,
+    subject: `Mot de passe réinitialisé par le support TerangaLink`,
     html: layout('Réinitialisation par le support', `
-      <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'équipe support TerangaSpot a réinitialisé le mot de passe de <strong>${boutiqueName}</strong> à votre demande. Voici le nouveau mot de passe :</p>
+      <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'équipe support TerangaLink a réinitialisé le mot de passe de <strong>${restaurantName}</strong> à votre demande. Voici le nouveau mot de passe :</p>
       ${credentialsBlock(email, newPassword)}
-      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives de la boutique ont été déconnectées. Contactez le support si vous n'êtes pas à l'origine de cette demande.</p>
+      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives de le restaurant ont été déconnectées. Contactez le support si vous n'êtes pas à l'origine de cette demande.</p>
     `),
   }
 }

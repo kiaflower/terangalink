@@ -7,7 +7,7 @@ interface RenderOptions {
   siteUrl: string
   /** null pour un envoi de test — désactive tracking pixel/clic/désabonnement. */
   recipientId: string | null
-  boutiqueId: string | null
+  restaurantId: string | null
 }
 
 function trackClickUrl(siteUrl: string, recipientId: string, targetUrl: string): string {
@@ -31,8 +31,8 @@ export async function renderCampaignHtml(
 ): Promise<string> {
   const blocks = resolveBlockLinks(campaign.blocks, opts.siteUrl, opts.recipientId)
 
-  const unsubscribeUrl = opts.boutiqueId && opts.recipientId
-    ? `${opts.siteUrl}/api/newsletter/unsubscribe?b=${opts.boutiqueId}&r=${opts.recipientId}&t=${sign(opts.boutiqueId)}`
+  const unsubscribeUrl = opts.restaurantId && opts.recipientId
+    ? `${opts.siteUrl}/api/newsletter/unsubscribe?b=${opts.restaurantId}&r=${opts.recipientId}&t=${sign(opts.restaurantId)}`
     : null
 
   const pixelUrl = opts.recipientId

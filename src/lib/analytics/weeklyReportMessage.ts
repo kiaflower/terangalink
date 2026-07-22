@@ -4,9 +4,9 @@ import type { WeeklyStats } from './weeklyStats'
  * Message WhatsApp prérempli pour le rapport hebdomadaire (envoi manuel par
  * le super admin — même pattern que buildWhatsAppMessage pour les commandes).
  */
-export function buildWeeklyReportMessage(boutiqueName: string, stats: WeeklyStats, recommendations: string[]): string {
+export function buildWeeklyReportMessage(restaurantName: string, stats: WeeklyStats, recommendations: string[]): string {
   const lines = [
-    `Bonjour ${boutiqueName} 👋`,
+    `Bonjour ${restaurantName} 👋`,
     '',
     '*TON TERANGASPOT CETTE SEMAINE*',
     `${stats.visits} visites`,
@@ -15,7 +15,7 @@ export function buildWeeklyReportMessage(boutiqueName: string, stats: WeeklyStat
     `${stats.abandonedCarts} panier${stats.abandonedCarts > 1 ? 's' : ''} abandonné${stats.abandonedCarts > 1 ? 's' : ''}`,
   ]
 
-  if (stats.topProduct) lines.push('', `Produit le plus populaire : *${stats.topProduct.itemName}*`)
+  if (stats.topProduct) lines.push('', `Plat le plus populaire : *${stats.topProduct.itemName}*`)
   if (stats.visitGrowthPercent !== null) {
     lines.push(`${stats.visitGrowthPercent >= 0 ? '+' : ''}${stats.visitGrowthPercent}% de visites par rapport à la semaine précédente`)
   }

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // Seuls ces buckets sont servis — `path` n'est jamais utilisé pour construire une
 // URL externe arbitraire (pas de proxy ouvert / SSRF), seulement pour compléter
 // notre propre URL Supabase.
-const ALLOWED_PREFIXES = ['boutique-images/', 'product-images/']
+const ALLOWED_PREFIXES = ['restaurant-images/', 'product-images/']
 
 // WhatsApp est bien plus strict que le débogueur Facebook sur le poids de
 // og:image, et Supabase ne peut pas recompresser un PNG (format sans perte) —

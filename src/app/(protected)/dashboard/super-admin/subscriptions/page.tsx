@@ -6,7 +6,7 @@ import { PLANS } from '@/lib/plans'
 import { RefreshCw, TrendingUp, Clock, XCircle, DollarSign } from 'lucide-react'
 import { SubscriptionRow } from './SubscriptionRow'
 
-// Prix figé pour les boutiques badge fondateur — indépendant du prix Pro
+// Prix figé pour les restaurants badge fondateur — indépendant du prix Pro
 // courant réglable en paramètres super-admin (grandfathering).
 const FOUNDER_PRO_PRICE = 7900
 
@@ -19,7 +19,7 @@ interface Sub {
   discount_percent: number | null
   discount_expires_at: string | null
   pending_discount_percent: number | null
-  boutique: { name: string; slug: string; is_demo: boolean; is_founder: boolean } | null
+  restaurant: { name: string; slug: string; is_demo: boolean; is_founder: boolean } | null
 }
 
 export default function SubscriptionsPage() {
@@ -42,7 +42,7 @@ export default function SubscriptionsPage() {
   const fetchSubs = useCallback(async () => {
     const { data } = await supabase
       .from('subscriptions')
-      .select('id, plan, status, started_at, ends_at, discount_percent, discount_expires_at, pending_discount_percent, boutique:boutiques(name, slug, is_demo, is_founder)')
+      .select('id, plan, status, started_at, ends_at, discount_percent, discount_expires_at, pending_discount_percent, restaurant:restaurants(name, slug, is_demo, is_founder)')
       .order('created_at', { ascending: false })
       .limit(200)
     setSubs((data ?? []) as unknown as Sub[])
@@ -60,9 +60,9 @@ export default function SubscriptionsPage() {
     return () => { clearInterval(interval); supabase.removeChannel(channel) }
   }, [fetchSubs])
 
-  // Les boutiques de démo (vitrines de présentation, pas de vrais clients) ne
+  // Les restaurants de démo (vitrines de présentation, pas de vrais clients) ne
   // doivent jamais gonfler les statistiques de cette page.
-  const billableSubs = subs.filter(s => !s.boutique?.is_demo)
+  const billableSubs = subs.filter(s => !s.restaurant?.is_demo)
 
   const activeCount = billableSubs.filter(s => s.status === 'active').length
   const trialCount = billableSubs.filter(s => s.status === 'trial').length
@@ -72,7 +72,7 @@ export default function SubscriptionsPage() {
     .filter(s => s.status === 'active')
     .reduce((sum, s) => {
       if (s.plan !== 'pro') return sum + planPrices.starter
-      return sum + (s.boutique?.is_founder ? FOUNDER_PRO_PRICE : planPrices.pro)
+      return sum + (s.restaurant?.is_founder ? FOUNDER_PRO_PRICE : planPrices.pro)
     }, 0)
 
   const statCards = [
@@ -161,7 +161,7 @@ export default function SubscriptionsPage() {
               <SubscriptionRow
                 key={sub.id}
                 id={sub.id}
-                boutiqueName={sub.boutique?.name ?? '—'}
+                restaurantName={sub.restaurant?.name ?? '—'}
                 plan={sub.plan}
                 status={sub.status}
                 startedAt={sub.started_at}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { slugify } from '@/lib/utils'
-import { generatePassword, rotateBoutiquePassword } from '@/lib/auth/boutiqueAdmin'
+import { generatePassword, rotateRestaurantPassword } from '@/lib/auth/restaurantAdmin'
 import { sendMail } from '@/lib/email/send'
 import { forgotPasswordPrincipalEmail } from '@/lib/email/templates'
 
@@ -9,21 +9,21 @@ export const dynamic = 'force-dynamic'
 
 const GENERIC_RESPONSE = { message: 'Si ces informations correspondent à un compte, un email a été envoyé sous peu.' }
 
-// Le champ accepte "ma-boutique" aussi bien que "teranga-spot.com/ma-boutique"
+// Le champ accepte "ma-restaurant" aussi bien que "teranga-link.com/ma-restaurant"
 // (le placeholder du formulaire suggère ce dernier format) — on ne garde que
 // le dernier segment de chemin avant de le slugifier, sinon slugify() mange
 // le nom de domaine et la recherche ne matche jamais.
-function extractBoutiqueSlug(input: string): string {
+function extractRestaurantSlug(input: string): string {
   const withoutProtocol = input.trim().replace(/^https?:\/\//i, '')
   const segments = withoutProtocol.split('/').filter(Boolean)
   const lastSegment = segments[segments.length - 1] || withoutProtocol
   return slugify(lastSegment)
 }
 
-// Public: demande "mot de passe oublié" avec nom + email + slug de boutique.
+// Public: demande "mot de passe oublié" avec nom + email + slug de restaurant.
 // Réservé à l'admin principal — un admin secondaire qui a oublié le mot de
 // passe doit le redemander au principal directement, pas via ce formulaire.
-// Ne révèle jamais si l'email/la boutique existe, ni si le compte est
+// Ne révèle jamais si l'email/le restaurant existe, ni si le compte est
 // principal ou secondaire — toujours la même réponse générique.
 export async function POST(req: NextRequest) {
   try {
@@ -33,14 +33,14 @@ export async function POST(req: NextRequest) {
       const admin = createAdminClient()
       const needle = slug.trim()
 
-      const { data: boutique } = await admin.from('boutiques').select('id, name').eq('slug', extractBoutiqueSlug(needle)).maybeSingle()
+      const { data: restaurant } = await admin.from('restaurants').select('id, name').eq('slug', extractRestaurantSlug(needle)).maybeSingle()
 
-      if (boutique) {
+      if (restaurant) {
         const { data: profile } = await admin
           .from('profiles')
           .select('id')
-          .eq('boutique_id', boutique.id)
-          .eq('role', 'boutique_admin')
+          .eq('restaurant_id', restaurant.id)
+          .eq('role', 'restaurant_admin')
           .eq('admin_role', 'principal')
           .eq('is_active', true)
           .ilike('email', email.trim())
@@ -48,8 +48,8 @@ export async function POST(req: NextRequest) {
 
         if (profile) {
           const newPassword = generatePassword()
-          await rotateBoutiquePassword(admin, boutique.id, newPassword, null)
-          await sendMail({ to: email.trim(), ...forgotPasswordPrincipalEmail(boutique.name, email.trim(), newPassword) })
+          await rotateRestaurantPassword(admin, restaurant.id, newPassword, null)
+          await sendMail({ to: email.trim(), ...forgotPasswordPrincipalEmail(restaurant.name, email.trim(), newPassword) })
         }
       }
     }

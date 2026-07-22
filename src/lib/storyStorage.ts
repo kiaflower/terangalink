@@ -1,5 +1,5 @@
-const VIEWED_KEY = 'terangaspot_viewed_stories'
-const LIKED_KEY = 'terangaspot_liked_stories'
+const VIEWED_KEY = 'terangalink_viewed_stories'
+const LIKED_KEY = 'terangalink_liked_stories'
 
 export const STORIES_VIEWED_EVENT = 'stories:viewed-changed'
 

@@ -11,7 +11,7 @@ export const NOTIFICATION_SETTINGS_DEFAULTS = {
   review_received_enabled: true,
 }
 
-export interface BoutiqueNotificationSettings {
+export interface RestaurantNotificationSettings {
   new_order_enabled: boolean
   cart_abandonment_enabled: boolean
   cart_abandonment_delay_hours: number
@@ -25,17 +25,17 @@ export interface BoutiqueNotificationSettings {
   review_received_enabled: boolean
 }
 
-// Une boutique sans ligne en base utilise les valeurs par défaut — la ligne
+// Un restaurant sans ligne en base utilise les valeurs par défaut — la ligne
 // n'est créée qu'au premier changement de réglage ou au premier passage du
 // cron qui doit persister un timestamp (last_checked_at / last_sent_at).
-export async function getBoutiqueNotificationSettings(
+export async function getRestaurantNotificationSettings(
   admin: SupabaseClient,
-  boutiqueId: string
-): Promise<BoutiqueNotificationSettings> {
+  restaurantId: string
+): Promise<RestaurantNotificationSettings> {
   const { data } = await admin
-    .from('boutique_notification_settings')
+    .from('restaurant_notification_settings')
     .select('*')
-    .eq('boutique_id', boutiqueId)
+    .eq('restaurant_id', restaurantId)
     .maybeSingle()
 
   return {

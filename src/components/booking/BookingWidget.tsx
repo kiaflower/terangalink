@@ -23,7 +23,7 @@ export function BookingWidget() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Slot | null>(null)
   const [ownerName, setOwnerName] = useState('')
-  const [boutiqueName, setBoutiqueName] = useState('')
+  const [restaurantName, setRestaurantName] = useState('')
   const [contact, setContact] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
@@ -43,7 +43,7 @@ export function BookingWidget() {
   }, {})
 
   async function submit() {
-    if (!selected || !ownerName || !boutiqueName) {
+    if (!selected || !ownerName || !restaurantName) {
       setError('Veuillez remplir tous les champs requis.')
       return
     }
@@ -56,7 +56,7 @@ export function BookingWidget() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         slot_id: selected.id,
-        boutique_name: boutiqueName,
+        restaurant_name: restaurantName,
         owner_name: ownerName,
         email: isEmail ? contact : null,
         whatsapp: !isEmail ? contact : null,
@@ -124,9 +124,9 @@ export function BookingWidget() {
       {selected && (
         <div className="space-y-3 border-t border-gray-100 pt-4">
           <input
-            value={boutiqueName}
-            onChange={e => setBoutiqueName(e.target.value)}
-            placeholder="Nom de votre boutique *"
+            value={restaurantName}
+            onChange={e => setRestaurantName(e.target.value)}
+            placeholder="Nom de votre restaurant *"
             className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-brand-orange"
           />
           <input

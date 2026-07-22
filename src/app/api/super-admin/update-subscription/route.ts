@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
-    const { id, boutique_id, plan, status, ends_at, notes_admin } = await request.json()
-    if (!id && !boutique_id) return NextResponse.json({ error: 'id ou boutique_id requis' }, { status: 400 })
+    const { id, restaurant_id, plan, status, ends_at, notes_admin } = await request.json()
+    if (!id && !restaurant_id) return NextResponse.json({ error: 'id ou restaurant_id requis' }, { status: 400 })
     if (plan && !VALID_PLANS.includes(plan)) return NextResponse.json({ error: 'Plan invalide' }, { status: 400 })
     if (status && !VALID_STATUSES.includes(status)) return NextResponse.json({ error: 'Statut invalide' }, { status: 400 })
 
@@ -32,16 +32,16 @@ export async function POST(request: NextRequest) {
       const { error } = await supabase.from('subscriptions').update(payload).eq('id', id)
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     } else {
-      // No subscription row exists yet for this boutique (e.g. the demo
-      // boutique, or one created outside the normal signup flow) — create it.
+      // No subscription row exists yet for this restaurant (e.g. the demo
+      // restaurant, or one created outside the normal signup flow) — create it.
       const { error } = await supabase.from('subscriptions').upsert({
-        boutique_id,
+        restaurant_id,
         plan: plan || 'starter',
         status: status || 'active',
         started_at: new Date().toISOString(),
         ends_at: ends_at || null,
         notes_admin: notes_admin ?? null,
-      }, { onConflict: 'boutique_id' })
+      }, { onConflict: 'restaurant_id' })
       if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     }
 

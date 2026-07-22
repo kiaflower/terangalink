@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'TerangaSpot Admin',
+    title: 'TerangaLink Admin',
   },
   other: { 'mobile-web-app-capable': 'yes' },
 }
@@ -28,7 +28,7 @@ export default async function SuperAdminLayout({ children }: { children: React.R
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'super_admin') redirect('/dashboard/boutique')
+  if (profile?.role !== 'super_admin') redirect('/dashboard/restaurant')
 
   // Filet de sécurité : rattrape la génération de factures si le cron
   // Vercel a été manqué. Throttlé en interne (platform_settings) donc

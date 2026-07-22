@@ -5,8 +5,8 @@ export interface AdminNotificationSettings {
   no_new_product_enabled: boolean
   no_new_product_days: number
   no_product_ever_days: number
-  inactive_boutique_enabled: boolean
-  inactive_boutique_days: number
+  inactive_restaurant_enabled: boolean
+  inactive_restaurant_days: number
   overdue_invoice_enabled: boolean
   product_limit_enabled: boolean
   product_limit_percent: number
@@ -18,15 +18,15 @@ const DEFAULTS: AdminNotificationSettings = {
   no_new_product_enabled: true,
   no_new_product_days: 14,
   no_product_ever_days: 7,
-  inactive_boutique_enabled: true,
-  inactive_boutique_days: 30,
+  inactive_restaurant_enabled: true,
+  inactive_restaurant_days: 30,
   overdue_invoice_enabled: true,
   product_limit_enabled: true,
   product_limit_percent: 80,
   periodic_reminder_enabled: true,
 }
 
-const NUMERIC_KEYS = new Set(['no_new_product_days', 'no_product_ever_days', 'inactive_boutique_days', 'product_limit_percent'])
+const NUMERIC_KEYS = new Set(['no_new_product_days', 'no_product_ever_days', 'inactive_restaurant_days', 'product_limit_percent'])
 
 // Réutilise platform_settings (clé/valeur déjà utilisé pour le mode
 // maintenance et la config générale) plutôt qu'une nouvelle table — un seul

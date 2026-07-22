@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react'
 import { Lightbulb, X } from 'lucide-react'
 
 const TIPS = [
-  "Les produits avec photo se vendent beaucoup plus. Ajoutez des images à votre catalogue.",
-  "Organisez votre catalogue en catégories claires pour faciliter la navigation.",
+  "Les plats avec photo se vendent beaucoup plus. Ajoutez des images à votre menu.",
+  "Organisez votre menu en catégories claires pour faciliter la navigation.",
   "Répondez rapidement sur WhatsApp — un client qui attend commande ailleurs.",
   "Un code promo de bienvenue augmente les premières commandes. Créez-en un.",
-  "Imprimez votre QR Code et collez-le dans votre boutique ou sur vos emballages.",
+  "Imprimez votre QR Code et collez-le dans votre restaurant ou sur vos emballages.",
   "Demandez à vos clients satisfaits de laisser un avis — ça augmente votre visibilité.",
   "Mettez à jour vos prix régulièrement pour éviter les mauvaises surprises.",
 ]

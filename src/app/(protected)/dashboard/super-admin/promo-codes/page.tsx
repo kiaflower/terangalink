@@ -7,7 +7,7 @@ import { formatPrice } from '@/lib/utils'
 
 interface PromoCode {
   id: string
-  boutique_id: string
+  restaurant_id: string
   code: string
   discount_type: 'percent' | 'fixed'
   discount_value: number
@@ -18,24 +18,24 @@ interface PromoCode {
   expires_at: string | null
   is_featured: boolean
   created_at: string
-  boutique: { id: string; name: string } | null
+  restaurant: { id: string; name: string } | null
 }
 
-interface Boutique { id: string; name: string }
+interface Restaurant { id: string; name: string }
 
 const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors'
 
 export default function SuperAdminPromoCodesPage() {
   const supabase = createClient()
   const [codes, setCodes] = useState<PromoCode[]>([])
-  const [boutiques, setBoutiques] = useState<Boutique[]>([])
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
 
   const [form, setForm] = useState({
-    boutique_id: '', code: '', discount_type: 'percent' as 'percent' | 'fixed',
+    restaurant_id: '', code: '', discount_type: 'percent' as 'percent' | 'fixed',
     discount_value: '', min_order_amount: '', max_uses: '', expires_at: '', is_featured: false,
   })
   const [saving, setSaving] = useState(false)
@@ -54,12 +54,12 @@ export default function SuperAdminPromoCodesPage() {
     setLoading(true)
     const { data } = await supabase
       .from('promo_codes')
-      .select('*, boutique:boutiques(id, name)')
+      .select('*, restaurant:restaurants(id, name)')
       .order('created_at', { ascending: false })
       .limit(200)
     setCodes((data ?? []) as unknown as PromoCode[])
-    const { data: b } = await supabase.from('boutiques').select('id, name').order('name')
-    setBoutiques(b ?? [])
+    const { data: b } = await supabase.from('restaurants').select('id, name').order('name')
+    setRestaurants(b ?? [])
     setLoading(false)
   }, [supabase])
 
@@ -67,12 +67,12 @@ export default function SuperAdminPromoCodesPage() {
 
   async function createCode() {
     setSaveError('')
-    if (!form.boutique_id || !form.code || !form.discount_value) {
-      setSaveError('Boutique, code et réduction sont requis.'); return
+    if (!form.restaurant_id || !form.code || !form.discount_value) {
+      setSaveError('Restaurant, code et réduction sont requis.'); return
     }
     setSaving(true)
     const { error } = await supabase.from('promo_codes').insert({
-      boutique_id: form.boutique_id,
+      restaurant_id: form.restaurant_id,
       code: form.code.toUpperCase().trim(),
       discount_type: form.discount_type,
       discount_value: parseFloat(form.discount_value),
@@ -85,7 +85,7 @@ export default function SuperAdminPromoCodesPage() {
     if (error) { setSaveError(error.message); setSaving(false); return }
     setSaving(false)
     setCreateOpen(false)
-    setForm({ boutique_id: '', code: '', discount_type: 'percent', discount_value: '', min_order_amount: '', max_uses: '', expires_at: '', is_featured: false })
+    setForm({ restaurant_id: '', code: '', discount_type: 'percent', discount_value: '', min_order_amount: '', max_uses: '', expires_at: '', is_featured: false })
     await load()
   }
 
@@ -146,7 +146,7 @@ export default function SuperAdminPromoCodesPage() {
   const filtered = codes.filter(c =>
     !search ||
     c.code.toLowerCase().includes(search.toLowerCase()) ||
-    (c.boutique as { name: string } | null)?.name.toLowerCase().includes(search.toLowerCase())
+    (c.restaurant as { name: string } | null)?.name.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -169,7 +169,7 @@ export default function SuperAdminPromoCodesPage() {
 
       <div className="mb-4">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Rechercher par code ou boutique…"
+          placeholder="Rechercher par code ou restaurant…"
           className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors" />
       </div>
 
@@ -196,7 +196,7 @@ export default function SuperAdminPromoCodesPage() {
                     {!c.is_active && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">Inactif</span>}
                   </div>
                   <p className="text-xs text-gray-500">
-                    {(c.boutique as { name: string } | null)?.name ?? '—'} ·{' '}
+                    {(c.restaurant as { name: string } | null)?.name ?? '—'} ·{' '}
                     <span className="text-brand-orange font-semibold">
                       {c.discount_type === 'percent' ? `${c.discount_value}%` : formatPrice(c.discount_value)}
                     </span>
@@ -237,7 +237,7 @@ export default function SuperAdminPromoCodesPage() {
             </div>
             <div className="p-6 space-y-3">
               {editError && <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{editError}</p>}
-              <p className="text-xs text-gray-400">Boutique : <span className="font-medium text-gray-700">{(editCode.boutique as { name: string } | null)?.name ?? '—'}</span></p>
+              <p className="text-xs text-gray-400">Restaurant : <span className="font-medium text-gray-700">{(editCode.restaurant as { name: string } | null)?.name ?? '—'}</span></p>
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-1.5">Code promo *</label>
                 <input type="text" value={editForm.code}
@@ -311,10 +311,10 @@ export default function SuperAdminPromoCodesPage() {
             <div className="p-6 space-y-3">
               {saveError && <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{saveError}</p>}
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Boutique *</label>
-                <select value={form.boutique_id} onChange={e => setForm(f => ({ ...f, boutique_id: e.target.value }))} className={iCls}>
-                  <option value="">Sélectionner une boutique…</option>
-                  {boutiques.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Restaurant *</label>
+                <select value={form.restaurant_id} onChange={e => setForm(f => ({ ...f, restaurant_id: e.target.value }))} className={iCls}>
+                  <option value="">Sélectionner un restaurant…</option>
+                  {restaurants.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
               <div>
@@ -363,7 +363,7 @@ export default function SuperAdminPromoCodesPage() {
                   className="w-4 h-4 accent-amber-500" />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Mise en avant 🔒</p>
-                  <p className="text-xs text-gray-400">La boutique ne pourra pas modifier ni supprimer ce code</p>
+                  <p className="text-xs text-gray-400">Le restaurant ne pourra pas modifier ni supprimer ce code</p>
                 </div>
               </label>
               <button onClick={createCode} disabled={saving}

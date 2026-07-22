@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { SHOP_CATEGORY_OPTIONS } from '@/lib/categories'
-import { BoutiqueLivePreview } from '@/components/onboarding/BoutiqueLivePreview'
+import { CUISINE_OPTIONS } from '@/lib/cuisines'
+import { RestaurantLivePreview } from '@/components/onboarding/RestaurantLivePreview'
 import { Logo } from '@/components/ui/Logo'
 import {
   Sparkles, Crown, BadgeCheck, Users2, Rocket,
@@ -44,24 +44,24 @@ const OFFER_ITEMS = [
   {
     icon: Users2,
     title: 'Atelier individuel 45 min',
-    desc: 'Comment fixer vos prix, structurer votre catalogue et vendre plus.',
+    desc: 'Comment fixer vos prix, structurer votre menu et vendre plus.',
   },
   {
     icon: Rocket,
-    title: 'On prépare votre boutique ensemble',
-    desc: '7 jours pour configurer votre vitrine, ajouter vos produits, tester avec de vrais clients avant le lancement officiel.',
+    title: 'On prépare votre restaurant ensemble',
+    desc: '7 jours pour configurer votre vitrine, ajouter vos plats, tester avec de vrais clients avant le lancement officiel.',
   },
 ]
 
 const TIMELINE = [
-  { heading: 'Vous remplissez le formulaire', body: 'Votre fiche complète arrive directement chez TerangaSpot.' },
+  { heading: 'Vous remplissez le formulaire', body: 'Votre fiche complète arrive directement chez TerangaLink.' },
   { heading: 'On vous contacte sous 24h', body: 'Par WhatsApp pour confirmer votre inscription et les modalités de paiement.' },
-  { heading: 'On prépare vos premiers jours de vente ensemble', body: '7 jours de préparation. Dès que votre boutique est prête, nous la présentons sur les réseaux et vous commencez à vendre avant tout le monde.' },
-  { heading: 'Lancement officiel — vous êtes déjà prêt(e) !', body: 'Vos clients peuvent commander. Votre boutique est vérifiée et prête à vendre.' },
+  { heading: 'On prépare vos premiers jours de vente ensemble', body: '7 jours de préparation. Dès que votre restaurant est prête, nous la présentons sur les réseaux et vous commencez à vendre avant tout le monde.' },
+  { heading: 'Lancement officiel — vous êtes déjà prêt(e) !', body: 'Vos clients peuvent commander. Votre restaurant est vérifiée et prête à vendre.' },
 ]
 
 const emptyForm = {
-  boutique_name: '', shop_category: '', city: '', description: '',
+  restaurant_name: '', cuisine_type: '', city: '', description: '',
   owner_name: '', email: '', phone: '', whatsapp_number: '',
   plan: 'pro' as const,
   primary_color: '#F97316',
@@ -74,7 +74,7 @@ const emptyForm = {
   consent_marketing: false,
 }
 
-const STEP_LABELS = ['Votre boutique', 'Identité visuelle', 'Vos informations', 'Couleur & thème', 'Paiement mobile', 'Réseaux sociaux', 'Consentements']
+const STEP_LABELS = ['Votre restaurant', 'Identité visuelle', 'Vos informations', 'Couleur & thème', 'Paiement mobile', 'Réseaux sociaux', 'Consentements']
 const TOTAL_STEPS = STEP_LABELS.length
 
 function FieldGroup({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -205,7 +205,7 @@ export default function EarlyAccessClient() {
   }
 
   function canGoNext(): boolean {
-    if (step === 1) return !!form.boutique_name && !!form.shop_category && !!form.city
+    if (step === 1) return !!form.restaurant_name && !!form.cuisine_type && !!form.city
     if (step === 3) return !!form.owner_name && !!form.email && !!form.phone && !!form.whatsapp_number
     return true
   }
@@ -273,11 +273,11 @@ export default function EarlyAccessClient() {
           Offre de lancement
         </div>
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-[1.15] tracking-tight mb-3" style={{ color: TEXT_PRIMARY }}>
-          15 boutiques.
+          15 restaurants.
           <span className="block text-4xl sm:text-5xl lg:text-6xl font-black" style={{ color: TEXT_PRO }}>Des avantages que vous n&apos;aurez plus jamais.</span>
         </h1>
         <p className="text-sm leading-relaxed max-w-xs mx-auto mb-6" style={{ color: TEXT_SECONDARY }}>
-          Pas 100. Pas 50. 15 boutiques seulement — et vous pouvez en faire partie.
+          Pas 100. Pas 50. 15 restaurants seulement — et vous pouvez en faire partie.
         </p>
         <div className="inline-flex flex-col items-center gap-0.5 px-6 py-3 rounded-2xl"
           style={{ backgroundColor: TEXT_PRO, color: '#FFFFFF' }}>
@@ -285,7 +285,7 @@ export default function EarlyAccessClient() {
             {placesLeft > 0 ? `${placesLeft} place${placesLeft > 1 ? 's' : ''} restante${placesLeft > 1 ? 's' : ''} sur 15` : 'Toutes les places sont prises'}
           </span>
           {taken !== null && taken > 0 && (
-            <span className="text-xs opacity-80">{taken} boutique{taken > 1 ? 's' : ''} déjà inscrite{taken > 1 ? 's' : ''}</span>
+            <span className="text-xs opacity-80">{taken} restaurant{taken > 1 ? 's' : ''} déjà inscrite{taken > 1 ? 's' : ''}</span>
           )}
         </div>
       </div>
@@ -343,7 +343,7 @@ export default function EarlyAccessClient() {
           <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Vous êtes la boutique #{placeNumber} !</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Vous êtes le restaurant #{placeNumber} !</h2>
           <p className="text-gray-500 mb-6 max-w-sm mx-auto">
             Votre demande a bien été reçue. Nous vous contacterons sur WhatsApp sous 24h pour confirmer votre inscription et vous expliquer la suite.
           </p>
@@ -356,7 +356,7 @@ export default function EarlyAccessClient() {
           <div className="max-w-md mx-auto">
             <h2 className="text-lg font-medium mb-1" style={{ color: TEXT_PRIMARY }}>Réserver ma place</h2>
             <p className="text-[13px] leading-relaxed mb-5" style={{ color: TEXT_SECONDARY }}>
-              Remplissez votre fiche étape par étape. Ces informations serviront directement à créer votre boutique.
+              Remplissez votre fiche étape par étape. Ces informations serviront directement à créer votre restaurant.
             </p>
             <button onClick={openWizard}
               className="w-full py-5 rounded-2xl text-lg font-black text-white transition-all hover:opacity-90"
@@ -379,7 +379,7 @@ export default function EarlyAccessClient() {
           ) : (
             <>
               <p className="text-xs leading-relaxed mb-4" style={{ color: TEXT_SECONDARY }}>
-                Inscrivez votre WhatsApp. Vous serez les premiers à savoir quand TerangaSpot ouvre officiellement.
+                Inscrivez votre WhatsApp. Vous serez les premiers à savoir quand TerangaLink ouvre officiellement.
               </p>
               <form onSubmit={handleWaitlist} className="flex flex-col gap-2">
                 <input
@@ -415,7 +415,7 @@ export default function EarlyAccessClient() {
 
       {/* FOOTER NOTE */}
       <div className="px-5 py-6 text-center text-xs leading-relaxed" style={{ color: TEXT_MUTED }}>
-        <strong style={{ color: TEXT_SECONDARY }}>TerangaSpot</strong> — La plateforme des commerçants du Sénégal<br />
+        <strong style={{ color: TEXT_SECONDARY }}>TerangaLink</strong> — La plateforme des commerçants du Sénégal<br />
         Des questions ?{' '}
         <a href="https://wa.me/221774739266" target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: TEXT_PRO }}>
           Écrivez-nous sur WhatsApp
@@ -458,14 +458,14 @@ export default function EarlyAccessClient() {
             <div className="px-5 py-5 overflow-y-auto flex-1">
               {step === 1 && (
                 <>
-                  <FieldGroup label="Nom de la boutique">
-                    <input value={form.boutique_name} onChange={e => set('boutique_name', e.target.value)} required
+                  <FieldGroup label="Nom de le restaurant">
+                    <input value={form.restaurant_name} onChange={e => set('restaurant_name', e.target.value)} required
                       placeholder="ex : Fatou Mode, Bijoux Dakar..." className={inputClass} style={inputStyle} />
                   </FieldGroup>
                   <div className="grid grid-cols-2 gap-2.5">
                     <FieldGroup label="Catégorie">
-                      <select value={form.shop_category} onChange={e => set('shop_category', e.target.value)} required className={inputClass} style={inputStyle}>
-                        {SHOP_CATEGORY_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                      <select value={form.cuisine_type} onChange={e => set('cuisine_type', e.target.value)} required className={inputClass} style={inputStyle}>
+                        {CUISINE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                       </select>
                     </FieldGroup>
                     <FieldGroup label="Ville">
@@ -473,7 +473,7 @@ export default function EarlyAccessClient() {
                         placeholder="Dakar, Thiès..." className={inputClass} style={inputStyle} />
                     </FieldGroup>
                   </div>
-                  <FieldGroup label="Description de votre boutique" hint="Ce texte apparaîtra sur votre vitrine.">
+                  <FieldGroup label="Description de votre restaurant" hint="Ce texte apparaîtra sur votre vitrine.">
                     <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={3}
                       placeholder="Décrivez ce que vous vendez, votre style, votre clientèle..."
                       className={inputClass + ' resize-none'} style={inputStyle} />
@@ -565,11 +565,11 @@ export default function EarlyAccessClient() {
                   <div className="grid grid-cols-2 gap-2.5">
                     <FieldGroup label="Instagram">
                       <input value={form.instagram_url} onChange={e => set('instagram_url', e.target.value)}
-                        placeholder="@votreboutique" className={inputClass} style={inputStyle} />
+                        placeholder="@votrerestaurant" className={inputClass} style={inputStyle} />
                     </FieldGroup>
                     <FieldGroup label="TikTok">
                       <input value={form.tiktok_url} onChange={e => set('tiktok_url', e.target.value)}
-                        placeholder="@votreboutique" className={inputClass} style={inputStyle} />
+                        placeholder="@votrerestaurant" className={inputClass} style={inputStyle} />
                     </FieldGroup>
                   </div>
                   <div className="grid grid-cols-2 gap-2.5">
@@ -593,7 +593,7 @@ export default function EarlyAccessClient() {
                       onChange={e => set('consent_images', e.target.checked)}
                       className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                     <span className="text-[13px] leading-relaxed" style={{ color: TEXT_SECONDARY }}>
-                      <span className="font-medium text-red-500">*</span> J&apos;autorise TerangaSpot à utiliser les photos et visuels de ma boutique (logo, bannière, produits) pour des publications organiques et des publicités payantes sur les réseaux sociaux.
+                      <span className="font-medium text-red-500">*</span> J&apos;autorise TerangaLink à utiliser les photos et visuels de mon restaurant (logo, bannière, plats) pour des publications organiques et des publicités payantes sur les réseaux sociaux.
                     </span>
                   </label>
                   <label className="flex items-start gap-2.5 cursor-pointer mb-3">
@@ -601,7 +601,7 @@ export default function EarlyAccessClient() {
                       onChange={e => set('consent_annuaire', e.target.checked)}
                       className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                     <span className="text-[13px] leading-relaxed" style={{ color: TEXT_SECONDARY }}>
-                      <span className="font-medium text-red-500">*</span> J&apos;accepte d&apos;être référencé(e) dans l&apos;annuaire public de TerangaSpot et que mes informations professionnelles soient visibles par tous les utilisateurs.
+                      <span className="font-medium text-red-500">*</span> J&apos;accepte d&apos;être référencé(e) dans l&apos;annuaire public de TerangaLink et que mes informations professionnelles soient visibles par tous les utilisateurs.
                     </span>
                   </label>
                   <label className="flex items-start gap-2.5 cursor-pointer">
@@ -647,9 +647,9 @@ export default function EarlyAccessClient() {
           {/* Preview live desktop */}
           <div className="hidden sm:block w-[300px] flex-shrink-0 p-5 overflow-y-auto" style={{ borderLeft: `1px solid ${BORDER}` }}>
             <p className="text-[11px] font-medium uppercase tracking-wide mb-3" style={{ color: TEXT_MUTED }}>Aperçu en direct</p>
-            <BoutiqueLivePreview
-              name={form.boutique_name}
-              category={form.shop_category}
+            <RestaurantLivePreview
+              name={form.restaurant_name}
+              category={form.cuisine_type}
               city={form.city}
               logoUrl={logoPreview || undefined}
               coverUrl={coverPreview || undefined}
@@ -669,9 +669,9 @@ export default function EarlyAccessClient() {
             <div className="flex justify-end mb-2">
               <button onClick={() => setMobilePreviewOpen(false)} aria-label="Fermer"><X className="w-5 h-5" style={{ color: TEXT_MUTED }} /></button>
             </div>
-            <BoutiqueLivePreview
-              name={form.boutique_name}
-              category={form.shop_category}
+            <RestaurantLivePreview
+              name={form.restaurant_name}
+              category={form.cuisine_type}
               city={form.city}
               logoUrl={logoPreview || undefined}
               coverUrl={coverPreview || undefined}

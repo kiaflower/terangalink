@@ -65,7 +65,7 @@ export default function LoginPage() {
     if (profile.role === 'super_admin') {
       router.push('/dashboard/super-admin')
     } else {
-      router.push('/dashboard/boutique')
+      router.push('/dashboard/restaurant')
     }
   }
 
@@ -81,7 +81,7 @@ export default function LoginPage() {
             La plateforme des<br />commerçants du Sénégal.
           </h2>
           <p className="text-orange-300 text-sm leading-relaxed">
-            Gérez votre boutique, recevez des commandes via WhatsApp et développez votre visibilité au Sénégal.
+            Gérez votre restaurant, recevez des commandes via WhatsApp et développez votre visibilité au Sénégal.
           </p>
           <div className="space-y-3">
             {[
@@ -100,7 +100,7 @@ export default function LoginPage() {
             ))}
           </div>
         </div>
-        <p className="text-orange-500 text-xs">&copy; 2026 TerangaSpot</p>
+        <p className="text-orange-500 text-xs">&copy; 2026 TerangaLink</p>
       </div>
 
       {/* Colonne droite — formulaire */}
@@ -153,7 +153,7 @@ export default function LoginPage() {
             </button>
           </form>
           <p className="text-center text-sm text-zinc-500 mt-6">
-            Pas encore de boutique ?{' '}
+            Pas encore de restaurant ?{' '}
             <Link href="/inscription" className="text-orange-400 hover:text-orange-300 transition-colors">
               S&apos;inscrire
             </Link>

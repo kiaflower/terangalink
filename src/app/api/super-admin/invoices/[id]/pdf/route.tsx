@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getPrincipalAdmin } from '@/lib/auth/boutiqueAdmin'
+import { getPrincipalAdmin } from '@/lib/auth/restaurantAdmin'
 import { getPlatformSettings } from '@/lib/platform-settings'
 import { InvoiceDocument } from '@/lib/pdf/InvoiceDocument'
 import type { PlanKey } from '@/lib/plans'
@@ -23,21 +23,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const admin = createAdminClient()
     const { data: invoice } = await admin
       .from('invoices')
-      .select('invoice_number, boutique_id, period_start, period_end, plan, full_amount, discount_amount, discount_reason, final_amount, status, generated_at, due_at, boutique:boutiques(name)')
+      .select('invoice_number, restaurant_id, period_start, period_end, plan, full_amount, discount_amount, discount_reason, final_amount, status, generated_at, due_at, restaurant:restaurants(name)')
       .eq('id', params.id)
       .single()
 
     if (!invoice) return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 })
 
     const [principal, platformSettings] = await Promise.all([
-      getPrincipalAdmin(admin, invoice.boutique_id),
+      getPrincipalAdmin(admin, invoice.restaurant_id),
       getPlatformSettings(),
     ])
 
     const buffer = await renderToBuffer(
       <InvoiceDocument
         invoiceNumber={invoice.invoice_number}
-        boutiqueName={(invoice.boutique as unknown as { name: string } | null)?.name ?? '—'}
+        restaurantName={(invoice.restaurant as unknown as { name: string } | null)?.name ?? '—'}
         contactEmail={principal?.email ?? null}
         periodStart={invoice.period_start}
         periodEnd={invoice.period_end}

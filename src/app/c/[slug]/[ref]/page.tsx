@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRight, Truck, Store } from 'lucide-react'
 import { OrderStatusLive } from '@/components/tracking/OrderStatusLive'
-import { getBoutiqueTheme } from '@/lib/theme'
+import { getRestaurantTheme } from '@/lib/theme'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,7 +20,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
-  return { title: `Commande ${params.ref} — TerangaSpot` }
+  return { title: `Commande ${params.ref} — TerangaLink` }
 }
 
 function isNextNavigationSignal(err: unknown): boolean {
@@ -41,55 +41,55 @@ export default async function OrderStatusPage({ params }: Props) {
 async function renderOrderStatusPage({ slug, ref }: Props['params']) {
   const admin = createAdminClient()
 
-  const { data: boutique } = await admin
-    .from('boutiques')
+  const { data: restaurant } = await admin
+    .from('restaurants')
     .select('id, name, slug, logo_url, primary_color, theme')
     .eq('slug', slug)
     .single()
 
-  if (!boutique) notFound()
+  if (!restaurant) notFound()
 
   const { data: subscription } = await admin
     .from('subscriptions')
     .select('plan')
-    .eq('boutique_id', boutique.id)
+    .eq('restaurant_id', restaurant.id)
     .single()
 
   const isPro = subscription?.plan === 'pro'
-  const { accent: accentColor, pageBg, pageText, cardBg, cardBorder, subtleText } = getBoutiqueTheme({
-    primary_color: isPro ? boutique.primary_color : undefined,
-    theme: isPro ? boutique.theme : 'light',
+  const { accent: accentColor, pageBg, pageText, cardBg, cardBorder, subtleText } = getRestaurantTheme({
+    primary_color: isPro ? restaurant.primary_color : undefined,
+    theme: isPro ? restaurant.theme : 'light',
   })
 
   const { data: order } = await admin
     .from('orders')
     .select('*')
-    .eq('boutique_id', boutique.id)
+    .eq('restaurant_id', restaurant.id)
     .eq('order_number', ref)
     .limit(1)
     .single()
 
   if (!order) notFound()
 
-  // Redirect logged-in boutique admin / super admin to their dashboard
+  // Redirect logged-in restaurant admin / super admin to their dashboard
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, boutique_id')
+      .select('role, restaurant_id')
       .eq('id', user.id)
       .single()
-    const isBoutiqueAdmin =
+    const isRestaurantAdmin =
       profile?.role === 'super_admin' ||
-      (profile?.role === 'boutique_admin' && profile?.boutique_id === boutique.id)
-    if (isBoutiqueAdmin) {
-      redirect(`/dashboard/boutique/orders?id=${order.id}`)
+      (profile?.role === 'restaurant_admin' && profile?.restaurant_id === restaurant.id)
+    if (isRestaurantAdmin) {
+      redirect(`/dashboard/restaurant/orders?id=${order.id}`)
     }
   }
 
   // Le suivi de commande client est une fonctionnalité Starter/Pro — en Free,
-  // seul l'admin de la boutique (redirigé ci-dessus) peut voir la commande.
+  // seul l'admin de le restaurant (redirigé ci-dessus) peut voir la commande.
   if (subscription?.plan === 'free') notFound()
 
   const items = (order.items ?? []) as OrderItem[]
@@ -115,12 +115,12 @@ async function renderOrderStatusPage({ slug, ref }: Props['params']) {
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: pageText }}>
       <header style={{ backgroundColor: pageBg, borderBottom: `1px solid ${cardBorder}` }}>
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href={`/${boutique.slug}`} className="flex items-center gap-3">
-            {boutique.logo_url ? (
+          <Link href={`/${restaurant.slug}`} className="flex items-center gap-3">
+            {restaurant.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={boutique.logo_url}
-                alt={boutique.name}
+                src={restaurant.logo_url}
+                alt={restaurant.name}
                 className="w-9 h-9 rounded-xl object-cover"
               />
             ) : (
@@ -129,13 +129,13 @@ async function renderOrderStatusPage({ slug, ref }: Props['params']) {
               </div>
             )}
             <div>
-              <span className="font-bold text-sm" style={{ color: pageText }}>{boutique.name}</span>
+              <span className="font-bold text-sm" style={{ color: pageText }}>{restaurant.name}</span>
               <p className="text-xs font-mono" style={{ color: subtleText }}>Commande {orderNumber}</p>
             </div>
           </Link>
 
           <Link
-            href={`/${boutique.slug}`}
+            href={`/${restaurant.slug}`}
             className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-xl transition-opacity hover:opacity-80"
             style={{ backgroundColor: cardBg, color: pageText, border: `1px solid ${cardBorder}` }}
           >
@@ -147,7 +147,7 @@ async function renderOrderStatusPage({ slug, ref }: Props['params']) {
       <div className="max-w-lg mx-auto px-4 py-8 space-y-5">
         <OrderStatusLive
           order={orderForLive}
-          boutiqueId={boutique.id}
+          restaurantId={restaurant.id}
           hasReview={hasReview}
           accentColor={accentColor}
           cardBg={cardBg}
@@ -205,7 +205,7 @@ async function renderOrderStatusPage({ slug, ref }: Props['params']) {
         )}
 
         <Link
-          href={`/${boutique.slug}`}
+          href={`/${restaurant.slug}`}
           className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm text-white transition-opacity hover:opacity-90"
           style={{ backgroundColor: accentColor }}
         >

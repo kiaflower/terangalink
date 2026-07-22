@@ -10,7 +10,7 @@ function page(title: string, message: string): string {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${title} — TerangaSpot</title>
+<title>${title} — TerangaLink</title>
 <style>
   body { font-family: Arial, Helvetica, sans-serif; background: #f4f4f5; margin: 0; padding: 40px 20px; display: flex; justify-content: center; }
   .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 420px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
@@ -23,7 +23,7 @@ function page(title: string, message: string): string {
   <div class="card">
     <h1>${title}</h1>
     <p>${message}</p>
-    <div class="brand">TerangaSpot</div>
+    <div class="brand">TerangaLink</div>
   </div>
 </body>
 </html>`
@@ -33,11 +33,11 @@ function page(title: string, message: string): string {
 // c'est le comportement attendu de ce type de lien dans un client email).
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const boutiqueId = searchParams.get('b')
+  const restaurantId = searchParams.get('b')
   const recipientId = searchParams.get('r')
   const token = searchParams.get('t')
 
-  if (!boutiqueId || !token || !verify(boutiqueId, token)) {
+  if (!restaurantId || !token || !verify(restaurantId, token)) {
     return new NextResponse(page('Lien invalide', "Ce lien de désabonnement est invalide ou a expiré."), {
       status: 400,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const admin = createAdminClient()
-    await admin.from('boutiques').update({ newsletter_opt_in: false }).eq('id', boutiqueId)
+    await admin.from('restaurants').update({ newsletter_opt_in: false }).eq('id', restaurantId)
 
     if (recipientId) {
       await admin.from('newsletter_recipients').update({
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     return new NextResponse(
-      page('Désabonnement confirmé', 'Vous ne recevrez plus les emails de la newsletter TerangaSpot. Vous pouvez réactiver cette option à tout moment depuis les paramètres de votre boutique.'),
+      page('Désabonnement confirmé', 'Vous ne recevrez plus les emails de la newsletter TerangaLink. Vous pouvez réactiver cette option à tout moment depuis les paramètres de votre restaurant.'),
       { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
     )
   } catch (err) {

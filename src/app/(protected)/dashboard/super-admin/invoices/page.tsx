@@ -17,7 +17,7 @@ export default function InvoicesPage() {
   const [generateMessage, setGenerateMessage] = useState<string | null>(null)
 
   const fetchRows = useCallback(async () => {
-    const res = await fetch('/api/super-admin/boutiques-billing')
+    const res = await fetch('/api/super-admin/restaurants-billing')
     const data = await res.json().catch(() => ({}))
     setRows((data.rows ?? []) as BillingRowData[])
     setLastRefresh(new Date())
@@ -30,7 +30,7 @@ export default function InvoicesPage() {
     return () => clearInterval(interval)
   }, [fetchRows])
 
-  // Une boutique est "à jour" dès que sa période en cours ne demande plus
+  // Un restaurant est "à jour" dès que sa période en cours ne demande plus
   // d'action — qu'elle vienne d'être payée (la période a alors déjà avancé)
   // ou qu'elle soit simplement encore couverte par un paiement précédent.
   const coveredRows = rows.filter(r => !r.actionable)
@@ -73,7 +73,7 @@ export default function InvoicesPage() {
       <div className="mb-2 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Factures</h1>
-          <p className="text-gray-500 text-sm mt-0.5">{rows.length} boutique{rows.length !== 1 ? 's' : ''} facturable{rows.length !== 1 ? 's' : ''}</p>
+          <p className="text-gray-500 text-sm mt-0.5">{rows.length} restaurant{rows.length !== 1 ? 's' : ''} facturable{rows.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={generateNow} disabled={generating}
@@ -130,11 +130,11 @@ export default function InvoicesPage() {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-gray-400 py-20 text-sm">Aucune boutique{filter !== 'all' ? ' dans ce filtre' : ''}</p>
+          <p className="text-center text-gray-400 py-20 text-sm">Aucun restaurant{filter !== 'all' ? ' dans ce filtre' : ''}</p>
         ) : (
           <div className="divide-y divide-gray-100">
             {filtered.map(row => (
-              <BillingRow key={row.boutiqueId} {...row} onChanged={fetchRows} />
+              <BillingRow key={row.restaurantId} {...row} onChanged={fetchRows} />
             ))}
           </div>
         )}

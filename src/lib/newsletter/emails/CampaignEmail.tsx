@@ -24,18 +24,18 @@ export function CampaignEmail({ blocks, previewText, unsubscribeUrl, pixelUrl, l
           <Section style={{ backgroundColor: BRAND_VIOLET, borderRadius: '12px 12px 0 0', padding: '28px 24px', textAlign: 'center' }}>
             <Img
               src={logoUrl}
-              alt="TerangaSpot"
+              alt="TerangaLink"
               width="44"
               height="44"
               style={{ width: 44, height: 44, borderRadius: 10, margin: '0 auto 8px' }}
             />
-            <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: 'bold', letterSpacing: 0.5, margin: 0 }}>TerangaSpot</Text>
+            <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: 'bold', letterSpacing: 0.5, margin: 0 }}>TerangaLink</Text>
           </Section>
           <Section style={{ backgroundColor: '#ffffff', borderRadius: '0 0 12px 12px', padding: '32px 24px' }}>
             {blocks.map(block => <BlockRenderer key={block.id} block={block} />)}
             <Hr style={{ borderColor: '#e5e7eb', margin: '32px 0 16px' }} />
             <Text style={{ fontSize: 12, color: '#9ca3af', textAlign: 'center', margin: '0 0 4px' }}>
-              TerangaSpot{unsubscribeUrl ? (
+              TerangaLink{unsubscribeUrl ? (
                 <>
                   {' — '}
                   <Link href={unsubscribeUrl} style={{ color: '#9ca3af', textDecoration: 'underline' }}>Se désabonner</Link>
@@ -43,7 +43,7 @@ export function CampaignEmail({ blocks, previewText, unsubscribeUrl, pixelUrl, l
               ) : null}
             </Text>
             <Text style={{ fontSize: 11, color: '#c1c5cc', textAlign: 'center', margin: 0 }}>
-              Vous recevez cet email car vous êtes inscrit(e) sur TerangaSpot.
+              Vous recevez cet email car vous êtes inscrit(e) sur TerangaLink.
             </Text>
           </Section>
         </Container>

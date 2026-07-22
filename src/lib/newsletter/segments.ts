@@ -5,13 +5,13 @@ import { INACTIVE_DAYS_THRESHOLD } from './config'
 type AdminClient = ReturnType<typeof createAdminClient>
 
 export interface SegmentRecipient {
-  boutique_id: string
+  restaurant_id: string
   email: string
   name: string
 }
 
-async function matchingBoutiqueIds(admin: AdminClient, segment: NewsletterSegment): Promise<string[]> {
-  let query = admin.from('boutiques').select('id, created_at, is_active').eq('newsletter_opt_in', true)
+async function matchingRestaurantIds(admin: AdminClient, segment: NewsletterSegment): Promise<string[]> {
+  let query = admin.from('restaurants').select('id, created_at, is_active').eq('newsletter_opt_in', true)
 
   if (segment.type === 'founder') {
     query = query.eq('is_founder', true)
@@ -29,8 +29,8 @@ async function matchingBoutiqueIds(admin: AdminClient, segment: NewsletterSegmen
     if (segment.registeredAfter) query = query.gt('created_at', segment.registeredAfter)
   }
 
-  const { data: boutiques } = await query
-  let rows: { id: string }[] = boutiques ?? []
+  const { data: restaurants } = await query
+  let rows: { id: string }[] = restaurants ?? []
 
   const needsPlanFilter =
     segment.type === 'pro' ||
@@ -41,11 +41,11 @@ async function matchingBoutiqueIds(admin: AdminClient, segment: NewsletterSegmen
   if (needsPlanFilter) {
     const ids = rows.map(r => r.id)
     if (ids.length === 0) return []
-    const { data: subs } = await admin.from('subscriptions').select('boutique_id, plan, status').in('boutique_id', ids)
-    const subsByBoutique = new Map((subs ?? []).map((s: { boutique_id: string; plan: string; status: string }) => [s.boutique_id, s]))
+    const { data: subs } = await admin.from('subscriptions').select('restaurant_id, plan, status').in('restaurant_id', ids)
+    const subsByRestaurant = new Map((subs ?? []).map((s: { restaurant_id: string; plan: string; status: string }) => [s.restaurant_id, s]))
 
     rows = rows.filter(r => {
-      const sub = subsByBoutique.get(r.id)
+      const sub = subsByRestaurant.get(r.id)
       if (segment.type === 'pro') return sub?.plan === 'pro'
       if (segment.type === 'starter') return sub?.plan === 'starter'
       if (segment.type === 'trial') return sub?.status === 'trial'
@@ -57,27 +57,27 @@ async function matchingBoutiqueIds(admin: AdminClient, segment: NewsletterSegmen
   return rows.map(r => r.id)
 }
 
-/** Une seule adresse par boutique — priorité au profil admin "principal" pour éviter les doublons entre admins partagés. */
-async function emailsForBoutiques(admin: AdminClient, boutiqueIds: string[]): Promise<SegmentRecipient[]> {
-  if (boutiqueIds.length === 0) return []
+/** Une seule adresse par restaurant — priorité au profil admin "principal" pour éviter les doublons entre admins partagés. */
+async function emailsForRestaurants(admin: AdminClient, restaurantIds: string[]): Promise<SegmentRecipient[]> {
+  if (restaurantIds.length === 0) return []
   const { data: profiles } = await admin
     .from('profiles')
-    .select('boutique_id, email, full_name, admin_role, created_at')
-    .in('boutique_id', boutiqueIds)
-    .eq('role', 'boutique_admin')
+    .select('restaurant_id, email, full_name, admin_role, created_at')
+    .in('restaurant_id', restaurantIds)
+    .eq('role', 'restaurant_admin')
     .order('created_at', { ascending: true })
 
-  const byBoutique = new Map<string, { email: string; full_name: string | null; admin_role: string | null }>()
-  for (const p of (profiles ?? []) as { boutique_id: string | null; email: string; full_name: string | null; admin_role: string | null }[]) {
-    if (!p.boutique_id) continue
-    const existing = byBoutique.get(p.boutique_id)
+  const byRestaurant = new Map<string, { email: string; full_name: string | null; admin_role: string | null }>()
+  for (const p of (profiles ?? []) as { restaurant_id: string | null; email: string; full_name: string | null; admin_role: string | null }[]) {
+    if (!p.restaurant_id) continue
+    const existing = byRestaurant.get(p.restaurant_id)
     if (!existing || (p.admin_role === 'principal' && existing.admin_role !== 'principal')) {
-      byBoutique.set(p.boutique_id, p)
+      byRestaurant.set(p.restaurant_id, p)
     }
   }
 
-  return Array.from(byBoutique.entries()).map(([boutique_id, p]) => ({
-    boutique_id,
+  return Array.from(byRestaurant.entries()).map(([restaurant_id, p]) => ({
+    restaurant_id,
     email: p.email,
     name: p.full_name ?? '',
   }))
@@ -85,8 +85,8 @@ async function emailsForBoutiques(admin: AdminClient, boutiqueIds: string[]): Pr
 
 /** Résout les destinataires pour un segment — toujours filtré newsletter_opt_in=true en base, quel que soit le segment. */
 export async function resolveSegmentRecipients(admin: AdminClient, segment: NewsletterSegment): Promise<SegmentRecipient[]> {
-  const ids = await matchingBoutiqueIds(admin, segment)
-  return emailsForBoutiques(admin, ids)
+  const ids = await matchingRestaurantIds(admin, segment)
+  return emailsForRestaurants(admin, ids)
 }
 
 export async function countSegmentRecipients(admin: AdminClient, segment: NewsletterSegment): Promise<number> {

@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from 'react'
 import type { NewsletterSegment } from '@/lib/types/database'
 
 const PRESETS: { type: 'all' | 'pro' | 'starter' | 'founder' | 'trial' | 'inactive'; label: string; description: string }[] = [
-  { type: 'all', label: 'Toutes les boutiques', description: 'Toutes les boutiques ayant accepté de recevoir la newsletter.' },
-  { type: 'pro', label: 'Boutiques Pro', description: 'Abonnement Pro actif.' },
-  { type: 'starter', label: 'Boutiques Starter', description: 'Abonnement Starter actif.' },
-  { type: 'founder', label: 'Boutiques fondatrices', description: 'Badge Early Access / fondateur.' },
-  { type: 'trial', label: "Boutiques en période d'essai", description: 'Abonnement en statut essai.' },
-  { type: 'inactive', label: 'Boutiques inactives', description: 'Aucune connexion au dashboard depuis 30 jours.' },
+  { type: 'all', label: 'Toutes les restaurants', description: 'Toutes les restaurants ayant accepté de recevoir la newsletter.' },
+  { type: 'pro', label: 'Restaurants Pro', description: 'Abonnement Pro actif.' },
+  { type: 'starter', label: 'Restaurants Starter', description: 'Abonnement Starter actif.' },
+  { type: 'founder', label: 'Restaurants fondatrices', description: 'Badge Early Access / fondateur.' },
+  { type: 'trial', label: "Restaurants en période d'essai", description: 'Abonnement en statut essai.' },
+  { type: 'inactive', label: 'Restaurants inactives', description: 'Aucune connexion au dashboard depuis 30 jours.' },
 ]
 
 interface SegmentPickerProps {
@@ -137,7 +137,7 @@ export function SegmentPicker({ campaignId, segment, onChange, disabled }: Segme
       <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
         {loadingCount ? 'Calcul du nombre de destinataires…' : (
           <>
-            <strong className="text-gray-900">{count ?? 0}</strong> destinataire{(count ?? 0) !== 1 ? 's' : ''} recevront cette campagne (boutiques ayant accepté la newsletter uniquement).
+            <strong className="text-gray-900">{count ?? 0}</strong> destinataire{(count ?? 0) !== 1 ? 's' : ''} recevront cette campagne (restaurants ayant accepté la newsletter uniquement).
           </>
         )}
       </div>

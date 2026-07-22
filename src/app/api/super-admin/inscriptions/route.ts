@@ -25,8 +25,8 @@ function generateReferralCode(): string {
 }
 
 // The inscription form stores images as base64 data URIs (to survive the wizard's
-// multi-step client state). Storing that raw string in boutiques.logo_url/cover_url
-// would ship megabytes of base64 on every boutiques query — upload to Storage instead
+// multi-step client state). Storing that raw string in restaurants.logo_url/cover_url
+// would ship megabytes of base64 on every restaurants query — upload to Storage instead
 // and keep only the short public URL.
 async function uploadBase64Image(
   admin: ReturnType<typeof createAdminClient>,
@@ -40,9 +40,9 @@ async function uploadBase64Image(
   if (!match) return null
   const [, contentType, base64Data] = match
   const buffer = Buffer.from(base64Data, 'base64')
-  const { error } = await admin.storage.from('boutique-images').upload(path, buffer, { contentType, upsert: true })
+  const { error } = await admin.storage.from('restaurant-images').upload(path, buffer, { contentType, upsert: true })
   if (error) return null
-  const { data } = admin.storage.from('boutique-images').getPublicUrl(path)
+  const { data } = admin.storage.from('restaurant-images').getPublicUrl(path)
   return data.publicUrl
 }
 
@@ -79,8 +79,8 @@ export async function POST(req: NextRequest) {
         const { data: ins } = await admin.from('inscriptions').select('*').eq('id', id).single()
         if (!ins) return NextResponse.json({ error: 'Inscription introuvable' }, { status: 404 })
 
-        // Auto-create boutique
-        const slug = slugify((ins as Record<string, unknown>).boutique_name as string || 'boutique')
+        // Auto-create restaurant
+        const slug = slugify((ins as Record<string, unknown>).restaurant_name as string || 'restaurant')
         // Le mot de passe choisi par le demandeur à l'inscription (chiffré)
         // est utilisé s'il existe ; sinon (anciennes inscriptions avant ce
         // champ) on retombe sur un mot de passe généré aléatoirement.
@@ -88,13 +88,13 @@ export async function POST(req: NextRequest) {
         const adminPassword = chosenPasswordEnc ? decryptSecret(chosenPasswordEnc) : generatePassword()
 
         // Check slug uniqueness
-        const { data: existing } = await admin.from('boutiques').select('id').eq('slug', slug).maybeSingle()
+        const { data: existing } = await admin.from('restaurants').select('id').eq('slug', slug).maybeSingle()
         const finalSlug = existing ? `${slug}-${Date.now().toString(36)}` : slug
 
         // Generate referral code
         let referral_code = generateReferralCode()
         for (let i = 0; i < 5; i++) {
-          const { data: rc } = await admin.from('boutiques').select('id').eq('referral_code', referral_code).maybeSingle()
+          const { data: rc } = await admin.from('restaurants').select('id').eq('referral_code', referral_code).maybeSingle()
           if (!rc) break
           referral_code = generateReferralCode()
         }
@@ -102,18 +102,18 @@ export async function POST(req: NextRequest) {
         const r = ins as Record<string, unknown>
 
         const [logo_url, cover_url] = await Promise.all([
-          uploadBase64Image(admin, r.logo_base64, `boutiques/${finalSlug}/logo-${Date.now()}.jpg`),
-          uploadBase64Image(admin, r.cover_base64, `boutiques/${finalSlug}/cover-${Date.now()}.jpg`),
+          uploadBase64Image(admin, r.logo_base64, `restaurants/${finalSlug}/logo-${Date.now()}.jpg`),
+          uploadBase64Image(admin, r.cover_base64, `restaurants/${finalSlug}/cover-${Date.now()}.jpg`),
         ])
 
-        // Create boutique
-        const { data: boutique, error: boutiqueError } = await admin.from('boutiques').insert({
-          name: r.boutique_name,
+        // Create restaurant
+        const { data: restaurant, error: restaurantError } = await admin.from('restaurants').insert({
+          name: r.restaurant_name,
           slug: finalSlug,
           description: r.description || r.message || null,
           whatsapp_number: r.whatsapp_number,
           phone: r.phone || null,
-          shop_category: r.shop_category || null,
+          cuisine_type: r.cuisine_type || null,
           city: r.city || null,
           facebook_url: r.facebook_url || null,
           instagram_url: r.instagram_url || null,
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
           is_active: true,
           is_demo: false,
           is_verified: false,
-          // Custom colors and theme are a Pro feature — Starter always keeps TerangaSpot's defaults
+          // Custom colors and theme are a Pro feature — Starter always keeps TerangaLink's defaults
           primary_color: r.plan === 'pro' ? (r.primary_color || '#F97316') : '#F97316',
           theme: r.plan === 'pro' ? ((r.theme as string) || 'light') : 'light',
           logo_url,
@@ -134,9 +134,9 @@ export async function POST(req: NextRequest) {
           admin_password_enc: encryptSecret(adminPassword),
         }).select().single()
 
-        if (boutiqueError || !boutique) {
-          console.error('auto-create boutique error:', boutiqueError)
-          return NextResponse.json({ error: boutiqueError?.message || 'Erreur lors de la création de la boutique' }, { status: 500 })
+        if (restaurantError || !restaurant) {
+          console.error('auto-create restaurant error:', restaurantError)
+          return NextResponse.json({ error: restaurantError?.message || 'Erreur lors de la création de le restaurant' }, { status: 500 })
         }
 
         // Create auth user
@@ -144,11 +144,11 @@ export async function POST(req: NextRequest) {
           email: r.email as string,
           password: adminPassword,
           email_confirm: true,
-          user_metadata: { full_name: r.owner_name, role: 'boutique_admin' },
+          user_metadata: { full_name: r.owner_name, role: 'restaurant_admin' },
         })
 
         if (userError || !newUser.user) {
-          await admin.from('boutiques').delete().eq('id', boutique.id)
+          await admin.from('restaurants').delete().eq('id', restaurant.id)
           console.error('auto-create user error:', userError)
           return NextResponse.json({ error: userError?.message || 'Erreur lors de la création du compte' }, { status: 500 })
         }
@@ -160,14 +160,14 @@ export async function POST(req: NextRequest) {
           id: userId,
           email: r.email,
           full_name: r.owner_name,
-          role: 'boutique_admin',
-          boutique_id: boutique.id,
+          role: 'restaurant_admin',
+          restaurant_id: restaurant.id,
           admin_role: 'principal',
         }, { onConflict: 'id' })
 
         if (profileError) {
           await admin.auth.admin.deleteUser(userId)
-          await admin.from('boutiques').delete().eq('id', boutique.id)
+          await admin.from('restaurants').delete().eq('id', restaurant.id)
           console.error('auto-create profile error:', profileError)
           return NextResponse.json({ error: profileError.message }, { status: 500 })
         }
@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
         const startedAt = new Date()
         const endsAt = plan === 'free' ? null : new Date(startedAt.getTime() + 8 * 24 * 60 * 60 * 1000)
         await admin.from('subscriptions').insert({
-          boutique_id: boutique.id,
+          restaurant_id: restaurant.id,
           plan,
           status: plan === 'free' ? 'active' : 'trial',
           started_at: startedAt.toISOString(),
@@ -187,34 +187,34 @@ export async function POST(req: NextRequest) {
         })
 
         // Record the referral relationship — the discount only kicks in once
-        // this boutique actually pays, see triggerReferralRewardIfDue
-        await registerReferral(admin, boutique.id, r.referral_code as string | null)
+        // this restaurant actually pays, see triggerReferralRewardIfDue
+        await registerReferral(admin, restaurant.id, r.referral_code as string | null)
 
         // Everything succeeded — only now mark the inscription as approved
         await admin.from('inscriptions').update({
           status: 'approved',
-          created_boutique_id: boutique.id,
+          created_restaurant_id: restaurant.id,
           created_admin_password: adminPassword,
         } as Record<string, unknown>).eq('id', id)
 
-        await sendMail({ to: r.email as string, ...welcomeEmail(boutique.name, r.email as string, adminPassword) })
+        await sendMail({ to: r.email as string, ...welcomeEmail(restaurant.name, r.email as string, adminPassword) })
 
-        return NextResponse.json({ ok: true, boutique_id: boutique.id })
+        return NextResponse.json({ ok: true, restaurant_id: restaurant.id })
       }
     }
     return NextResponse.json({ error: 'Bad request' }, { status: 400 })
   }
 
   const {
-    boutique_name, owner_name, email, password, phone, whatsapp_number,
-    shop_category, city, description, message,
+    restaurant_name, owner_name, email, password, phone, whatsapp_number,
+    cuisine_type, city, description, message,
     plan, primary_color, theme, facebook_url, instagram_url, tiktok_url,
     snapchat_url, referral_code, logo_base64, cover_base64,
     want_verified_badge, partner_offer_type, partner_offer_custom,
     consent_images, consent_annuaire, consent_marketing,
   } = body as Record<string, unknown>
 
-  if (!boutique_name || !owner_name || !email || !phone || !whatsapp_number) {
+  if (!restaurant_name || !owner_name || !email || !phone || !whatsapp_number) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
   if (typeof password !== 'string' || password.length < 8) {
@@ -228,9 +228,9 @@ export async function POST(req: NextRequest) {
   // bypass RLS the same way /api/orders does for its public insert.
   const admin = createAdminClient()
   const { error } = await admin.from('inscriptions').insert({
-    boutique_name, owner_name, email, phone, whatsapp_number,
+    restaurant_name, owner_name, email, phone, whatsapp_number,
     chosen_password_enc: encryptSecret(password),
-    shop_category: shop_category || null,
+    cuisine_type: cuisine_type || null,
     city: city || null,
     description: description || null,
     message: message || null,
@@ -262,7 +262,7 @@ export async function POST(req: NextRequest) {
       await sendPushToSuperAdmins(admin, {
         type: 'admin_new_signup',
         title: 'Nouvelle demande d\'inscription',
-        body: `${boutique_name} (${owner_name}) vient de demander à rejoindre TerangaSpot.`,
+        body: `${restaurant_name} (${owner_name}) vient de demander à rejoindre TerangaLink.`,
         url: '/dashboard/super-admin/inscriptions',
       })
     }

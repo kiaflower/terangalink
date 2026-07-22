@@ -44,7 +44,7 @@ self.addEventListener('fetch', (event) => {
 // Si le parsing échoue (payload absent/corrompu), on affiche quand même une
 // notification générique plutôt que de rester silencieux.
 self.addEventListener('push', (event) => {
-  let payload = { title: 'TerangaSpot', body: '', url: '/dashboard/boutique' }
+  let payload = { title: 'TerangaLink', body: '', url: '/dashboard/restaurant' }
   try {
     if (event.data) payload = { ...payload, ...event.data.json() }
   } catch {}
@@ -54,7 +54,7 @@ self.addEventListener('push', (event) => {
       body: payload.body,
       icon: '/icons/admin-192.png',
       badge: '/icons/admin-192.png',
-      data: { url: payload.url || '/dashboard/boutique' },
+      data: { url: payload.url || '/dashboard/restaurant' },
     })
   )
 })
@@ -63,7 +63,7 @@ self.addEventListener('push', (event) => {
 // d'en ouvrir un nouveau, si possible.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const targetUrl = event.notification.data?.url || '/dashboard/boutique'
+  const targetUrl = event.notification.data?.url || '/dashboard/restaurant'
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

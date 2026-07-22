@@ -1,7 +1,7 @@
 {
-  "name": "TerangaSpot — Super Admin",
+  "name": "TerangaLink — Super Admin",
   "short_name": "TS Admin",
-  "description": "Tableau de bord Super Admin TerangaSpot",
+  "description": "Tableau de bord Super Admin TerangaLink",
   "start_url": "/dashboard/super-admin",
   "scope": "/dashboard/super-admin",
   "display": "standalone",

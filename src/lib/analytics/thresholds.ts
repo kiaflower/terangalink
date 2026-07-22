@@ -8,13 +8,13 @@ export const ANALYTICS_THRESHOLDS = {
   // Hausse de visites (semaine vs semaine précédente) déclenchant la
   // suggestion de publier une nouveauté ou une promotion.
   visitSpikePercent: 25,
-  // Volume minimum de vues produit avant de juger un taux (ajout panier,
+  // Volume minimum de vues plat avant de juger un taux (ajout panier,
   // conversion) significatif — évite les faux signaux sur peu de données.
   minViewsForSignal: 30,
   // Volume minimum de paniers créés avant de juger le taux de conversion
   // panier -> commande significatif.
   minCartsForSignal: 5,
-  // Taux vues produit -> ajout panier en dessous duquel on suggère de
+  // Taux vues plat -> ajout panier en dessous duquel on suggère de
   // vérifier prix/description/photos.
   lowAddToCartRate: 0.03,
   // Taux ajout panier -> commande confirmée en dessous duquel on signale

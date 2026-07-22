@@ -4,7 +4,7 @@ interface HeroProduct {
   name: string
   price: number
   image: string
-  boutiqueName: string
+  restaurantName: string
   variant: { label: string; value: string } | null
 }
 
@@ -47,12 +47,12 @@ function renderLine(line: string, key: number) {
   )
 }
 
-// Illustration décorative du hero : deux téléphones superposés (vitrine boutique +
-// conversation WhatsApp), avec le même cadre que BoutiquePhoneDemo (rounded-[2.5rem]
+// Illustration décorative du hero : deux téléphones superposés (vitrine restaurant +
+// conversation WhatsApp), avec le même cadre que RestaurantPhoneDemo (rounded-[2.5rem]
 // border-8 border-gray-900) pour rester cohérent avec le reste du site. `product` est un
-// vrai produit d'une boutique démo (photo, nom, prix, boutique) et `orderMessage` le texte
+// vrai plat d'un restaurant démo (photo, nom, prix, restaurant) et `orderMessage` le texte
 // exact que génère src/lib/utils#buildWhatsAppMessage pour une vraie commande — rien n'est
-// inventé, seuls le client et l'adresse sont un exemple. Si aucun produit démo n'est
+// inventé, seuls le client et l'adresse sont un exemple. Si aucun plat démo n'est
 // disponible, on retombe sur un aperçu générique plutôt que d'inventer un contenu.
 export function HeroPhoneMockup({ product, orderMessage }: HeroPhoneMockupProps) {
   const productPrice = product ? formatPrice(product.price) : '19 900 FCFA'
@@ -61,12 +61,12 @@ export function HeroPhoneMockup({ product, orderMessage }: HeroPhoneMockupProps)
   return (
     <div className="relative mx-auto w-full max-w-[380px] h-[460px] sm:h-[520px] md:h-[560px] select-none">
 
-      {/* Téléphone arrière — vitrine boutique */}
+      {/* Téléphone arrière — vitrine restaurant */}
       <div className="absolute left-2 sm:left-4 top-2 sm:top-4 w-[130px] sm:w-[150px] md:w-[165px] -rotate-6 rounded-[2rem] border-[6px] border-gray-900 bg-white overflow-hidden shadow-2xl">
         <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-gray-100">
           <div className="w-3.5 h-3.5 rounded-full bg-brand-orange flex-shrink-0" />
           {product ? (
-            <p className="text-[7px] font-bold text-gray-800 truncate">{product.boutiqueName}</p>
+            <p className="text-[7px] font-bold text-gray-800 truncate">{product.restaurantName}</p>
           ) : (
             <div className="h-1.5 w-14 rounded-full bg-gray-200" />
           )}

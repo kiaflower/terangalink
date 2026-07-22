@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
 
     const { data: targetData } = await admin.from('profiles').select('admin_role').eq('id', user_id).single()
     if ((targetData as { admin_role?: string } | null)?.admin_role === 'principal') {
-      return NextResponse.json({ error: 'Impossible de supprimer l\'admin principal d\'une boutique. Utilisez la réinitialisation du mot de passe si besoin.' }, { status: 403 })
+      return NextResponse.json({ error: 'Impossible de supprimer l\'admin principal d\'un restaurant. Utilisez la réinitialisation du mot de passe si besoin.' }, { status: 403 })
     }
 
     // Désactivation en douceur plutôt que suppression immédiate du compte
     // Supabase Auth : si l'admin visé a une session active, ça lui permet de
-    // voir le message "Vous avez été déconnecté(e)" (via BoutiqueSessionGuard
+    // voir le message "Vous avez été déconnecté(e)" (via RestaurantSessionGuard
     // + le contrôle de session dans le middleware) au lieu de casser sa
     // session en plein vol côté navigateur.
     const { error } = await admin.from('profiles').update({ is_active: false }).eq('id', user_id)

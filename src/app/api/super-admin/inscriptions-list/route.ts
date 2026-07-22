@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   // list view doesn't render images, only the fiche detail (fetched via ?id=) does.
   const { data } = await admin
     .from('inscriptions')
-    .select('id, boutique_name, owner_name, email, phone, whatsapp_number, shop_category, city, description, status, created_at, plan, primary_color, theme, facebook_url, instagram_url, tiktok_url, snapchat_url, referral_code, want_verified_badge, partner_offer_type, partner_offer_custom, consent_images, consent_annuaire, consent_marketing, created_boutique_id, created_admin_password')
+    .select('id, restaurant_name, owner_name, email, phone, whatsapp_number, cuisine_type, city, description, status, created_at, plan, primary_color, theme, facebook_url, instagram_url, tiktok_url, snapchat_url, referral_code, want_verified_badge, partner_offer_type, partner_offer_custom, consent_images, consent_annuaire, consent_marketing, created_restaurant_id, created_admin_password')
     .order('created_at', { ascending: false })
     .limit(100)
   return NextResponse.json({ inscriptions: data ?? [] })

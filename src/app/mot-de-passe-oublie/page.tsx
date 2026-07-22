@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
   const [slug, setSlug] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const [siteHost, setSiteHost] = useState('teranga-spot.com')
+  const [siteHost, setSiteHost] = useState('teranga-link.com')
 
   useEffect(() => { setSiteHost(window.location.host) }, [])
 
@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-white tracking-tight">Mot de passe oublié</h1>
           <p className="text-sm text-zinc-400 mt-1">
-            Réservé à l&apos;admin principal. Indiquez votre email admin et le lien de votre boutique — si ces informations correspondent à un compte, un email sera envoyé sous peu.
+            Réservé à l&apos;admin principal. Indiquez votre email admin et le lien de votre restaurant — si ces informations correspondent à un compte, un email sera envoyé sous peu.
           </p>
         </div>
 
@@ -49,13 +49,13 @@ export default function ForgotPasswordPage() {
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="vous@exemple.com" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Lien de votre boutique</label>
+              <label className="block text-sm font-medium text-zinc-300 mb-1.5">Lien de votre restaurant</label>
               <input
                 type="text"
                 value={slug}
                 onChange={e => setSlug(e.target.value)}
                 required
-                placeholder={`Ex : ma-boutique ou ${siteHost}/ma-boutique`}
+                placeholder={`Ex : ma-restaurant ou ${siteHost}/ma-restaurant`}
                 className={inputCls}
               />
             </div>

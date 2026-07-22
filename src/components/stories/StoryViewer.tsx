@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { X, Heart, Share2, Volume2, VolumeX } from 'lucide-react'
-import type { BoutiqueStory } from '@/lib/types'
+import type { RestaurantStory } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
 import { markStoryViewed, isStoryLiked, toggleStoryLiked } from '@/lib/storyStorage'
 
@@ -11,14 +11,14 @@ const IMAGE_DURATION_MS = 5000
 const SWIPE_THRESHOLD = 60
 
 interface Props {
-  stories: BoutiqueStory[]
-  boutiqueSlug: string
-  boutiqueName: string
-  boutiqueLogoUrl?: string | null
+  stories: RestaurantStory[]
+  restaurantSlug: string
+  restaurantName: string
+  restaurantLogoUrl?: string | null
   onClose: () => void
 }
 
-export function StoryViewer({ stories, boutiqueSlug, boutiqueName, boutiqueLogoUrl, onClose }: Props) {
+export function StoryViewer({ stories, restaurantSlug, restaurantName, restaurantLogoUrl, onClose }: Props) {
   const supabase = createClient()
   const [index, setIndex] = useState(0)
   const [progress, setProgress] = useState(0)
@@ -89,16 +89,16 @@ export function StoryViewer({ stories, boutiqueSlug, boutiqueName, boutiqueLogoU
   }
 
   async function handleShare() {
-    const url = `${window.location.origin}/${boutiqueSlug}`
+    const url = `${window.location.origin}/${restaurantSlug}`
     if (navigator.share) {
-      try { await navigator.share({ title: boutiqueName, url }) } catch { /* annulé */ }
+      try { await navigator.share({ title: restaurantName, url }) } catch { /* annulé */ }
     } else {
       await navigator.clipboard.writeText(url)
     }
   }
 
-  const ctaHref = story.product_id ? `/${boutiqueSlug}?product=${story.product_id}` : `/${boutiqueSlug}`
-  const ctaLabel = story.product_id ? 'Voir le produit' : 'Voir la boutique'
+  const ctaHref = story.product_id ? `/${restaurantSlug}?product=${story.product_id}` : `/${restaurantSlug}`
+  const ctaLabel = story.product_id ? 'Voir le plat' : 'Voir le restaurant'
 
   function handleTouchStart(e: React.TouchEvent) {
     const t = e.touches[0]
@@ -141,15 +141,15 @@ export function StoryViewer({ stories, boutiqueSlug, boutiqueName, boutiqueLogoU
 
         <div className="absolute top-5 left-3 right-3 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {boutiqueLogoUrl ? (
+            {restaurantLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={boutiqueLogoUrl} alt="" className="w-7 h-7 rounded-full object-cover border border-white/40" />
+              <img src={restaurantLogoUrl} alt="" className="w-7 h-7 rounded-full object-cover border border-white/40" />
             ) : (
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold">
-                {boutiqueName.charAt(0)}
+                {restaurantName.charAt(0)}
               </div>
             )}
-            <p className="text-white text-sm font-semibold drop-shadow">{boutiqueName}</p>
+            <p className="text-white text-sm font-semibold drop-shadow">{restaurantName}</p>
           </div>
           <button onClick={onClose} aria-label="Fermer" className="text-white p-1.5"><X className="w-6 h-6" /></button>
         </div>

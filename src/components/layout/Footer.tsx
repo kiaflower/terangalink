@@ -61,9 +61,9 @@ export async function Footer({
             <p className="font-semibold text-sm mb-3" style={{ color: '#111111' }}>Navigation</p>
             <div className="space-y-2">
               {[
-                { label: 'Boutiques', href: '/boutiques' },
-                { label: 'Rejoindre TerangaSpot', href: '/pour-les-boutiques' },
-                { label: 'Tarifs', href: '/pour-les-boutiques#tarifs' },
+                { label: 'Restaurants', href: '/restaurants' },
+                { label: 'Rejoindre TerangaLink', href: '/pour-les-restaurants' },
+                { label: 'Tarifs', href: '/pour-les-restaurants#tarifs' },
                 { label: 'Mentions légales', href: '/legal' },
               ].map(link => (
                 <Link key={link.label} href={link.href}
@@ -132,7 +132,7 @@ export async function Footer({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6"
           style={{ borderTop: '1px solid #F3F4F6' }}>
           <p className="text-xs" style={{ color: '#9CA3AF' }}>
-            © 2026 TerangaSpot — Fait à Dakar
+            © 2026 TerangaLink — Fait à Dakar
           </p>
           <div className="flex gap-4 text-xs" style={{ color: '#9CA3AF' }}>
             <Link href="/legal" className="hover:text-brand-orange transition-colors">Mentions légales</Link>

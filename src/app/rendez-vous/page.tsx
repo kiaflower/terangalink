@@ -6,8 +6,8 @@ import { Logo } from '@/components/ui/Logo'
 import { Calendar, Check, ArrowLeft, Clock } from 'lucide-react'
 
 const SUBJECTS = [
-  'Découverte de TerangaSpot',
-  'Création de ma boutique',
+  'Découverte de TerangaLink',
+  'Création de mon restaurant',
   'Question sur les tarifs',
   'Question technique',
   'Autre',
@@ -114,7 +114,7 @@ export default function RendezVousPage() {
       </header>
 
       <div className="max-w-xl mx-auto px-4 py-12">
-        <Link href="/pour-les-boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors mb-6">
+        <Link href="/pour-les-restaurants" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors mb-6">
           <ArrowLeft className="w-4 h-4" />
           Retour
         </Link>

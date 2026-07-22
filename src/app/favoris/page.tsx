@@ -8,8 +8,8 @@ import { Logo } from '@/components/ui/Logo'
 
 interface FavoriteItem {
   product_id: string
-  boutique_slug: string
-  boutique_name: string
+  restaurant_slug: string
+  restaurant_name: string
   name: string
   image_url: string | null
   price: number
@@ -22,11 +22,11 @@ interface AnnuaireSuggestion {
   price: number
   discount_percent: number | null
   image_url: string | null
-  boutique_slug: string
-  boutique_name: string
+  restaurant_slug: string
+  restaurant_name: string
 }
 
-const FAVORITES_KEY = 'terangaspot_favorites'
+const FAVORITES_KEY = 'terangalink_favorites'
 
 export default function FavorisPage() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([])
@@ -41,7 +41,7 @@ export default function FavorisPage() {
   }, [])
 
   // Boucle de découverte de l'annuaire — uniquement pour les visiteurs venant
-  // d'une boutique en plan Free (voir BoutiquePageClient, lien "Mes favoris").
+  // d'un restaurant en plan Free (voir RestaurantPageClient, lien "Mes favoris").
   useEffect(() => {
     const isFreeSource = new URLSearchParams(window.location.search).get('src') === 'free'
     setShowSuggestions(isFreeSource)
@@ -58,10 +58,10 @@ export default function FavorisPage() {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(next))
   }
 
-  // Group by boutique
-  const byBoutique = favorites.reduce<Record<string, { slug: string; name: string; items: FavoriteItem[] }>>((acc, f) => {
-    if (!acc[f.boutique_slug]) acc[f.boutique_slug] = { slug: f.boutique_slug, name: f.boutique_name, items: [] }
-    acc[f.boutique_slug].items.push(f)
+  // Group by restaurant
+  const byRestaurant = favorites.reduce<Record<string, { slug: string; name: string; items: FavoriteItem[] }>>((acc, f) => {
+    if (!acc[f.restaurant_slug]) acc[f.restaurant_slug] = { slug: f.restaurant_slug, name: f.restaurant_name, items: [] }
+    acc[f.restaurant_slug].items.push(f)
     return acc
   }, {})
 
@@ -69,7 +69,7 @@ export default function FavorisPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="px-6 py-5 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #F3F4F6' }}>
         <Link href="/"><Logo textClassName="font-bold text-xl" textStyle={{ color: '#111111' }} /></Link>
-        <Link href="/boutiques" className="text-sm text-gray-500 hover:text-brand-orange transition-colors flex items-center gap-1.5">
+        <Link href="/restaurants" className="text-sm text-gray-500 hover:text-brand-orange transition-colors flex items-center gap-1.5">
           <Store className="w-4 h-4" /> Annuaire
         </Link>
       </header>
@@ -85,15 +85,15 @@ export default function FavorisPage() {
           <div className="text-center py-24">
             <Heart className="w-12 h-12 text-gray-200 mx-auto mb-4" />
             <p className="text-gray-500 font-medium">Aucun favori pour l&apos;instant</p>
-            <p className="text-gray-400 text-sm mt-1 mb-6">Ajoutez des produits en cliquant sur le cœur sur les vitrines</p>
-            <Link href="/boutiques"
+            <p className="text-gray-400 text-sm mt-1 mb-6">Ajoutez des plats en cliquant sur le cœur sur les vitrines</p>
+            <Link href="/restaurants"
               className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
-              <Store className="w-4 h-4" /> Découvrir les boutiques
+              <Store className="w-4 h-4" /> Découvrir les restaurants
             </Link>
           </div>
         ) : (
           <div className="space-y-8">
-            {Object.values(byBoutique).map(group => (
+            {Object.values(byRestaurant).map(group => (
               <div key={group.slug}>
                 <Link href={`/${group.slug}`}
                   className="inline-flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-brand-orange transition-colors mb-4">
@@ -121,9 +121,9 @@ export default function FavorisPage() {
                       <div className="p-3">
                         <h3 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h3>
                         <p className="text-sm font-bold text-brand-orange mt-1">{formatPrice(item.price)}</p>
-                        <Link href={`/${item.boutique_slug}`}
+                        <Link href={`/${item.restaurant_slug}`}
                           className="mt-2 w-full flex items-center justify-center gap-1 text-xs font-semibold py-2 rounded-lg border border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white transition-colors">
-                          Voir la boutique
+                          Voir le restaurant
                         </Link>
                       </div>
                     </div>
@@ -136,10 +136,10 @@ export default function FavorisPage() {
 
         {showSuggestions && suggestions.length > 0 && (
           <div className="mt-10">
-            <h2 className="text-sm font-bold text-gray-900 mb-3">Découvrez d&apos;autres boutiques</h2>
+            <h2 className="text-sm font-bold text-gray-900 mb-3">Découvrez d&apos;autres restaurants</h2>
             <div className="grid grid-cols-3 gap-3 mb-4">
               {suggestions.map(p => (
-                <Link key={p.id} href={`/${p.boutique_slug}/produit/${p.slug}`}
+                <Link key={p.id} href={`/${p.restaurant_slug}/plat/${p.slug}`}
                   className="rounded-xl overflow-hidden border border-gray-100 bg-white hover:shadow-md transition-shadow">
                   <div className="aspect-square relative bg-gray-50">
                     {p.image_url ? (
@@ -152,12 +152,12 @@ export default function FavorisPage() {
                   <div className="p-2.5">
                     <p className="text-xs font-semibold text-gray-900 truncate">{p.name}</p>
                     <p className="text-xs font-bold mt-0.5 text-brand-orange">{formatPrice(p.price)}</p>
-                    <p className="text-[10px] text-gray-400 truncate mt-0.5">{p.boutique_name}</p>
+                    <p className="text-[10px] text-gray-400 truncate mt-0.5">{p.restaurant_name}</p>
                   </div>
                 </Link>
               ))}
             </div>
-            <Link href="/boutiques"
+            <Link href="/restaurants"
               className="inline-flex items-center gap-2 bg-brand-orange text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-90 transition-opacity">
               <Store className="w-4 h-4" /> Découvrir l&apos;annuaire
             </Link>

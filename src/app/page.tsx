@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ShoppingBag, Store, ArrowRight, MapPin, Check } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Footer } from '@/components/layout/Footer'
-import { RealBoutiquesMarquee } from '@/components/landing/RealBoutiquesMarquee'
+import { RealRestaurantsMarquee } from '@/components/landing/RealRestaurantsMarquee'
 import { ProductPhotosGrid } from '@/components/landing/ProductPhotosGrid'
 import { Logo } from '@/components/ui/Logo'
 
@@ -12,48 +12,48 @@ export const revalidate = 0
 export default async function HomePage() {
   const supabase = createClient()
 
-  // Chiffres réels (annuaire) et boutiques réelles (vendeurs) chargés côté serveur pour
+  // Chiffres réels (annuaire) et restaurants réelles (vendeurs) chargés côté serveur pour
   // que les deux moitiés de la page — acheteur et vendeur — s'appuient sur des faits
   // vérifiables plutôt qu'une seule preuve sociale unilatérale (côté vendeur uniquement).
-  const [{ data: marqueeBoutiques }, { count: boutiqueCount }, { count: productCount }, { data: photoProducts }] = await Promise.all([
+  const [{ data: marqueeRestaurants }, { count: restaurantCount }, { count: productCount }, { data: photoProducts }] = await Promise.all([
     supabase
-      .from('boutiques')
-      .select('name, slug, shop_category, logo_url, primary_color')
+      .from('restaurants')
+      .select('name, slug, cuisine_type, logo_url, primary_color')
       .eq('is_active', true)
       .eq('is_demo', false)
       .order('created_at', { ascending: true })
       .limit(12),
     supabase
-      .from('boutiques')
+      .from('restaurants')
       .select('id', { count: 'exact', head: true })
       .eq('is_active', true)
       .eq('is_demo', false),
     supabase
       .from('products')
-      .select('id, boutiques!inner(is_active,is_demo)', { count: 'exact', head: true })
+      .select('id, restaurants!inner(is_active,is_demo)', { count: 'exact', head: true })
       .eq('is_available', true)
-      .eq('boutiques.is_active', true)
-      .eq('boutiques.is_demo', false),
+      .eq('restaurants.is_active', true)
+      .eq('restaurants.is_demo', false),
     supabase
       .from('products')
-      .select('slug, image_url, images_urls, boutiques!inner(slug, is_active, is_demo)')
+      .select('slug, image_url, images_urls, restaurants!inner(slug, is_active, is_demo)')
       .eq('is_available', true)
-      .eq('boutiques.is_active', true)
-      .eq('boutiques.is_demo', false)
+      .eq('restaurants.is_active', true)
+      .eq('restaurants.is_demo', false)
       .limit(24),
   ])
 
-  const realBoutiques = (marqueeBoutiques ?? []).map(b => ({ ...b, name: b.name.trim() }))
+  const realRestaurants = (marqueeRestaurants ?? []).map(b => ({ ...b, name: b.name.trim() }))
 
-  // Juste les photos, sans prix/nom/description — un aperçu visuel du catalogue plutôt
+  // Juste les photos, sans prix/nom/description — un aperçu visuel du menu plutôt
   // qu'un CTA qui répétait les cartes acheteur/vendeur du haut de page. Chaque photo
-  // reste cliquable vers sa vraie page produit dans l'annuaire.
+  // reste cliquable vers sa vraie page plat dans l'annuaire.
   const productPhotos = (photoProducts ?? [])
     .map(p => {
       const src = p.image_url ?? p.images_urls?.[0] ?? null
-      const boutique = Array.isArray(p.boutiques) ? p.boutiques[0] : p.boutiques
-      if (!src || !boutique?.slug) return null
-      return { src, href: `/${boutique.slug}/produit/${p.slug}?from=accueil` }
+      const restaurant = Array.isArray(p.restaurants) ? p.restaurants[0] : p.restaurants
+      if (!src || !restaurant?.slug) return null
+      return { src, href: `/${restaurant.slug}/plat/${p.slug}?from=accueil` }
     })
     .filter((photo): photo is { src: string; href: string } => Boolean(photo))
 
@@ -97,7 +97,7 @@ export default async function HomePage() {
               vendeur — pour ne pas faire pencher la page d'un côté. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 
-            <Link href="/boutiques"
+            <Link href="/restaurants"
               className="group flex flex-col items-center text-center p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               style={{ backgroundColor: '#F5F3FF', border: '2px solid #DDD6FE' }}>
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
@@ -108,23 +108,23 @@ export default async function HomePage() {
                 Je veux acheter
               </h2>
               <p className="text-sm mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
-                Découvrez les meilleures boutiques du Sénégal et faites-vous livrer facilement
+                Découvrez les meilleurs restaurants du Sénégal et faites-vous livrer facilement
               </p>
-              {Boolean(boutiqueCount) && Boolean(productCount) && (
+              {Boolean(restaurantCount) && Boolean(productCount) && (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold mb-6 px-3 py-1 rounded-full"
                   style={{ backgroundColor: 'rgba(249,115,22,0.1)', color: '#F97316' }}>
                   <Store className="w-3.5 h-3.5" />
-                  {boutiqueCount} boutiques · {productCount} produits
+                  {restaurantCount} restaurants · {productCount} plats
                 </span>
               )}
               <span className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl text-white mt-auto"
                 style={{ backgroundColor: '#F97316' }}>
-                Voir les boutiques
+                Voir les restaurants
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
 
-            <Link href="/pour-les-boutiques"
+            <Link href="/pour-les-restaurants"
               className="group flex flex-col items-center text-center p-8 rounded-3xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               style={{ backgroundColor: '#FFFFFF', border: '2px solid #E5E7EB' }}>
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
@@ -132,7 +132,7 @@ export default async function HomePage() {
                 <Store className="w-8 h-8 text-white" />
               </div>
               <h2 className="font-black text-2xl mb-2" style={{ color: '#111111' }}>
-                J&apos;ai une boutique
+                J&apos;ai un restaurant
               </h2>
               <p className="text-sm mb-4 leading-relaxed" style={{ color: '#6B7280' }}>
                 Rangez vos commandes Instagram et WhatsApp dans un lien unique, gratuitement
@@ -145,7 +145,7 @@ export default async function HomePage() {
               <span
                 className="inline-flex items-center gap-2 font-bold text-sm px-5 py-2.5 rounded-xl transition-all group-hover:bg-brand-orange group-hover:text-white group-hover:border-brand-orange mt-auto"
                 style={{ border: '2px solid #111111', color: '#111111' }}>
-                Créer ma boutique
+                Créer mon restaurant
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </span>
             </Link>
@@ -153,23 +153,23 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {realBoutiques.length > 0 && (
+        {realRestaurants.length > 0 && (
           <section className="pb-4">
             <p className="text-sm text-gray-400 text-center mb-3">
-              Elles sont déjà sur TerangaSpot
+              Elles sont déjà sur TerangaLink
             </p>
-            <RealBoutiquesMarquee boutiques={realBoutiques} />
+            <RealRestaurantsMarquee restaurants={realRestaurants} />
           </section>
         )}
 
-        {/* Aperçu du catalogue — 4 photos de produits réels de l'annuaire, sans prix ni
+        {/* Aperçu du menu — 4 photos de plats réels de l'annuaire, sans prix ni
             nom ni description, qui tournent toutes les 5s. Remplace le CTA du bas qui
             répétait les cartes acheteur/vendeur du haut de page. */}
         {productPhotos.length > 0 && (
           <section className="py-16 px-4">
             <div className="max-w-2xl mx-auto">
               <p className="text-sm text-gray-400 text-center mb-6">
-                Un aperçu de ce qui s&apos;achète déjà sur TerangaSpot
+                Un aperçu de ce qui s&apos;achète déjà sur TerangaLink
               </p>
               <ProductPhotosGrid photos={productPhotos} />
             </div>
@@ -180,17 +180,17 @@ export default async function HomePage() {
         <section style={{ backgroundColor: '#F97316' }} className="py-16 px-4">
           <div className="max-w-2xl mx-auto text-center">
             <h2 className="font-black text-2xl sm:text-3xl leading-tight mb-8 text-white">
-              Deux façons de profiter de TerangaSpot
+              Deux façons de profiter de TerangaLink
             </h2>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link href="/pour-les-boutiques"
+              <Link href="/pour-les-restaurants"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:opacity-90 group w-full sm:w-auto justify-center"
                 style={{ backgroundColor: '#FFFFFF', color: '#111111' }}>
                 <Store className="w-4 h-4" />
                 Je veux créer mon site
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
-              <Link href="/boutiques"
+              <Link href="/restaurants"
                 className="inline-flex items-center gap-2 font-bold text-sm px-6 py-3 rounded-xl transition-all hover:opacity-90 group w-full sm:w-auto justify-center"
                 style={{ backgroundColor: '#FFFFFF', color: '#F97316' }}>
                 <ShoppingBag className="w-4 h-4" />

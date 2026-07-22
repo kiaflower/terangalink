@@ -1,4 +1,4 @@
-// Limites vidéo partagées (Stories + vidéo produit) — pensées pour rester
+// Limites vidéo partagées (Stories + vidéo plat) — pensées pour rester
 // légères en data mobile, cohérent avec la compression photo côté client
 // (voir imageUtils.ts).
 export const MAX_VIDEO_SIZE_MB = 20

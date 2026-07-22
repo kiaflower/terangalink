@@ -1,6 +1,6 @@
 export function jsonLdScript(data: Record<string, unknown>) {
   // Échappe les "<" pour empêcher toute fermeture prématurée de la balise <script>
-  // si une valeur (nom de produit, description...) contient "</script>".
+  // si une valeur (nom de plat, description...) contient "</script>".
   return JSON.stringify(data).replace(/</g, '\\u003c')
 }
 
@@ -8,7 +8,7 @@ export function buildProductJsonLd(input: {
   name: string
   description: string
   images: string[]
-  boutiqueName: string
+  restaurantName: string
   price: number
   url: string
   inStock: boolean
@@ -19,7 +19,7 @@ export function buildProductJsonLd(input: {
     name: input.name,
     image: input.images,
     description: input.description,
-    brand: { '@type': 'Brand', name: input.boutiqueName },
+    brand: { '@type': 'Brand', name: input.restaurantName },
     offers: {
       '@type': 'Offer',
       priceCurrency: 'XOF',

@@ -9,7 +9,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const COPY = {
-  boutique: {
+  restaurant: {
     title: 'Installez votre tableau de bord',
     body: "Ajoutez-le à votre écran d'accueil pour l'ouvrir en un tap, comme une vraie appli. Sur iPhone, c'est aussi nécessaire pour recevoir les notifications de nouvelles commandes — Safari seul ne les affiche pas.",
   },
@@ -38,7 +38,7 @@ function isStandalone() {
   )
 }
 
-export function InstallPwaBanner({ variant }: { variant: 'boutique' | 'admin' }) {
+export function InstallPwaBanner({ variant }: { variant: 'restaurant' | 'admin' }) {
   const storageKey = `pwa_banner_dismissed_${variant}`
   const [visible, setVisible] = useState(false)
   const [platform, setPlatform] = useState<'ios' | 'android' | 'other'>('other')

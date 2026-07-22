@@ -16,11 +16,11 @@ export interface AbandonedCartsScanResult {
  * déjà signalés lors d'un run précédent. `lastCheckedAt` est le
  * `scannedUntil` renvoyé au run précédent ; à null au tout premier run, où
  * on ne remonte que 24h en arrière pour éviter un backfill sur tout
- * l'historique de la boutique.
+ * l'historique de le restaurant.
  */
 export async function detectNewlyAbandonedCarts(
   admin: SupabaseClient,
-  boutiqueId: string,
+  restaurantId: string,
   delayHours: number,
   lastCheckedAt: string | null
 ): Promise<AbandonedCartsScanResult> {
@@ -32,7 +32,7 @@ export async function detectNewlyAbandonedCarts(
   const { data } = await admin
     .from('analytics_events')
     .select('session_id, created_at')
-    .eq('boutique_id', boutiqueId)
+    .eq('restaurant_id', restaurantId)
     .eq('event_type', 'add_to_cart')
     .gt('created_at', windowStart.toISOString())
     .limit(10000)
@@ -54,9 +54,9 @@ export async function detectNewlyAbandonedCarts(
 
   const [convertedRes, clearedRes] = await Promise.all([
     admin.from('analytics_events').select('session_id')
-      .eq('boutique_id', boutiqueId).eq('event_type', 'whatsapp_click').in('session_id', candidateSessions).limit(10000),
+      .eq('restaurant_id', restaurantId).eq('event_type', 'whatsapp_click').in('session_id', candidateSessions).limit(10000),
     admin.from('analytics_events').select('session_id, created_at')
-      .eq('boutique_id', boutiqueId).eq('event_type', 'cart_cleared').in('session_id', candidateSessions).limit(10000),
+      .eq('restaurant_id', restaurantId).eq('event_type', 'cart_cleared').in('session_id', candidateSessions).limit(10000),
   ])
 
   const convertedSessions = new Set((convertedRes.data ?? []).map((r: { session_id: string }) => r.session_id))

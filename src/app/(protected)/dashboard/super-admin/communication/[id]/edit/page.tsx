@@ -24,7 +24,7 @@ export default function EditCampaignPage() {
   const [name, setName] = useState('')
   const [subject, setSubject] = useState('')
   const [previewText, setPreviewText] = useState('')
-  const [fromName, setFromName] = useState('TerangaSpot')
+  const [fromName, setFromName] = useState('TerangaLink')
   const [blocks, setBlocks] = useState<NewsletterBlock[]>([])
   const [segment, setSegment] = useState<NewsletterSegment>({ type: 'all' })
 
@@ -303,7 +303,7 @@ export default function EditCampaignPage() {
         <Modal onClose={() => setShowTestModal(false)} title="Envoyer un email de test">
           <input
             type="email"
-            placeholder="admin@teranga-spot.com"
+            placeholder="admin@teranga-link.com"
             value={testEmail}
             onChange={e => setTestEmail(e.target.value)}
             className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mb-3"

@@ -6,7 +6,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return Uint8Array.from(rawData, c => c.charCodeAt(0))
 }
 
-export type PushContext = 'boutique' | 'admin'
+export type PushContext = 'restaurant' | 'admin'
 
 export async function subscribeToPush(context: PushContext): Promise<void> {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {

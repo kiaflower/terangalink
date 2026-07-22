@@ -31,8 +31,8 @@ function toDateOnly(date: Date): string {
 type PendingCreditAction = 'discount' | 'free_month' | 'referral_welcome' | null
 
 /**
- * A trial boutique's first payment always starts a fresh month from today —
- * the trial window itself was never billed. A renewing boutique's next
+ * A trial restaurant's first payment always starts a fresh month from today —
+ * the trial window itself was never billed. A renewing restaurant's next
  * period always starts where its last paid period left off (ends_at), so
  * paying early never shortens what they already paid for.
  */
@@ -61,16 +61,16 @@ function computeDiscount(fullAmount: number, pendingAction: PendingCreditAction)
 
 /**
  * Consumes 1 available referral credit and queues a -25% discount on the
- * boutique's next generated invoice. Only one queued action at a time — a
- * boutique can't stack a discount and a free month on the same invoice.
+ * restaurant's next generated invoice. Only one queued action at a time — a
+ * restaurant can't stack a discount and a free month on the same invoice.
  */
-export async function applyCreditToNextInvoice(admin: AdminClient, boutiqueId: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { data: sub } = await admin.from('subscriptions').select('id, pending_credit_action').eq('boutique_id', boutiqueId).maybeSingle()
+export async function applyCreditToNextInvoice(admin: AdminClient, restaurantId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { data: sub } = await admin.from('subscriptions').select('id, pending_credit_action').eq('restaurant_id', restaurantId).maybeSingle()
   if (!sub) return { ok: false, error: 'Abonnement introuvable' }
   if (sub.pending_credit_action) return { ok: false, error: 'Une réduction est déjà prévue sur la prochaine facture' }
 
   const { data: consumed } = await admin.rpc('consume_referral_credits', {
-    p_boutique_id: boutiqueId, p_count: 1, p_reason: 'discount', p_invoice_id: null,
+    p_restaurant_id: restaurantId, p_count: 1, p_reason: 'discount', p_invoice_id: null,
   })
   if (!consumed || consumed < 1) return { ok: false, error: 'Aucun crédit disponible' }
 
@@ -79,13 +79,13 @@ export async function applyCreditToNextInvoice(admin: AdminClient, boutiqueId: s
 }
 
 /** Same as applyCreditToNextInvoice but consumes 5 credits at once for a free month. */
-export async function redeemFreeMonth(admin: AdminClient, boutiqueId: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  const { data: sub } = await admin.from('subscriptions').select('id, pending_credit_action').eq('boutique_id', boutiqueId).maybeSingle()
+export async function redeemFreeMonth(admin: AdminClient, restaurantId: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { data: sub } = await admin.from('subscriptions').select('id, pending_credit_action').eq('restaurant_id', restaurantId).maybeSingle()
   if (!sub) return { ok: false, error: 'Abonnement introuvable' }
   if (sub.pending_credit_action) return { ok: false, error: 'Une réduction est déjà prévue sur la prochaine facture' }
 
   const { data: consumed } = await admin.rpc('consume_referral_credits', {
-    p_boutique_id: boutiqueId, p_count: 5, p_reason: 'free_month', p_invoice_id: null,
+    p_restaurant_id: restaurantId, p_count: 5, p_reason: 'free_month', p_invoice_id: null,
   })
   if (!consumed || consumed < 5) return { ok: false, error: 'Il faut au moins 5 crédits disponibles' }
 
@@ -94,16 +94,16 @@ export async function redeemFreeMonth(admin: AdminClient, boutiqueId: string): P
 }
 
 /**
- * If this boutique was referred and never had its welcome discount applied,
+ * If this restaurant was referred and never had its welcome discount applied,
  * queues it now. Called right before invoice generation so a referred
- * boutique's very first invoice carries the discount — not some future one.
- * Never overwrites a discount the boutique already chose itself.
+ * restaurant's very first invoice carries the discount — not some future one.
+ * Never overwrites a discount the restaurant already chose itself.
  */
-async function maybeQueueWelcomeDiscount(admin: AdminClient, boutiqueId: string): Promise<void> {
-  const { data: reward } = await admin.from('referral_rewards').select('id').eq('referred_boutique_id', boutiqueId).eq('status', 'pending').maybeSingle()
+async function maybeQueueWelcomeDiscount(admin: AdminClient, restaurantId: string): Promise<void> {
+  const { data: reward } = await admin.from('referral_rewards').select('id').eq('referred_restaurant_id', restaurantId).eq('status', 'pending').maybeSingle()
   if (!reward) return
 
-  const { data: sub } = await admin.from('subscriptions').select('id, pending_credit_action').eq('boutique_id', boutiqueId).maybeSingle()
+  const { data: sub } = await admin.from('subscriptions').select('id, pending_credit_action').eq('restaurant_id', restaurantId).maybeSingle()
   if (!sub || sub.pending_credit_action) return
 
   await admin.from('subscriptions').update({ pending_credit_action: 'referral_welcome', updated_at: new Date().toISOString() }).eq('id', sub.id)
@@ -111,7 +111,7 @@ async function maybeQueueWelcomeDiscount(admin: AdminClient, boutiqueId: string)
 
 interface SubscriptionForInvoice {
   id: string
-  boutique_id: string
+  restaurant_id: string
   plan: BillablePlanKey
   status: string
   started_at: string
@@ -151,7 +151,7 @@ async function ensureInvoiceForCurrentPeriod(
 
   const { data: invoice, error } = await admin.from('invoices').insert({
     invoice_number: invoiceNumber as string,
-    boutique_id: sub.boutique_id,
+    restaurant_id: sub.restaurant_id,
     subscription_id: sub.id,
     period_start: periodStartStr,
     period_end: toDateOnly(period.end),
@@ -171,7 +171,7 @@ async function ensureInvoiceForCurrentPeriod(
   if (sub.pending_credit_action === 'discount' || sub.pending_credit_action === 'free_month') {
     await admin.from('referral_credits')
       .update({ invoice_id: invoice.id })
-      .eq('boutique_id', sub.boutique_id)
+      .eq('restaurant_id', sub.restaurant_id)
       .eq('status', 'consumed')
       .is('invoice_id', null)
   }
@@ -202,7 +202,7 @@ export async function runInvoiceGenerationSweep(admin: AdminClient): Promise<num
   // BillablePlanKey de SubscriptionForInvoice reste vrai à l'exécution.
   const { data: subs } = await admin
     .from('subscriptions')
-    .select('id, boutique_id, plan, status, started_at, ends_at, pending_credit_action')
+    .select('id, restaurant_id, plan, status, started_at, ends_at, pending_credit_action')
     .eq('status', 'active')
     .neq('plan', 'free')
 
@@ -244,16 +244,16 @@ export async function runInvoiceGenerationSweepThrottled(admin: AdminClient): Pr
 /**
  * The single entry point for recording a payment. Never takes a manually
  * typed amount — the amount is always computed server-side from the plan
- * price and whichever discount applies (the boutique's own pre-selected
+ * price and whichever discount applies (the restaurant's own pre-selected
  * credit/free-month choice, an auto-detected referral welcome discount, or
  * one picked by the super-admin at collection time via `applyCredit`).
  * Works for a trial's first payment as much as a renewal.
  */
 export async function collectPayment(
   admin: AdminClient,
-  opts: { boutiqueId: string; method: string; applyCredit?: 'discount' | 'free_month' | null }
+  opts: { restaurantId: string; method: string; applyCredit?: 'discount' | 'free_month' | null }
 ): Promise<{ ok: true; invoiceId: string; finalAmount: number } | { ok: false; error: string }> {
-  const { data: sub } = await admin.from('subscriptions').select('*').eq('boutique_id', opts.boutiqueId).maybeSingle()
+  const { data: sub } = await admin.from('subscriptions').select('*').eq('restaurant_id', opts.restaurantId).maybeSingle()
   if (!sub) return { ok: false, error: 'Abonnement introuvable' }
   if (sub.plan === 'free') return { ok: false, error: 'Le plan Free ne se facture pas' }
   if (!BILLABLE_STATUSES.includes(sub.status)) {
@@ -262,14 +262,14 @@ export async function collectPayment(
 
   if (!sub.pending_credit_action && opts.applyCredit) {
     const result = opts.applyCredit === 'free_month'
-      ? await redeemFreeMonth(admin, opts.boutiqueId)
-      : await applyCreditToNextInvoice(admin, opts.boutiqueId)
+      ? await redeemFreeMonth(admin, opts.restaurantId)
+      : await applyCreditToNextInvoice(admin, opts.restaurantId)
     if (!result.ok) return result
   }
 
-  await maybeQueueWelcomeDiscount(admin, opts.boutiqueId)
+  await maybeQueueWelcomeDiscount(admin, opts.restaurantId)
 
-  const { data: freshSub } = await admin.from('subscriptions').select('*').eq('boutique_id', opts.boutiqueId).single()
+  const { data: freshSub } = await admin.from('subscriptions').select('*').eq('restaurant_id', opts.restaurantId).single()
   if (!freshSub) return { ok: false, error: 'Abonnement introuvable' }
 
   const built = await ensureInvoiceForCurrentPeriod(admin, freshSub as SubscriptionForInvoice, { bypassLeadGate: true })
@@ -287,7 +287,7 @@ export async function collectPayment(
 
   const { error: paymentError } = await admin.from('payments').insert({
     subscription_id: freshSub.id,
-    boutique_id: opts.boutiqueId,
+    restaurant_id: opts.restaurantId,
     invoice_id: invoice.id,
     amount: invoice.final_amount,
     method: opts.method,
@@ -300,16 +300,16 @@ export async function collectPayment(
   }).eq('id', freshSub.id)
   if (subError) return { ok: false, error: subError.message }
 
-  // If this boutique was referred, this real payment is what triggers the
+  // If this restaurant was referred, this real payment is what triggers the
   // referrer's credit (never during the trial)
-  await triggerReferralRewardIfDue(admin, opts.boutiqueId)
+  await triggerReferralRewardIfDue(admin, opts.restaurantId)
 
   return { ok: true, invoiceId: invoice.id, finalAmount: invoice.final_amount }
 }
 
-export interface BoutiqueBillingRow {
-  boutiqueId: string
-  boutiqueName: string
+export interface RestaurantBillingRow {
+  restaurantId: string
+  restaurantName: string
   plan: BillablePlanKey
   subscriptionStatus: string
   periodStart: string
@@ -326,25 +326,25 @@ export interface BoutiqueBillingRow {
 }
 
 /**
- * One row per billable boutique (trial/active/overdue) — the data source for
- * the super-admin's Factures tab. Every boutique shows up here, whether or
+ * One row per billable restaurant (trial/active/overdue) — the data source for
+ * the super-admin's Factures tab. Every restaurant shows up here, whether or
  * not an invoice has been generated yet, with the amount that would be due
  * computed live so nothing ever needs a manually typed number.
  */
-export async function getBoutiqueBillingRows(admin: AdminClient): Promise<BoutiqueBillingRow[]> {
+export async function getRestaurantBillingRows(admin: AdminClient): Promise<RestaurantBillingRow[]> {
   const { data: subs } = await admin
     .from('subscriptions')
-    .select('id, boutique_id, plan, status, started_at, ends_at, pending_credit_action, boutique:boutiques(name, is_demo)')
+    .select('id, restaurant_id, plan, status, started_at, ends_at, pending_credit_action, restaurant:restaurants(name, is_demo)')
     .in('status', BILLABLE_STATUSES)
     .order('created_at', { ascending: false })
 
-  const rows: BoutiqueBillingRow[] = []
+  const rows: RestaurantBillingRow[] = []
   const prices = await getPlanPrices(admin)
 
-  for (const raw of (subs ?? []) as unknown as (SubscriptionForInvoice & { boutique: { name: string; is_demo: boolean } | null })[]) {
-    // Les boutiques de démo (vitrines de présentation, pas de vrais clients)
+  for (const raw of (subs ?? []) as unknown as (SubscriptionForInvoice & { restaurant: { name: string; is_demo: boolean } | null })[]) {
+    // Les restaurants de démo (vitrines de présentation, pas de vrais clients)
     // n'ont rien à facturer — elles ne doivent jamais apparaître ici.
-    if (raw.boutique?.is_demo) continue
+    if (raw.restaurant?.is_demo) continue
 
     const period = computeCurrentPeriod(raw)
     const periodStartStr = toDateOnly(period.start)
@@ -353,12 +353,12 @@ export async function getBoutiqueBillingRows(admin: AdminClient): Promise<Boutiq
       admin.from('invoices')
         .select('id, invoice_number, status, due_at, paid_at, discount_amount, discount_reason, final_amount')
         .eq('subscription_id', raw.id).eq('period_start', periodStartStr).maybeSingle(),
-      admin.from('referral_credits').select('id', { count: 'exact', head: true }).eq('boutique_id', raw.boutique_id).eq('status', 'available'),
+      admin.from('referral_credits').select('id', { count: 'exact', head: true }).eq('restaurant_id', raw.restaurant_id).eq('status', 'available'),
     ])
 
     let pendingCreditAction = raw.pending_credit_action
     if (!invoice && !pendingCreditAction) {
-      const { data: reward } = await admin.from('referral_rewards').select('id').eq('referred_boutique_id', raw.boutique_id).eq('status', 'pending').maybeSingle()
+      const { data: reward } = await admin.from('referral_rewards').select('id').eq('referred_restaurant_id', raw.restaurant_id).eq('status', 'pending').maybeSingle()
       if (reward) pendingCreditAction = 'referral_welcome'
     }
 
@@ -372,8 +372,8 @@ export async function getBoutiqueBillingRows(admin: AdminClient): Promise<Boutiq
       : raw.status === 'trial' || period.start.getTime() - Date.now() <= GENERATE_LEAD_DAYS * 86400000
 
     rows.push({
-      boutiqueId: raw.boutique_id,
-      boutiqueName: raw.boutique?.name ?? '—',
+      restaurantId: raw.restaurant_id,
+      restaurantName: raw.restaurant?.name ?? '—',
       plan: raw.plan,
       subscriptionStatus: raw.status,
       periodStart: periodStartStr,

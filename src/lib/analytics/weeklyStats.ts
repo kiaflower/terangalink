@@ -38,15 +38,15 @@ function distinctSessionCount(rows: { session_id: string | null }[]): number {
 }
 
 /**
- * Calcule les métriques du parcours d'achat (visites -> vues produit ->
+ * Calcule les métriques du parcours d'achat (visites -> vues plat ->
  * ajouts panier -> paniers créés -> clics WhatsApp -> commandes confirmées)
- * et l'abandon de panier pour une boutique sur une période donnée. Module
- * unique consommé par le dashboard boutique (analytics/page.tsx) et le
+ * et l'abandon de panier pour un restaurant sur une période donnée. Module
+ * unique consommé par le dashboard restaurant (analytics/page.tsx) et le
  * générateur de rapport hebdomadaire (super admin) — une seule implémentation.
  */
 export async function computeWeeklyStats(
   admin: AdminClient,
-  boutiqueId: string,
+  restaurantId: string,
   periodStart: Date,
   periodEnd: Date
 ): Promise<WeeklyStats> {
@@ -64,15 +64,15 @@ export async function computeWeeklyStats(
     ordersRes,
   ] = await Promise.all([
     admin.from('analytics_events').select('*', { count: 'exact', head: true })
-      .eq('boutique_id', boutiqueId).eq('event_type', 'boutique_view').gte('created_at', startIso).lt('created_at', endIso),
+      .eq('restaurant_id', restaurantId).eq('event_type', 'restaurant_view').gte('created_at', startIso).lt('created_at', endIso),
     admin.from('analytics_events').select('*', { count: 'exact', head: true })
-      .eq('boutique_id', boutiqueId).eq('event_type', 'boutique_view').gte('created_at', prevStartIso).lt('created_at', startIso),
+      .eq('restaurant_id', restaurantId).eq('event_type', 'restaurant_view').gte('created_at', prevStartIso).lt('created_at', startIso),
     admin.from('analytics_events').select('item_id, item_name')
-      .eq('boutique_id', boutiqueId).eq('event_type', 'product_view').gte('created_at', startIso).lt('created_at', endIso).limit(10000),
+      .eq('restaurant_id', restaurantId).eq('event_type', 'product_view').gte('created_at', startIso).lt('created_at', endIso).limit(10000),
     admin.from('analytics_events').select('item_id, item_name, session_id, created_at')
-      .eq('boutique_id', boutiqueId).eq('event_type', 'add_to_cart').gte('created_at', startIso).lt('created_at', endIso).limit(10000),
+      .eq('restaurant_id', restaurantId).eq('event_type', 'add_to_cart').gte('created_at', startIso).lt('created_at', endIso).limit(10000),
     admin.from('orders').select('status, items')
-      .eq('boutique_id', boutiqueId).gte('created_at', startIso).lt('created_at', endIso).limit(10000),
+      .eq('restaurant_id', restaurantId).gte('created_at', startIso).lt('created_at', endIso).limit(10000),
   ])
 
   const visits = visitsRes.count ?? 0
@@ -90,10 +90,10 @@ export async function computeWeeklyStats(
   const ordersConfirmed = orders.filter(o => o.status !== 'pending' && o.status !== 'cancelled').length
 
   // Un panier n'existe que côté client (add_to_cart) — les clics WhatsApp
-  // sont mesurés séparément (voir tracking dans BoutiquePageClient /
+  // sont mesurés séparément (voir tracking dans RestaurantPageClient /
   // ProductOrderPanel) pour ne pas confondre "panier créé" et "commande".
   const whatsappClicksRes = await admin.from('analytics_events').select('session_id')
-    .eq('boutique_id', boutiqueId).eq('event_type', 'whatsapp_click').gte('created_at', startIso).lt('created_at', endIso).limit(10000)
+    .eq('restaurant_id', restaurantId).eq('event_type', 'whatsapp_click').gte('created_at', startIso).lt('created_at', endIso).limit(10000)
   const whatsappClickRows = (whatsappClicksRes.data ?? []) as Array<{ session_id: string | null }>
   const whatsappClicks = distinctSessionCount(whatsappClickRows)
 
@@ -105,9 +105,9 @@ export async function computeWeeklyStats(
   if (sessionIds.length > 0) {
     const [convertedRes, clearedRes] = await Promise.all([
       admin.from('analytics_events').select('session_id')
-        .eq('boutique_id', boutiqueId).eq('event_type', 'whatsapp_click').in('session_id', sessionIds).limit(10000),
+        .eq('restaurant_id', restaurantId).eq('event_type', 'whatsapp_click').in('session_id', sessionIds).limit(10000),
       admin.from('analytics_events').select('session_id, created_at')
-        .eq('boutique_id', boutiqueId).eq('event_type', 'cart_cleared').in('session_id', sessionIds).limit(10000),
+        .eq('restaurant_id', restaurantId).eq('event_type', 'cart_cleared').in('session_id', sessionIds).limit(10000),
     ])
     const convertedSessions = new Set((convertedRes.data ?? []).map((r: { session_id: string }) => r.session_id))
     const lastClearedAt = new Map<string, number>()
@@ -133,12 +133,12 @@ export async function computeWeeklyStats(
     }
   }
 
-  // Intérêt par produit (vues + ajouts panier + quantité commandée) pour le
-  // "produit le plus populaire" et les produits à fort intérêt / faible conversion.
+  // Intérêt par plat (vues + ajouts panier + quantité commandée) pour le
+  // "plat le plus populaire" et les plats à fort intérêt / faible conversion.
   const interest = new Map<string, ProductInterestStat>()
   const bump = (id: string | null, name: string | null, field: 'views' | 'addToCart' | 'ordersQty', qty = 1) => {
     if (!id) return
-    const entry = interest.get(id) ?? { itemId: id, itemName: name ?? 'Produit', views: 0, addToCart: 0, ordersQty: 0 }
+    const entry = interest.get(id) ?? { itemId: id, itemName: name ?? 'Plat', views: 0, addToCart: 0, ordersQty: 0 }
     entry[field] += qty
     if (name) entry.itemName = name
     interest.set(id, entry)

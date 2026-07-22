@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { checkBoutiqueSession } from '@/lib/auth/session'
+import { checkRestaurantSession } from '@/lib/auth/session'
 
 export const dynamic = 'force-dynamic'
 
 /**
- * Poll léger appelé depuis le dashboard boutique (BoutiqueSessionGuard) pour
+ * Poll léger appelé depuis le dashboard restaurant (RestaurantSessionGuard) pour
  * détecter une déconnexion forcée (changement de mdp, suppression d'admin)
  * pendant qu'un admin reste inactif sur une page sans naviguer. Jamais
  * affecté par le mode impersonation du super-admin.
@@ -24,7 +24,7 @@ export async function GET() {
     return NextResponse.json({ ok: true })
   }
 
-  const result = await checkBoutiqueSession(supabase, user.id)
+  const result = await checkRestaurantSession(supabase, user.id)
   if (!result.ok) return NextResponse.json({ ok: false, reason: result.reason }, { status: 401 })
 
   return NextResponse.json({ ok: true })

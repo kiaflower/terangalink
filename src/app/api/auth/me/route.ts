@@ -12,24 +12,24 @@ export async function GET() {
   const cookieStore = cookies()
   const imp = cookieStore.get('sa_impersonate')?.value
 
-  const { data: profile } = await supabase.from('profiles').select('role, boutique_id, admin_role, is_active').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('role, restaurant_id, admin_role, is_active').eq('id', user.id).single()
 
   // Only honor the impersonation cookie for an actual super_admin — a stale
   // cookie left in the browser must not silently impersonate for a regular
-  // boutique login.
+  // restaurant login.
   if (imp && profile?.role === 'super_admin') {
-    return NextResponse.json({ boutique_id: imp, impersonating: true })
+    return NextResponse.json({ restaurant_id: imp, impersonating: true })
   }
 
-  // Alimente le segment de ciblage newsletter "boutiques inactives" — throttlé
+  // Alimente le segment de ciblage newsletter "restaurants inactives" — throttlé
   // (condition dans le WHERE) pour ne pas écrire à chaque appel de cette route,
-  // qui est faite à chaque chargement de page du dashboard boutique.
-  if (profile?.role === 'boutique_admin' && profile.boutique_id) {
+  // qui est faite à chaque chargement de page du dashboard restaurant.
+  if (profile?.role === 'restaurant_admin' && profile.restaurant_id) {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     await supabase
-      .from('boutiques')
+      .from('restaurants')
       .update({ last_login_at: new Date().toISOString() })
-      .eq('id', profile.boutique_id)
+      .eq('id', profile.restaurant_id)
       .or(`last_login_at.is.null,last_login_at.lt.${oneHourAgo}`)
   }
 

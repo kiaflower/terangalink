@@ -3,62 +3,62 @@ import { createAdminClient } from '@/lib/supabase/admin'
 type AdminClient = ReturnType<typeof createAdminClient>
 
 /**
- * Called when a boutique is approved/created. If it was referred by another
- * boutique's code, records a pending reward — no credit granted yet. The
- * reward only fires once the referred boutique actually pays, see
+ * Called when a restaurant is approved/created. If it was referred by another
+ * restaurant's code, records a pending reward — no credit granted yet. The
+ * reward only fires once the referred restaurant actually pays, see
  * triggerReferralRewardIfDue.
  */
 export async function registerReferral(
   admin: AdminClient,
-  newBoutiqueId: string,
+  newRestaurantId: string,
   referredByCode: string | null | undefined
 ) {
   if (!referredByCode) return
 
   const { data: referrer } = await admin
-    .from('boutiques')
+    .from('restaurants')
     .select('id')
     .eq('referral_code', referredByCode)
     .maybeSingle()
 
-  if (!referrer || referrer.id === newBoutiqueId) return
+  if (!referrer || referrer.id === newRestaurantId) return
 
   const { data: existing } = await admin
     .from('referral_rewards')
     .select('id')
-    .eq('referred_boutique_id', newBoutiqueId)
+    .eq('referred_restaurant_id', newRestaurantId)
     .maybeSingle()
 
   if (existing) return
 
   await admin.from('referral_rewards').insert({
-    referrer_boutique_id: referrer.id,
-    referred_boutique_id: newBoutiqueId,
+    referrer_restaurant_id: referrer.id,
+    referred_restaurant_id: newRestaurantId,
     discount_percent: 25,
     status: 'pending',
   })
 }
 
 /**
- * Call right after a boutique's subscription is marked active from a real
+ * Call right after a restaurant's subscription is marked active from a real
  * payment (see collectPayment in src/lib/invoices.ts, which also queues the
- * referred boutique's own welcome discount on that same payment before
- * calling this). If this boutique was referred and its reward hasn't fired
+ * referred restaurant's own welcome discount on that same payment before
+ * calling this). If this restaurant was referred and its reward hasn't fired
  * yet, grants the referrer 1 referral credit — redeemable anytime, no expiry.
  */
-export async function triggerReferralRewardIfDue(admin: AdminClient, boutiqueId: string) {
+export async function triggerReferralRewardIfDue(admin: AdminClient, restaurantId: string) {
   const { data: reward } = await admin
     .from('referral_rewards')
-    .select('id, referrer_boutique_id')
-    .eq('referred_boutique_id', boutiqueId)
+    .select('id, referrer_restaurant_id')
+    .eq('referred_restaurant_id', restaurantId)
     .eq('status', 'pending')
     .maybeSingle()
 
   if (!reward) return
 
   await admin.from('referral_credits').insert({
-    boutique_id: reward.referrer_boutique_id,
-    referred_boutique_id: boutiqueId,
+    restaurant_id: reward.referrer_restaurant_id,
+    referred_restaurant_id: restaurantId,
     status: 'available',
   })
 

@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { SHOP_CATEGORY_OPTIONS } from '@/lib/categories'
+import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { PLANS, type PlanKey } from '@/lib/plans'
 import { slugify } from '@/lib/utils'
 import { fileToCompressedBase64 } from '@/lib/imageUtils'
-import { BoutiqueLivePreview } from '@/components/onboarding/BoutiqueLivePreview'
+import { RestaurantLivePreview } from '@/components/onboarding/RestaurantLivePreview'
 import { Logo } from '@/components/ui/Logo'
 import { useRouter } from 'next/navigation'
 import { Check, ArrowLeft, ArrowRight, Store, X, Eye } from 'lucide-react'
@@ -27,7 +27,7 @@ const THEMES = [
 const inputClass = 'w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 bg-white transition-colors'
 const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'
 
-const STEP_LABELS = ['Boutique', 'Contact', 'Offre', 'Identité', 'Résumé']
+const STEP_LABELS = ['Restaurant', 'Contact', 'Offre', 'Identité', 'Résumé']
 
 export default function InscriptionPage() {
   const router = useRouter()
@@ -35,9 +35,9 @@ export default function InscriptionPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({
-    boutique_name: '',
+    restaurant_name: '',
     slug: '',
-    shop_category: '',
+    cuisine_type: '',
     city: 'Dakar',
     description: '',
     owner_name: '',
@@ -68,10 +68,10 @@ export default function InscriptionPage() {
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false)
 
   useEffect(() => {
-    if (!slugTouched && form.boutique_name) {
-      setForm(f => ({ ...f, slug: slugify(f.boutique_name) }))
+    if (!slugTouched && form.restaurant_name) {
+      setForm(f => ({ ...f, slug: slugify(f.restaurant_name) }))
     }
-  }, [form.boutique_name, slugTouched])
+  }, [form.restaurant_name, slugTouched])
 
   useEffect(() => {
     setSiteOrigin(window.location.origin)
@@ -90,7 +90,7 @@ export default function InscriptionPage() {
   function set(k: string, v: unknown) { setForm(f => ({ ...f, [k]: v })) }
 
   function canGoNext(): boolean {
-    if (step === 1) return !!form.boutique_name && !!form.whatsapp_number
+    if (step === 1) return !!form.restaurant_name && !!form.whatsapp_number
     if (step === 2) {
       return !!form.owner_name && !!form.email && !!form.phone
         && form.password.length >= 8 && form.password === form.password_confirm
@@ -115,14 +115,14 @@ export default function InscriptionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          boutique_name: form.boutique_name,
-          slug: form.slug || slugify(form.boutique_name),
+          restaurant_name: form.restaurant_name,
+          slug: form.slug || slugify(form.restaurant_name),
           owner_name: form.owner_name,
           email: form.email,
           password: form.password,
           phone: form.phone,
           whatsapp_number: form.whatsapp_number,
-          shop_category: form.shop_category,
+          cuisine_type: form.cuisine_type,
           city: form.city,
           description: form.description,
           plan: form.plan,
@@ -157,12 +157,12 @@ export default function InscriptionPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="px-6 py-5 flex items-center justify-between bg-white" style={{ borderBottom: '1px solid #F3F4F6' }}>
         <Link href="/"><Logo textClassName="font-bold text-xl" textStyle={{ color: '#111111' }} /></Link>
-        <Link href="/pour-les-boutiques" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors">← Retour</Link>
+        <Link href="/pour-les-restaurants" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-orange transition-colors">← Retour</Link>
       </header>
 
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Créez votre boutique</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Créez votre restaurant</h1>
           <p className="text-gray-500">8 jours d&apos;essai gratuit · Aucun paiement requis</p>
         </div>
 
@@ -195,13 +195,13 @@ export default function InscriptionPage() {
 
         <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 shadow-sm">
 
-          {/* Step 1 — Boutique */}
+          {/* Step 1 — Restaurant */}
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">Informations de la boutique</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-5">Informations de le restaurant</h2>
               <div>
-                <label className={labelClass}>Nom de la boutique *</label>
-                <input value={form.boutique_name} onChange={e => set('boutique_name', e.target.value)}
+                <label className={labelClass}>Nom de le restaurant *</label>
+                <input value={form.restaurant_name} onChange={e => set('restaurant_name', e.target.value)}
                   className={inputClass} placeholder="Ex: Fatou Mode" />
               </div>
               <div>
@@ -209,13 +209,13 @@ export default function InscriptionPage() {
                 <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden focus-within:border-brand-orange">
                   <span className="text-xs text-gray-400 pl-4 pr-1 shrink-0">{siteOrigin.replace(/^https?:\/\//, '')}/</span>
                   <input value={form.slug} onChange={e => { setSlugTouched(true); set('slug', e.target.value) }}
-                    className="flex-1 py-3 pr-4 text-sm bg-white focus:outline-none" placeholder="votre-boutique" />
+                    className="flex-1 py-3 pr-4 text-sm bg-white focus:outline-none" placeholder="votre-restaurant" />
                 </div>
               </div>
               <div>
                 <label className={labelClass}>Catégorie</label>
-                <select value={form.shop_category} onChange={e => set('shop_category', e.target.value)} className={inputClass}>
-                  {SHOP_CATEGORY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                <select value={form.cuisine_type} onChange={e => set('cuisine_type', e.target.value)} className={inputClass}>
+                  {CUISINE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
               <div>
@@ -234,7 +234,7 @@ export default function InscriptionPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                 <div>
-                  <label className={labelClass}>Logo de la boutique (optionnel)</label>
+                  <label className={labelClass}>Logo de le restaurant (optionnel)</label>
                   <label className="flex items-center gap-3 cursor-pointer">
                     <span className="shrink-0 text-xs font-medium bg-orange-50 text-brand-orange px-3 py-2 rounded-lg hover:bg-orange-100 transition-colors">
                       Choisir un fichier
@@ -299,7 +299,7 @@ export default function InscriptionPage() {
                 <label className={labelClass}>Créez un mot de passe *</label>
                 <input type="password" value={form.password} onChange={e => set('password', e.target.value)}
                   className={inputClass} placeholder="8 caractères minimum" minLength={8} />
-                <p className="text-xs text-gray-400 mt-1.5">Ce sera votre mot de passe de connexion au dashboard, envoyé par email dès l&apos;acceptation de votre boutique.</p>
+                <p className="text-xs text-gray-400 mt-1.5">Ce sera votre mot de passe de connexion au dashboard, envoyé par email dès l&apos;acceptation de votre restaurant.</p>
               </div>
               <div>
                 <label className={labelClass}>Confirmer le mot de passe *</label>
@@ -388,7 +388,7 @@ export default function InscriptionPage() {
                 </div>
               )}
               {form.plan !== 'pro' && (
-                <p className="text-xs text-gray-400 text-center mt-4">La couleur violette TerangaSpot par défaut sera utilisée. Passez en Pro pour personnaliser.</p>
+                <p className="text-xs text-gray-400 text-center mt-4">La couleur violette TerangaLink par défaut sera utilisée. Passez en Pro pour personnaliser.</p>
               )}
             </div>
           )}
@@ -401,28 +401,28 @@ export default function InscriptionPage() {
               <div>
                 <label className={labelClass}>Instagram</label>
                 <input value={form.instagram_url} onChange={e => set('instagram_url', e.target.value)}
-                  className={inputClass} placeholder="https://instagram.com/votre-boutique" />
+                  className={inputClass} placeholder="https://instagram.com/votre-restaurant" />
               </div>
               <div>
                 <label className={labelClass}>Facebook</label>
                 <input value={form.facebook_url} onChange={e => set('facebook_url', e.target.value)}
-                  className={inputClass} placeholder="https://facebook.com/votre-boutique" />
+                  className={inputClass} placeholder="https://facebook.com/votre-restaurant" />
               </div>
               <div>
                 <label className={labelClass}>TikTok</label>
                 <input value={form.tiktok_url} onChange={e => set('tiktok_url', e.target.value)}
-                  className={inputClass} placeholder="https://tiktok.com/@votre-boutique" />
+                  className={inputClass} placeholder="https://tiktok.com/@votre-restaurant" />
               </div>
               <div>
                 <label className={labelClass}>Snapchat</label>
                 <input value={form.snapchat_url} onChange={e => set('snapchat_url', e.target.value)}
-                  className={inputClass} placeholder="https://snapchat.com/add/votre-boutique" />
+                  className={inputClass} placeholder="https://snapchat.com/add/votre-restaurant" />
               </div>
               <div className="pt-2 border-t border-gray-100">
                 <label className={labelClass}>Code de parrainage (optionnel)</label>
                 <input value={form.referral_code} onChange={e => set('referral_code', e.target.value.toUpperCase())}
-                  className={inputClass} placeholder="Ex: BOUTIQUEMODE25" maxLength={20} />
-                <p className="text-xs text-gray-400 mt-1.5">Si quelqu&apos;un vous a recommandé TerangaSpot, entrez son code pour bénéficier d&apos;une réduction de 25% chacun(e).</p>
+                  className={inputClass} placeholder="Ex: MENU25" maxLength={20} />
+                <p className="text-xs text-gray-400 mt-1.5">Si quelqu&apos;un vous a recommandé TerangaLink, entrez son code pour bénéficier d&apos;une réduction de 25% chacun(e).</p>
               </div>
             </div>
           )}
@@ -433,8 +433,8 @@ export default function InscriptionPage() {
               <h2 className="text-lg font-bold text-gray-900 mb-5">Récapitulatif</h2>
               <div className="space-y-3 text-sm">
                 {[
-                  { label: 'Boutique', value: form.boutique_name },
-                  { label: 'Catégorie', value: form.shop_category },
+                  { label: 'Restaurant', value: form.restaurant_name },
+                  { label: 'Catégorie', value: form.cuisine_type },
                   { label: 'Ville', value: form.city },
                   { label: 'WhatsApp', value: form.whatsapp_number },
                   { label: 'Responsable', value: form.owner_name },
@@ -462,7 +462,7 @@ export default function InscriptionPage() {
                     onChange={e => set('consent_images', e.target.checked)}
                     className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                   <span className="text-sm text-gray-700">
-                    <span className="font-medium text-red-500">*</span> J&apos;autorise TerangaSpot à utiliser les photos et visuels de ma boutique (logo, bannière, produits) pour des publications organiques et des publicités payantes sur les réseaux sociaux (Instagram, Facebook, TikTok) dans le cadre de la promotion de la plateforme.
+                    <span className="font-medium text-red-500">*</span> J&apos;autorise TerangaLink à utiliser les photos et visuels de mon restaurant (logo, bannière, plats) pour des publications organiques et des publicités payantes sur les réseaux sociaux (Instagram, Facebook, TikTok) dans le cadre de la promotion de la plateforme.
                   </span>
                 </label>
 
@@ -472,7 +472,7 @@ export default function InscriptionPage() {
                     onChange={e => set('consent_annuaire', e.target.checked)}
                     className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                   <span className="text-sm text-gray-700">
-                    <span className="font-medium text-red-500">*</span> J&apos;accepte d&apos;être référencé(e) dans l&apos;annuaire public de TerangaSpot et que mes informations professionnelles (nom, catégorie, ville, contact) soient visibles par tous les utilisateurs.
+                    <span className="font-medium text-red-500">*</span> J&apos;accepte d&apos;être référencé(e) dans l&apos;annuaire public de TerangaLink et que mes informations professionnelles (nom, catégorie, ville, contact) soient visibles par tous les utilisateurs.
                   </span>
                 </label>
 
@@ -482,7 +482,7 @@ export default function InscriptionPage() {
                     onChange={e => set('consent_marketing', e.target.checked)}
                     className="w-4 h-4 mt-0.5 accent-brand-orange shrink-0" />
                   <span className="text-sm text-gray-700">
-                    J&apos;accepte de recevoir des conseils, des offres partenaires et des actualités de TerangaSpot par email ou WhatsApp. <span className="text-gray-400">(optionnel)</span>
+                    J&apos;accepte de recevoir des conseils, des offres partenaires et des actualités de TerangaLink par email ou WhatsApp. <span className="text-gray-400">(optionnel)</span>
                   </span>
                 </label>
 
@@ -534,15 +534,15 @@ export default function InscriptionPage() {
         <button type="button" onClick={() => setMobilePreviewOpen(true)}
           className="lg:hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-white bg-black px-4 py-2.5 rounded-full shadow-lg">
           <Eye className="w-3.5 h-3.5" />
-          Prévisualiser ma boutique
+          Prévisualiser mon restaurant
         </button>
         </div>
 
         {/* Preview live desktop */}
         <div className="hidden lg:block lg:sticky lg:top-8">
-          <BoutiqueLivePreview
-            name={form.boutique_name}
-            category={form.shop_category}
+          <RestaurantLivePreview
+            name={form.restaurant_name}
+            category={form.cuisine_type}
             city={form.city}
             logoUrl={form.logo_base64 || undefined}
             coverUrl={form.cover_base64 || undefined}
@@ -562,9 +562,9 @@ export default function InscriptionPage() {
             <div className="flex justify-end mb-2">
               <button onClick={() => setMobilePreviewOpen(false)} aria-label="Fermer"><X className="w-5 h-5 text-gray-400" /></button>
             </div>
-            <BoutiqueLivePreview
-              name={form.boutique_name}
-              category={form.shop_category}
+            <RestaurantLivePreview
+              name={form.restaurant_name}
+              category={form.cuisine_type}
               city={form.city}
               logoUrl={form.logo_base64 || undefined}
               coverUrl={form.cover_base64 || undefined}

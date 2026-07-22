@@ -6,8 +6,8 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { PLANS, PlanKey } from '@/lib/plans'
 
 export interface BillingRowData {
-  boutiqueId: string
-  boutiqueName: string
+  restaurantId: string
+  restaurantName: string
   plan: PlanKey
   subscriptionStatus: string
   periodStart: string
@@ -48,7 +48,7 @@ function computePreview(fullAmount: number, choice: 'none' | 'discount' | 'free_
 }
 
 export function BillingRow({
-  boutiqueId, boutiqueName, plan, subscriptionStatus, periodStart, periodEnd,
+  restaurantId, restaurantName, plan, subscriptionStatus, periodStart, periodEnd,
   fullAmount, discountAmount, discountReason, finalAmount,
   pendingCreditAction, availableCredits, invoice, actionable, onChanged,
 }: BillingRowProps) {
@@ -85,7 +85,7 @@ export function BillingRow({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        boutique_id: boutiqueId,
+        restaurant_id: restaurantId,
         method: payMethod,
         apply_credit: hasPredeterminedDiscount ? null : (creditChoice === 'none' ? null : creditChoice),
       }),
@@ -105,7 +105,7 @@ export function BillingRow({
     <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
       <div className="min-w-0">
         <p className="text-sm font-medium text-gray-900">
-          {boutiqueName}
+          {restaurantName}
           {invoice && <span className="text-gray-400 font-normal"> · {invoice.invoiceNumber}</span>}
           {subscriptionStatus === 'trial' && (
             <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-50 text-brand-orange border border-orange-100 align-middle">Essai</span>
@@ -177,7 +177,7 @@ export function BillingRow({
             </div>
             <div>
               <p className="font-semibold text-gray-900 text-sm">Paiement confirmé</p>
-              <p className="text-xs text-gray-500 mt-1">{boutiqueName} · {formatFcfa(previewAmount)}</p>
+              <p className="text-xs text-gray-500 mt-1">{restaurantName} · {formatFcfa(previewAmount)}</p>
             </div>
             <a
               href={`/api/super-admin/invoices/${paidInvoiceId}/receipt`}
@@ -200,7 +200,7 @@ export function BillingRow({
       {payModalOpen && !paidInvoiceId && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setPayModalOpen(false)}>
           <form onClick={e => e.stopPropagation()} onSubmit={confirmMarkPaid} className="bg-white w-full max-w-sm rounded-2xl p-5 space-y-4">
-            <p className="font-semibold text-gray-900 text-sm">Paiement reçu — {boutiqueName}</p>
+            <p className="font-semibold text-gray-900 text-sm">Paiement reçu — {restaurantName}</p>
 
             {hasPredeterminedDiscount ? (
               <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 text-xs text-brand-orange font-medium">
@@ -208,7 +208,7 @@ export function BillingRow({
               </div>
             ) : canChooseCredit ? (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-gray-500">Cette boutique a {availableCredits} crédit{availableCredits > 1 ? 's' : ''} de parrainage disponible{availableCredits > 1 ? 's' : ''}</p>
+                <p className="text-xs font-medium text-gray-500">Ce restaurant a {availableCredits} crédit{availableCredits > 1 ? 's' : ''} de parrainage disponible{availableCredits > 1 ? 's' : ''}</p>
                 <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                   <input type="radio" name="credit" checked={creditChoice === 'none'} onChange={() => setCreditChoice('none')} />
                   Aucune réduction

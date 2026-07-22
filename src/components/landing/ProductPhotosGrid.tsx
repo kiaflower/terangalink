@@ -12,7 +12,7 @@ interface ProductPhotosGridProps {
   photos: Photo[]
 }
 
-// Affiche 4 photos produit cliquables (vers leur vraie page dans l'annuaire). Toutes
+// Affiche 4 photos plat cliquables (vers leur vraie page dans l'annuaire). Toutes
 // les 5s, une seule tuile (à tour de rôle) passe à la photo suivante du pool — un
 // changement successif plutôt que les 4 qui sautent en même temps.
 export function ProductPhotosGrid({ photos }: ProductPhotosGridProps) {

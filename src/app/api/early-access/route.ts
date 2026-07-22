@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData()
 
-    const boutique_name = formData.get('boutique_name') as string
-    const shop_category = formData.get('shop_category') as string
+    const restaurant_name = formData.get('restaurant_name') as string
+    const cuisine_type = formData.get('cuisine_type') as string
     const city = formData.get('city') as string
     const owner_name = formData.get('owner_name') as string
     const email = formData.get('email') as string
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     const consent_images = formData.get('consent_images') === 'true'
     const consent_annuaire = formData.get('consent_annuaire') === 'true'
 
-    if (!boutique_name || !shop_category || !city || !owner_name || !email || !phone || !whatsapp_number) {
+    if (!restaurant_name || !cuisine_type || !city || !owner_name || !email || !phone || !whatsapp_number) {
       return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
     }
     if (!consent_images || !consent_annuaire) {
@@ -69,12 +69,12 @@ export async function POST(req: NextRequest) {
       if (!file || file.size === 0) return null
       const buffer = Buffer.from(await file.arrayBuffer())
       const filename = `early-access/${folder}/${Date.now()}-${file.name}`
-      const { error } = await admin.storage.from('boutique-images').upload(filename, buffer, {
+      const { error } = await admin.storage.from('restaurant-images').upload(filename, buffer, {
         contentType: file.type,
         upsert: true,
       })
       if (error) return null
-      const { data } = admin.storage.from('boutique-images').getPublicUrl(filename)
+      const { data } = admin.storage.from('restaurant-images').getPublicUrl(filename)
       return data.publicUrl
     }
 
@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
     const { data: application, error } = await admin
       .from('early_access_applications')
       .insert({
-        boutique_name,
-        shop_category,
+        restaurant_name,
+        cuisine_type,
         city,
         description: (formData.get('description') as string) || null,
         owner_name,

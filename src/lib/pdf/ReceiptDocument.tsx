@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
 
 interface ReceiptDocumentProps {
   invoiceNumber: string
-  boutiqueName: string
+  restaurantName: string
   contactEmail: string | null
   plan: PlanKey
   periodStart: string
@@ -46,14 +46,14 @@ function formatDateTime(iso: string): string {
 }
 
 export function ReceiptDocument({
-  invoiceNumber, boutiqueName, contactEmail, plan, periodStart, periodEnd, amountPaid, paymentMethod, paidAt,
+  invoiceNumber, restaurantName, contactEmail, plan, periodStart, periodEnd, amountPaid, paymentMethod, paidAt,
 }: ReceiptDocumentProps) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.brand}>TerangaSpot</Text>
+            <Text style={styles.brand}>TerangaLink</Text>
             <Text style={styles.subtitle}>Reçu de paiement</Text>
           </View>
           <View>
@@ -71,8 +71,8 @@ export function ReceiptDocument({
 
         <View style={styles.infoRow}>
           <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>Boutique</Text>
-            <Text style={styles.infoMain}>{boutiqueName}</Text>
+            <Text style={styles.infoTitle}>Restaurant</Text>
+            <Text style={styles.infoMain}>{restaurantName}</Text>
             {contactEmail && <Text style={styles.infoLine}>{contactEmail}</Text>}
           </View>
           <View style={styles.infoBox}>
@@ -94,7 +94,7 @@ export function ReceiptDocument({
           </View>
         </View>
 
-        <Text style={styles.footer}>TerangaSpot — Merci pour votre confiance.</Text>
+        <Text style={styles.footer}>TerangaLink — Merci pour votre confiance.</Text>
       </Page>
     </Document>
   )

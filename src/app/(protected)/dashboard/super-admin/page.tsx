@@ -7,7 +7,7 @@ import { Store, CheckCircle, ClipboardList, ShoppingBag, CreditCard, CalendarClo
 import { StatusBadge } from '@/components/ui/StatusBadge'
 
 interface Stats {
-  boutiquesCount: number
+  restaurantsCount: number
   activeCount: number
   inscriptionsCount: number
   ordersCount: number
@@ -17,7 +17,7 @@ interface Stats {
 
 interface Inscription {
   id: string
-  boutique_name: string
+  restaurant_name: string
   owner_name: string
   city: string | null
   status: string
@@ -46,7 +46,7 @@ export default function SuperAdminDashboard() {
   const fetchData = useCallback(async () => {
     const yesterday = new Date(Date.now() - 86400000).toISOString()
     const [
-      { count: boutiquesCount },
+      { count: restaurantsCount },
       { count: activeCount },
       { count: inscriptionsCount },
       { count: ordersCount },
@@ -54,16 +54,16 @@ export default function SuperAdminDashboard() {
       { count: rdvCount },
       { data: recentIns },
     ] = await Promise.all([
-      supabase.from('boutiques').select('*', { count: 'exact', head: true }),
-      supabase.from('boutiques').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      supabase.from('restaurants').select('*', { count: 'exact', head: true }),
+      supabase.from('restaurants').select('*', { count: 'exact', head: true }).eq('is_active', true),
       supabase.from('inscriptions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('orders').select('*', { count: 'exact', head: true }).gte('created_at', yesterday),
       supabase.from('subscriptions').select('*', { count: 'exact', head: true }).in('status', ['active', 'trial']),
       supabase.from('appointment_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('inscriptions').select('id, boutique_name, owner_name, city, status, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(6),
+      supabase.from('inscriptions').select('id, restaurant_name, owner_name, city, status, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(6),
     ])
     setStats({
-      boutiquesCount: boutiquesCount ?? 0,
+      restaurantsCount: restaurantsCount ?? 0,
       activeCount: activeCount ?? 0,
       inscriptionsCount: inscriptionsCount ?? 0,
       ordersCount: ordersCount ?? 0,
@@ -97,10 +97,10 @@ export default function SuperAdminDashboard() {
   }, [fetchData])
 
   const statCards = stats ? [
-    { label: 'Total boutiques', value: stats.boutiquesCount, href: '/dashboard/super-admin/boutiques', Icon: Store, color: '#F97316' },
-    { label: 'Boutiques actives', value: stats.activeCount, href: '/dashboard/super-admin/boutiques', Icon: CheckCircle, color: '#059669' },
+    { label: 'Total restaurants', value: stats.restaurantsCount, href: '/dashboard/super-admin/restaurants', Icon: Store, color: '#F97316' },
+    { label: 'Restaurants actives', value: stats.activeCount, href: '/dashboard/super-admin/restaurants', Icon: CheckCircle, color: '#059669' },
     { label: 'Inscriptions en attente', value: stats.inscriptionsCount, href: '/dashboard/super-admin/inscriptions', Icon: ClipboardList, color: '#DC2626', alert: true },
-    { label: 'Commandes (24h)', value: stats.ordersCount, href: '/dashboard/super-admin/boutiques', Icon: ShoppingBag, color: '#D97706' },
+    { label: 'Commandes (24h)', value: stats.ordersCount, href: '/dashboard/super-admin/restaurants', Icon: ShoppingBag, color: '#D97706' },
     { label: 'Abonnements actifs/essai', value: stats.activeSubsCount, href: '/dashboard/super-admin/subscriptions', Icon: CreditCard, color: '#2563EB' },
     { label: 'RDV en attente', value: stats.rdvCount, href: '/dashboard/super-admin/appointments', Icon: CalendarClock, color: '#0891B2' },
   ] : []
@@ -166,7 +166,7 @@ export default function SuperAdminDashboard() {
             {inscriptions.map(ins => (
               <div key={ins.id} className="px-5 py-3.5 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{ins.boutique_name}</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{ins.restaurant_name}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{ins.owner_name}{ins.city ? ` · ${ins.city}` : ''}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">

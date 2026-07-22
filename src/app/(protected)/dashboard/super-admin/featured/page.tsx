@@ -6,7 +6,7 @@ import { Plus, RefreshCw, Star, Trash2, Pencil } from 'lucide-react'
 
 interface BlockItemRow {
   sort_order: number
-  boutiques: { id: string; name: string } | { id: string; name: string }[] | null
+  restaurants: { id: string; name: string } | { id: string; name: string }[] | null
 }
 
 interface FeaturedBlockRow {
@@ -20,14 +20,14 @@ interface FeaturedBlockRow {
   featured_block_items: BlockItemRow[]
 }
 
-interface Boutique { id: string; name: string }
-interface SelectedItem { boutique_id: string; sort_order: number }
+interface Restaurant { id: string; name: string }
+interface SelectedItem { restaurant_id: string; sort_order: number }
 
 const iCls = 'w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange transition-colors'
 
 const POSITION_LABELS: Record<string, string> = { top: 'En haut', mid: 'Au milieu', bottom: 'En bas' }
 
-function normalizeBoutique(b: BlockItemRow['boutiques']): { id: string; name: string } | null {
+function normalizeRestaurant(b: BlockItemRow['restaurants']): { id: string; name: string } | null {
   if (!b) return null
   return Array.isArray(b) ? (b[0] ?? null) : b
 }
@@ -44,16 +44,16 @@ const emptyForm = (): FormState => ({
   title: 'Coup de cœur de la semaine', position: 'top', page_number: 1, is_active: true, items: [],
 })
 
-function BoutiqueMultiSelect({ boutiques, items, onToggle, onReorder }: {
-  boutiques: Boutique[]
+function RestaurantMultiSelect({ restaurants, items, onToggle, onReorder }: {
+  restaurants: Restaurant[]
   items: SelectedItem[]
   onToggle: (id: string) => void
   onReorder: (id: string, order: number) => void
 }) {
   return (
     <div className="border border-gray-200 rounded-xl max-h-64 overflow-y-auto divide-y divide-gray-50">
-      {boutiques.map(bt => {
-        const selected = items.find(i => i.boutique_id === bt.id)
+      {restaurants.map(bt => {
+        const selected = items.find(i => i.restaurant_id === bt.id)
         return (
           <label key={bt.id} className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50">
             <input type="checkbox" checked={!!selected} onChange={() => onToggle(bt.id)}
@@ -68,7 +68,7 @@ function BoutiqueMultiSelect({ boutiques, items, onToggle, onReorder }: {
           </label>
         )
       })}
-      {boutiques.length === 0 && <p className="text-xs text-gray-400 text-center py-4">Aucune boutique disponible</p>}
+      {restaurants.length === 0 && <p className="text-xs text-gray-400 text-center py-4">Aucun restaurant disponible</p>}
     </div>
   )
 }
@@ -76,7 +76,7 @@ function BoutiqueMultiSelect({ boutiques, items, onToggle, onReorder }: {
 export default function SuperAdminFeaturedPage() {
   const supabase = createClient()
   const [blocks, setBlocks] = useState<FeaturedBlockRow[]>([])
-  const [boutiques, setBoutiques] = useState<Boutique[]>([])
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -94,36 +94,36 @@ export default function SuperAdminFeaturedPage() {
     setLoading(true)
     const { data } = await supabase
       .from('featured_blocks')
-      .select('*, featured_block_items(sort_order, boutiques(id, name))')
+      .select('*, featured_block_items(sort_order, restaurants(id, name))')
       .order('sort_order')
     setBlocks((data ?? []) as unknown as FeaturedBlockRow[])
-    const { data: b } = await supabase.from('boutiques').select('id, name').eq('is_active', true).order('name')
-    setBoutiques(b ?? [])
+    const { data: b } = await supabase.from('restaurants').select('id, name').eq('is_active', true).order('name')
+    setRestaurants(b ?? [])
     setLoading(false)
   }, [supabase])
 
   useEffect(() => { load() }, [load])
 
   function toggleItem(items: SelectedItem[], id: string): SelectedItem[] {
-    if (items.some(i => i.boutique_id === id)) return items.filter(i => i.boutique_id !== id)
-    return [...items, { boutique_id: id, sort_order: items.length }]
+    if (items.some(i => i.restaurant_id === id)) return items.filter(i => i.restaurant_id !== id)
+    return [...items, { restaurant_id: id, sort_order: items.length }]
   }
   function reorderItem(items: SelectedItem[], id: string, order: number): SelectedItem[] {
-    return items.map(i => (i.boutique_id === id ? { ...i, sort_order: order } : i))
+    return items.map(i => (i.restaurant_id === id ? { ...i, sort_order: order } : i))
   }
 
   async function saveItems(blockId: string, items: SelectedItem[]) {
     await supabase.from('featured_block_items').delete().eq('block_id', blockId)
     if (items.length) {
       await supabase.from('featured_block_items').insert(
-        items.map(i => ({ block_id: blockId, boutique_id: i.boutique_id, sort_order: i.sort_order })) as unknown as object[]
+        items.map(i => ({ block_id: blockId, restaurant_id: i.restaurant_id, sort_order: i.sort_order })) as unknown as object[]
       )
     }
   }
 
   async function createBlock() {
     setSaveError('')
-    if (!form.title || form.items.length === 0) { setSaveError('Titre et au moins une boutique sont requis.'); return }
+    if (!form.title || form.items.length === 0) { setSaveError('Titre et au moins un restaurant sont requis.'); return }
     setSaving(true)
     const { data, error } = await supabase.from('featured_blocks').insert({
       title: form.title.trim(),
@@ -154,8 +154,8 @@ export default function SuperAdminFeaturedPage() {
       is_active: block.is_active,
       items: (block.featured_block_items ?? [])
         .map(i => {
-          const b = normalizeBoutique(i.boutiques)
-          return b ? { boutique_id: b.id, sort_order: i.sort_order } : null
+          const b = normalizeRestaurant(i.restaurants)
+          return b ? { restaurant_id: b.id, sort_order: i.sort_order } : null
         })
         .filter((i): i is SelectedItem => i !== null)
         .sort((a, b) => a.sort_order - b.sort_order),
@@ -165,7 +165,7 @@ export default function SuperAdminFeaturedPage() {
   async function saveEdit() {
     if (!editBlock) return
     setEditError('')
-    if (!editForm.title || editForm.items.length === 0) { setEditError('Titre et au moins une boutique sont requis.'); return }
+    if (!editForm.title || editForm.items.length === 0) { setEditError('Titre et au moins un restaurant sont requis.'); return }
     setEditSaving(true)
     const { error } = await supabase.from('featured_blocks').update({
       title: editForm.title.trim(),
@@ -220,7 +220,7 @@ export default function SuperAdminFeaturedPage() {
               const names = (b.featured_block_items ?? [])
                 .slice()
                 .sort((x, y) => x.sort_order - y.sort_order)
-                .map(i => normalizeBoutique(i.boutiques)?.name)
+                .map(i => normalizeRestaurant(i.restaurants)?.name)
                 .filter(Boolean)
                 .join(', ')
               return (
@@ -291,8 +291,8 @@ export default function SuperAdminFeaturedPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Boutiques * (sélection multiple, ordre d&apos;affichage)</label>
-                <BoutiqueMultiSelect boutiques={boutiques} items={editForm.items}
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Restaurants * (sélection multiple, ordre d&apos;affichage)</label>
+                <RestaurantMultiSelect restaurants={restaurants} items={editForm.items}
                   onToggle={id => setEditForm(f => ({ ...f, items: toggleItem(f.items, id) }))}
                   onReorder={(id, order) => setEditForm(f => ({ ...f, items: reorderItem(f.items, id, order) }))} />
               </div>
@@ -343,8 +343,8 @@ export default function SuperAdminFeaturedPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1.5">Boutiques * (sélection multiple, ordre d&apos;affichage)</label>
-                <BoutiqueMultiSelect boutiques={boutiques} items={form.items}
+                <label className="block text-xs font-medium text-gray-500 mb-1.5">Restaurants * (sélection multiple, ordre d&apos;affichage)</label>
+                <RestaurantMultiSelect restaurants={restaurants} items={form.items}
                   onToggle={id => setForm(f => ({ ...f, items: toggleItem(f.items, id) }))}
                   onReorder={(id, order) => setForm(f => ({ ...f, items: reorderItem(f.items, id, order) }))} />
               </div>

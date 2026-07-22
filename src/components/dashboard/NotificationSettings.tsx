@@ -37,7 +37,7 @@ const TOGGLES: Array<{ key: ToggleKey; label: string; hint: string }> = [
   { key: 'recommendations_enabled', label: 'Recommandations', hint: 'Conseils basés sur vos statistiques (1 notification/jour max)' },
 ]
 
-export function NotificationSettings({ variant = 'boutique' }: { variant?: PushContext }) {
+export function NotificationSettings({ variant = 'restaurant' }: { variant?: PushContext }) {
   const [subState, setSubState] = useState<'loading' | 'unsupported' | 'denied' | 'subscribed' | 'not-subscribed'>('loading')
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS)
   const [busy, setBusy] = useState(false)
@@ -45,7 +45,7 @@ export function NotificationSettings({ variant = 'boutique' }: { variant?: PushC
 
   useEffect(() => {
     getPushSubscriptionState().then(setSubState)
-    if (variant === 'boutique') {
+    if (variant === 'restaurant') {
       fetch('/api/pwa/push/settings').then(r => r.ok ? r.json() : null).then(data => {
         if (data) setSettings(data)
       })
@@ -95,7 +95,7 @@ export function NotificationSettings({ variant = 'boutique' }: { variant?: PushC
         Notifications
       </h2>
       <p className="text-xs text-gray-500 mb-4">
-        {variant === 'boutique'
+        {variant === 'restaurant'
           ? "Recevez des alertes sur cet appareil (nouvelles commandes, paniers abandonnés…). Sur iPhone, le tableau de bord doit être ajouté à l'écran d'accueil."
           : "Recevez les alertes Super Admin sur cet appareil. Sur iPhone, le dashboard doit être ajouté à l'écran d'accueil."}
       </p>
@@ -127,7 +127,7 @@ export function NotificationSettings({ variant = 'boutique' }: { variant?: PushC
         </p>
       )}
 
-      {variant === 'boutique' && (
+      {variant === 'restaurant' && (
         <div className="mt-5 pt-5 border-t border-gray-100 space-y-3">
           {TOGGLES.map(({ key, label, hint }) => (
             <label key={key} className="flex items-start gap-3 cursor-pointer">

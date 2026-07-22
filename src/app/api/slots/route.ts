@@ -25,9 +25,9 @@ export async function GET() {
 export async function POST(req: Request) {
   // Public — les prospects réservent un appel sans être connectés
   const body = await req.json()
-  const { slot_id, boutique_id, boutique_name, owner_name, email, whatsapp } = body
+  const { slot_id, restaurant_id, restaurant_name, owner_name, email, whatsapp } = body
 
-  if (!slot_id || !owner_name || !boutique_name) {
+  if (!slot_id || !owner_name || !restaurant_name) {
     return NextResponse.json({ error: 'Champs requis manquants' }, { status: 400 })
   }
 
@@ -45,8 +45,8 @@ export async function POST(req: Request) {
 
   const { error: apptErr } = await admin.from('appointments').insert({
     slot_id,
-    boutique_id: boutique_id ?? null,
-    boutique_name,
+    restaurant_id: restaurant_id ?? null,
+    restaurant_name,
     owner_name,
     email: email ?? null,
     whatsapp: whatsapp ?? null,

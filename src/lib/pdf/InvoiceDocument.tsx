@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
 
 interface InvoiceDocumentProps {
   invoiceNumber: string
-  boutiqueName: string
+  restaurantName: string
   contactEmail: string | null
   periodStart: string
   periodEnd: string
@@ -74,7 +74,7 @@ function formatDateTime(iso: string): string {
 }
 
 export function InvoiceDocument({
-  invoiceNumber, boutiqueName, contactEmail, periodStart, periodEnd, plan,
+  invoiceNumber, restaurantName, contactEmail, periodStart, periodEnd, plan,
   fullAmount, discountAmount, discountReason, finalAmount, status, generatedAt, dueAt, paymentNumber,
 }: InvoiceDocumentProps) {
   const statusStyle = STATUS_STYLES[status] ?? { label: status, color: '#374151', bg: '#F3F4F6' }
@@ -84,7 +84,7 @@ export function InvoiceDocument({
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.brand}>TerangaSpot</Text>
+            <Text style={styles.brand}>TerangaLink</Text>
             <Text style={styles.subtitle}>Facture d&apos;abonnement</Text>
           </View>
           <View>
@@ -99,8 +99,8 @@ export function InvoiceDocument({
 
         <View style={styles.infoRow}>
           <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>Boutique</Text>
-            <Text style={styles.infoMain}>{boutiqueName}</Text>
+            <Text style={styles.infoTitle}>Restaurant</Text>
+            <Text style={styles.infoMain}>{restaurantName}</Text>
             {contactEmail && <Text style={styles.infoLine}>{contactEmail}</Text>}
           </View>
           <View style={styles.infoBox}>
@@ -139,7 +139,7 @@ export function InvoiceDocument({
           </Text>
         </View>
 
-        <Text style={styles.footer}>TerangaSpot — {invoiceNumber}</Text>
+        <Text style={styles.footer}>TerangaLink — {invoiceNumber}</Text>
       </Page>
     </Document>
   )

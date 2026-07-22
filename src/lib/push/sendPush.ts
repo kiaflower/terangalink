@@ -65,12 +65,12 @@ async function sendToSubscriptions(
 async function logNotification(
   admin: AdminClient,
   payload: PushPayload,
-  opts: { boutiqueId?: string | null; profileId?: string | null; recipientCount: number; totalTargets: number }
+  opts: { restaurantId?: string | null; profileId?: string | null; recipientCount: number; totalTargets: number }
 ) {
   const status = opts.recipientCount > 0 ? 'sent' : opts.totalTargets > 0 ? 'failed' : 'skipped'
   await admin.from('push_notifications_log').insert({
     type: payload.type,
-    boutique_id: opts.boutiqueId ?? null,
+    restaurant_id: opts.restaurantId ?? null,
     profile_id: opts.profileId ?? null,
     title: payload.title,
     body: payload.body,
@@ -80,12 +80,12 @@ async function logNotification(
 }
 
 // Envoie à tous les admins (principal + secondaire) ayant activé les
-// notifications sur au moins un appareil pour cette boutique.
-export async function sendPushToBoutique(admin: AdminClient, boutiqueId: string, payload: PushPayload): Promise<number> {
-  const { data: subs } = await admin.from('push_subscriptions').select('id, endpoint, p256dh, auth').eq('boutique_id', boutiqueId)
+// notifications sur au moins un appareil pour ce restaurant.
+export async function sendPushToRestaurant(admin: AdminClient, restaurantId: string, payload: PushPayload): Promise<number> {
+  const { data: subs } = await admin.from('push_subscriptions').select('id, endpoint, p256dh, auth').eq('restaurant_id', restaurantId)
   const targets = subs ?? []
   const sentCount = targets.length > 0 ? await sendToSubscriptions(admin, targets, payload) : 0
-  await logNotification(admin, payload, { boutiqueId, recipientCount: sentCount, totalTargets: targets.length })
+  await logNotification(admin, payload, { restaurantId, recipientCount: sentCount, totalTargets: targets.length })
   return sentCount
 }
 

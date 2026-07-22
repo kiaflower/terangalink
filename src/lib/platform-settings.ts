@@ -17,13 +17,13 @@ export interface PlatformSettings {
 }
 
 export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
-  platform_url: 'https://terangaspot.com',
+  platform_url: 'https://terangalink.com',
   support_phone: '221774739266',
   support_whatsapp: '221774739266',
-  support_email: 'support@teranga-spot.com',
-  instagram_url: 'https://instagram.com/terangaspot',
-  facebook_url: 'https://facebook.com/terangaspot',
-  tiktok_url: 'https://tiktok.com/@terangaspot',
+  support_email: 'support@teranga-link.com',
+  instagram_url: 'https://instagram.com/terangalink',
+  facebook_url: 'https://facebook.com/terangalink',
+  tiktok_url: 'https://tiktok.com/@terangalink',
   plan_starter_price: PLANS.starter.price,
   plan_pro_price: PLANS.pro.price,
   maintenance_mode: false,

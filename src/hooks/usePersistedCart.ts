@@ -10,8 +10,8 @@ interface PersistedCart {
   savedAt: number
 }
 
-export function usePersistedCart(boutiqueSlug: string) {
-  const key = `terangaspot_cart_${boutiqueSlug}`
+export function usePersistedCart(restaurantSlug: string) {
+  const key = `terangalink_cart_${restaurantSlug}`
   const [cart, setCartState] = useState<CartItem[]>([])
 
   useEffect(() => {

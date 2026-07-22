@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getPrincipalAdmin } from '@/lib/auth/boutiqueAdmin'
+import { getPrincipalAdmin } from '@/lib/auth/restaurantAdmin'
 import { ReceiptDocument } from '@/lib/pdf/ReceiptDocument'
 import type { PlanKey } from '@/lib/plans'
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const admin = createAdminClient()
     const { data: invoice } = await admin
       .from('invoices')
-      .select('invoice_number, boutique_id, period_start, period_end, plan, final_amount, status, payment_method, paid_at, boutique:boutiques(name)')
+      .select('invoice_number, restaurant_id, period_start, period_end, plan, final_amount, status, payment_method, paid_at, restaurant:restaurants(name)')
       .eq('id', params.id)
       .single()
 
@@ -36,12 +36,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Cette facture n\'a pas encore été payée' }, { status: 400 })
     }
 
-    const principal = await getPrincipalAdmin(admin, invoice.boutique_id)
+    const principal = await getPrincipalAdmin(admin, invoice.restaurant_id)
 
     const buffer = await renderToBuffer(
       <ReceiptDocument
         invoiceNumber={invoice.invoice_number}
-        boutiqueName={(invoice.boutique as unknown as { name: string } | null)?.name ?? '—'}
+        restaurantName={(invoice.restaurant as unknown as { name: string } | null)?.name ?? '—'}
         contactEmail={principal?.email ?? null}
         plan={invoice.plan as PlanKey}
         periodStart={invoice.period_start}

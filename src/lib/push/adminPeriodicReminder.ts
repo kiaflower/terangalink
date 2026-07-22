@@ -7,11 +7,11 @@ const LAST_SENT_KEY = 'admin_notif_last_periodic_reminder_at'
 const DAY_COPY: Record<number, { title: string; suggestion: string }> = {
   1: {
     title: 'Lundi — bilan du week-end',
-    suggestion: "Suggestion : relancez par WhatsApp les boutiques inactives depuis plus de 30 jours.",
+    suggestion: "Suggestion : relancez par WhatsApp les restaurants inactives depuis plus de 30 jours.",
   },
   3: {
     title: 'Mercredi — mi-semaine',
-    suggestion: 'Suggestion : publiez une fiche business ou une story pour mettre en avant une boutique.',
+    suggestion: 'Suggestion : publiez une fiche business ou une story pour mettre en avant un restaurant.',
   },
   5: {
     title: 'Vendredi — avant le week-end',

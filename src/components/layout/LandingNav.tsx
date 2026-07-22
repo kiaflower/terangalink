@@ -7,8 +7,8 @@ import { Logo } from '@/components/ui/Logo'
 
 const LINKS = [
   { label: 'Accueil', href: '/' },
-  { label: 'Boutiques', href: '/boutiques' },
-  { label: 'Tarifs', href: '/pour-les-boutiques#tarifs' },
+  { label: 'Restaurants', href: '/restaurants' },
+  { label: 'Tarifs', href: '/pour-les-restaurants#tarifs' },
 ]
 
 export function LandingNav() {

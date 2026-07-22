@@ -96,7 +96,7 @@ export default function EarlyAccessPage() {
     setApplications(prev => prev.map(a => a.id === selected.id ? { ...a, notes_admin: notesDraft } : a))
   }
 
-  async function confirmAndCreateBoutique(id: string) {
+  async function confirmAndCreateRestaurant(id: string) {
     setConfirming(true)
     try {
       const res = await fetch('/api/super-admin/early-access', {
@@ -129,7 +129,7 @@ export default function EarlyAccessPage() {
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Early Access</h1>
-          <p className="text-gray-500 text-sm mt-1">Gestion des {config?.max_places ?? 15} premières boutiques</p>
+          <p className="text-gray-500 text-sm mt-1">Gestion des {config?.max_places ?? 15} premières restaurants</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-600">Inscriptions {config?.is_open ? 'ouvertes' : 'fermées'}</span>
@@ -170,7 +170,7 @@ export default function EarlyAccessPage() {
                   <img src={app.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center font-bold text-brand-orange flex-shrink-0">
-                    {app.boutique_name.charAt(0)}
+                    {app.restaurant_name.charAt(0)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -178,9 +178,9 @@ export default function EarlyAccessPage() {
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-brand-orange shrink-0">
                       #{app.place_number}
                     </span>
-                    <p className="font-semibold text-gray-900 truncate">{app.boutique_name}</p>
+                    <p className="font-semibold text-gray-900 truncate">{app.restaurant_name}</p>
                   </div>
-                  <p className="text-xs text-gray-400">{app.shop_category} · {app.city}</p>
+                  <p className="text-xs text-gray-400">{app.cuisine_type} · {app.city}</p>
                   <p className="text-xs text-gray-500 mt-0.5 truncate">{app.owner_name} · {app.phone}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
@@ -210,7 +210,7 @@ export default function EarlyAccessPage() {
                 </div>
                 <a
                   href={`https://wa.me/${w.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                    `Bonjour ${w.name || ''}, TerangaSpot ouvre officiellement bientôt ! Nous vous recontactons dès que les inscriptions sont ouvertes.`
+                    `Bonjour ${w.name || ''}, TerangaLink ouvre officiellement bientôt ! Nous vous recontactons dès que les inscriptions sont ouvertes.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -236,17 +236,17 @@ export default function EarlyAccessPage() {
                   <img src={selected.logo_url} alt="" className="w-10 h-10 rounded-xl object-cover" />
                 ) : (
                   <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center font-bold text-brand-orange">
-                    {selected.boutique_name.charAt(0)}
+                    {selected.restaurant_name.charAt(0)}
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-bold text-gray-900">{selected.boutique_name}</p>
+                    <p className="font-bold text-gray-900">{selected.restaurant_name}</p>
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white bg-brand-orange">
                       Early Access #{selected.place_number}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400">{selected.shop_category} · {selected.city}</p>
+                  <p className="text-xs text-gray-400">{selected.cuisine_type} · {selected.city}</p>
                 </div>
               </div>
               <button onClick={() => setSelected(null)}><X className="w-5 h-5 text-gray-400" /></button>
@@ -315,11 +315,11 @@ export default function EarlyAccessPage() {
                 />
               </InfoSection>
 
-              {selected.created_boutique_id && (
+              {selected.created_restaurant_id && (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    <p className="text-sm font-semibold text-green-700">Boutique créée automatiquement</p>
+                    <p className="text-sm font-semibold text-green-700">Restaurant créée automatiquement</p>
                   </div>
                   {selected.created_admin_password && (
                     <>
@@ -329,7 +329,7 @@ export default function EarlyAccessPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          const msg = `Bonjour ${selected.owner_name}, votre boutique ${selected.boutique_name} est prête sur TerangaSpot !\n\nEmail : ${selected.email}\nMot de passe : ${selected.created_admin_password}\n\nConnectez-vous sur : ${window.location.origin}/login`
+                          const msg = `Bonjour ${selected.owner_name}, votre restaurant ${selected.restaurant_name} est prête sur TerangaLink !\n\nEmail : ${selected.email}\nMot de passe : ${selected.created_admin_password}\n\nConnectez-vous sur : ${window.location.origin}/login`
                           window.open(`https://wa.me/${selected.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank')
                         }}
                         className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
@@ -345,7 +345,7 @@ export default function EarlyAccessPage() {
             <div className="sticky bottom-0 bg-white px-6 py-4 border-t border-gray-100 space-y-2">
               <a
                 href={`https://wa.me/${selected.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(
-                  `Bonjour ${selected.owner_name}, nous avons bien reçu votre demande d'inscription Early Access pour ${selected.boutique_name} sur TerangaSpot ! Nous allons vous contacter très prochainement pour la suite.`
+                  `Bonjour ${selected.owner_name}, nous avons bien reçu votre demande d'inscription Early Access pour ${selected.restaurant_name} sur TerangaLink ! Nous allons vous contacter très prochainement pour la suite.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -355,13 +355,13 @@ export default function EarlyAccessPage() {
                 Contacter sur WhatsApp
               </a>
 
-              {!selected.created_boutique_id && (
+              {!selected.created_restaurant_id && (
                 <button
-                  onClick={() => confirmAndCreateBoutique(selected.id)}
+                  onClick={() => confirmAndCreateRestaurant(selected.id)}
                   disabled={confirming}
                   className="w-full py-3 rounded-xl text-sm font-bold text-white disabled:opacity-50"
                   style={{ backgroundColor: '#F97316' }}>
-                  {confirming ? 'Création en cours...' : 'Confirmer & créer la boutique'}
+                  {confirming ? 'Création en cours...' : 'Confirmer & créer le restaurant'}
                 </button>
               )}
 

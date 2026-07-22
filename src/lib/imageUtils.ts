@@ -51,7 +51,7 @@ export async function fileToCompressedBase64(file: File, maxDimension = 1000, qu
 }
 
 // Variante Blob pour l'upload direct vers Supabase Storage (logo/couverture
-// boutique, photos produit) : évite d'envoyer telles quelles des photos de
+// restaurant, photos plat) : évite d'envoyer telles quelles des photos de
 // téléphone de plusieurs Mo, qui peuvent suffire à faire échouer silencieusement
 // la génération d'aperçu og:image sur WhatsApp (plus strict que Facebook).
 export async function fileToCompressedBlob(file: File, maxDimension = 1600, quality = 0.82): Promise<File> {
@@ -67,7 +67,7 @@ export async function fileToCompressedBlob(file: File, maxDimension = 1600, qual
 }
 
 // Recadre au centre vers un ratio cible (ex: 3/1 pour une bannière) avant
-// compression — évite qu'une photo produit au mauvais format soit étirée ou
+// compression — évite qu'une photo plat au mauvais format soit étirée ou
 // déformée une fois affichée en pleine largeur sur la vitrine.
 export async function fileToCroppedBlob(file: File, targetRatio: number, maxWidth = 1600, quality = 0.82): Promise<File> {
   try {

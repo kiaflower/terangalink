@@ -20,12 +20,12 @@ const STATUS_CONFIG: Record<string, {
   pending: {
     label: 'En attente',
     icon: Clock,
-    desc: 'Votre commande est en attente de confirmation par la boutique.',
+    desc: 'Votre commande est en attente de confirmation par le restaurant.',
   },
   confirmed: {
     label: 'Confirmée',
     icon: CheckCircle2,
-    desc: 'La boutique a confirmé votre commande. Préparation en cours.',
+    desc: 'Le restaurant a confirmé votre commande. Préparation en cours.',
   },
   in_delivery: {
     label: 'En livraison',
@@ -40,7 +40,7 @@ const STATUS_CONFIG: Record<string, {
   cancelled: {
     label: 'Annulée',
     icon: XCircle,
-    desc: "Cette commande a été annulée. Contactez la boutique pour plus d'informations.",
+    desc: "Cette commande a été annulée. Contactez le restaurant pour plus d'informations.",
   },
 }
 
@@ -50,7 +50,7 @@ const PROGRESS_LABELS = ['Reçue', 'Confirmée', 'En livraison', 'Livrée']
 
 interface OrderStatusLiveProps {
   order: OrderLive
-  boutiqueId: string
+  restaurantId: string
   hasReview: boolean
   accentColor?: string
   cardBg?: string
@@ -61,7 +61,7 @@ interface OrderStatusLiveProps {
 
 export function OrderStatusLive({
   order: initialOrder,
-  boutiqueId,
+  restaurantId,
   hasReview: initialHasReview,
   accentColor = '#F97316',
   cardBg = '#FFFFFF',
@@ -185,7 +185,7 @@ export function OrderStatusLive({
       {isDelivered && !hasReview && (
         <ReviewForm
           orderId={initialOrder.id}
-          boutiqueId={boutiqueId}
+          restaurantId={restaurantId}
           customerName={initialOrder.customer_name || ''}
           onSubmitted={() => setHasReview(true)}
           accentColor={accentColor}

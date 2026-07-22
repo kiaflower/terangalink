@@ -8,7 +8,7 @@ import { getActiveDiscount, getPendingDiscount } from '@/lib/subscriptionDiscoun
 
 interface SubscriptionRowProps {
   id: string
-  boutiqueName: string
+  restaurantName: string
   plan: string
   status: string
   startedAt: string
@@ -34,7 +34,7 @@ const STATUS_OPTIONS = [
 ]
 
 export function SubscriptionRow({
-  id, boutiqueName, plan, status, startedAt, endsAt,
+  id, restaurantName, plan, status, startedAt, endsAt,
   discountPercent, discountExpiresAt, pendingDiscountPercent, onChanged,
 }: SubscriptionRowProps) {
   const [form, setForm] = useState({ plan, status, ends_at: endsAt ? endsAt.slice(0, 10) : '' })
@@ -59,7 +59,7 @@ export function SubscriptionRow({
   return (
     <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
       <div>
-        <p className="text-sm font-medium text-gray-900">{boutiqueName}</p>
+        <p className="text-sm font-medium text-gray-900">{restaurantName}</p>
         <p className="text-xs text-gray-500 mt-0.5">
           Plan {plan} · Depuis {new Date(startedAt).toLocaleDateString('fr-SN')}
           {endsAt && ` · Expire ${new Date(endsAt).toLocaleDateString('fr-SN')}`}
@@ -80,7 +80,7 @@ export function SubscriptionRow({
         <StatusBadge status={status} />
         <Link
           href="/dashboard/super-admin/invoices"
-          title="Encaisser un paiement pour cette boutique"
+          title="Encaisser un paiement pour ce restaurant"
           className="flex items-center gap-1.5 text-xs bg-white border border-gray-200 hover:border-brand-orange text-gray-700 px-2 sm:px-3 py-1.5 rounded-lg transition-colors"
         >
           <Receipt className="w-3.5 h-3.5" />

@@ -7,7 +7,7 @@ export default async function MaintenancePage() {
   const admin = createAdminClient()
   const { data } = await admin.from('platform_settings').select('key, value').in('key', ['maintenance_message', 'support_whatsapp'])
   const settings = Object.fromEntries((data ?? []).map(s => [s.key, s.value]))
-  const message = settings.maintenance_message || 'TerangaSpot est actuellement en maintenance. Nous serons de retour très bientôt.'
+  const message = settings.maintenance_message || 'TerangaLink est actuellement en maintenance. Nous serons de retour très bientôt.'
   const whatsapp = settings.support_whatsapp
 
   return (
@@ -15,7 +15,7 @@ export default async function MaintenancePage() {
       <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center mb-6">
         <Wrench className="w-8 h-8 text-brand-orange" />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-3">TerangaSpot en maintenance</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-3">TerangaLink en maintenance</h1>
       <p className="text-gray-500 max-w-md">{message}</p>
       {whatsapp && (
         <a

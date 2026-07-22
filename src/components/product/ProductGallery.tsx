@@ -15,7 +15,7 @@ interface ProductGalleryProps {
   variantImage?: string | null
   productName: string
   cardBg: string
-  // 'page' = page produit dédiée (grande zone + vignettes en grille).
+  // 'page' = page plat dédiée (grande zone + vignettes en grille).
   // 'modal' = aperçu rapide vitrine (bande défilante compacte, existant).
   variant?: 'page' | 'modal'
 }

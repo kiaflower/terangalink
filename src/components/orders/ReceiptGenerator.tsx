@@ -10,7 +10,7 @@ import { sanitizeHexColor } from '@/lib/theme'
 
 type OrderItem = { name: string; quantity: number; price: number; isPreorder?: boolean; preorderDeliveryDate?: string }
 
-interface BoutiqueInfo {
+interface RestaurantInfo {
   name: string
   address: string | null
   phone: string | null
@@ -19,22 +19,22 @@ interface BoutiqueInfo {
 
 interface Props {
   order: Order
-  boutique: BoutiqueInfo
+  restaurant: RestaurantInfo
   plan: PlanKey
 }
 
-export function ReceiptGenerator({ order, boutique, plan }: Props) {
+export function ReceiptGenerator({ order, restaurant, plan }: Props) {
   const [downloading, setDownloading] = useState(false)
   const orderItems = (order.items as OrderItem[]) ?? []
   const items = orderItems.map(i => ({ name: i.name, quantity: i.quantity, price: i.price }))
-  const accentColor = sanitizeHexColor(boutique.primary_color)
+  const accentColor = sanitizeHexColor(restaurant.primary_color)
   const isPreorder = orderItems.some(i => i.isPreorder)
   const deliveryDates = Array.from(new Set(orderItems.filter(i => i.isPreorder && i.preorderDeliveryDate).map(i => i.preorderDeliveryDate as string)))
 
   const params = new URLSearchParams({
-    boutiqueName: boutique.name || '',
-    boutiqueAddress: boutique.address || '',
-    boutiquePhone: boutique.phone || '',
+    restaurantName: restaurant.name || '',
+    restaurantAddress: restaurant.address || '',
+    restaurantPhone: restaurant.phone || '',
     orderNumber: order.order_number,
     date: formatDate(order.created_at),
     customerName: order.customer_name || '',

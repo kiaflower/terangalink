@@ -13,12 +13,12 @@ export function withAlpha(hex: string, alphaHex: string): string {
 
 export type ThemeMode = 'light' | 'dark' | 'vibrant'
 
-export interface BoutiqueThemeInput {
+export interface RestaurantThemeInput {
   primary_color?: string | null
   theme?: string | null
 }
 
-export interface BoutiqueTheme {
+export interface RestaurantTheme {
   accent: string
   theme: ThemeMode
   isDark: boolean
@@ -30,9 +30,9 @@ export interface BoutiqueTheme {
   subtleText: string
 }
 
-export function getBoutiqueTheme(boutique: BoutiqueThemeInput): BoutiqueTheme {
-  const accent = sanitizeHexColor(boutique.primary_color)
-  const theme: ThemeMode = boutique.theme === 'dark' || boutique.theme === 'vibrant' ? boutique.theme : 'light'
+export function getRestaurantTheme(restaurant: RestaurantThemeInput): RestaurantTheme {
+  const accent = sanitizeHexColor(restaurant.primary_color)
+  const theme: ThemeMode = restaurant.theme === 'dark' || restaurant.theme === 'vibrant' ? restaurant.theme : 'light'
   const isDark = theme === 'dark'
   const isVibrant = theme === 'vibrant'
   const pageBg = isDark ? '#111111' : isVibrant ? accent : '#FFFFFF'

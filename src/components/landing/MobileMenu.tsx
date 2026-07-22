@@ -6,11 +6,11 @@ import Link from 'next/link'
 import { Logo } from '@/components/ui/Logo'
 
 const links = [
-  { href: '/boutiques', label: 'Annuaire' },
-  { href: '/pour-les-boutiques#fonctionnalites', label: 'Fonctionnalités' },
-  { href: '/pour-les-boutiques#tarifs', label: 'Tarifs' },
-  { href: '/pour-les-boutiques#faq', label: 'FAQ' },
-  { href: '/inscription', label: 'Créer ma boutique' },
+  { href: '/restaurants', label: 'Annuaire' },
+  { href: '/pour-les-restaurants#fonctionnalites', label: 'Fonctionnalités' },
+  { href: '/pour-les-restaurants#tarifs', label: 'Tarifs' },
+  { href: '/pour-les-restaurants#faq', label: 'FAQ' },
+  { href: '/inscription', label: 'Créer mon restaurant' },
 ]
 
 export function MobileMenu() {

@@ -140,7 +140,7 @@ export default function AppointmentsPage() {
   async function updateApptStatus(appt: Appointment, status: string) {
     // Open synchronously, before any await, so the browser doesn't block the popup
     if (status === 'confirmed') {
-      const msg = `Bonjour ${appt.name}, votre rendez-vous TerangaSpot${appt.subject ? ` (${appt.subject})` : ''} du ${formatDate(appt.requested_date)} à ${appt.requested_time.slice(0, 5)} est confirmé. À très bientôt !`
+      const msg = `Bonjour ${appt.name}, votre rendez-vous TerangaLink${appt.subject ? ` (${appt.subject})` : ''} du ${formatDate(appt.requested_date)} à ${appt.requested_time.slice(0, 5)} est confirmé. À très bientôt !`
       window.open(`https://wa.me/${appt.phone.replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank')
     }
     await fetch('/api/appointment-requests', {

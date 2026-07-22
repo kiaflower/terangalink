@@ -53,7 +53,7 @@ export function FicheDocument({
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.brand}>TerangaSpot</Text>
+            <Text style={styles.brand}>TerangaLink</Text>
             <Text style={styles.brandSubtitle}>Fiche pratique commerçant</Text>
           </View>
           <View>
@@ -111,7 +111,7 @@ export function FicheDocument({
           </View>
         )}
 
-        <Text style={styles.footer}>TerangaSpot — Fiche {formatNumero(numero)} — {categoryCode}</Text>
+        <Text style={styles.footer}>TerangaLink — Fiche {formatNumero(numero)} — {categoryCode}</Text>
       </Page>
     </Document>
   )

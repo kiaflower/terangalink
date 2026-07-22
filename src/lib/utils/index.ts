@@ -48,7 +48,7 @@ export function exportToCSV(data: Record<string, unknown>[], filename: string) {
 }
 
 export function buildWhatsAppMessage(
-  boutiqueName: string,
+  restaurantName: string,
   items: Array<{
     name: string
     quantity: number
@@ -73,7 +73,7 @@ export function buildWhatsAppMessage(
   const total = promo ? subtotal - promo.discountAmount : subtotal
   const hasPreorder = items.some(item => item.isPreorder)
 
-  const lines = [`Bonjour ${boutiqueName},`, '', hasPreorder ? 'Voici ma précommande :' : 'Voici ma commande :', '']
+  const lines = [`Bonjour ${restaurantName},`, '', hasPreorder ? 'Voici ma précommande :' : 'Voici ma commande :', '']
   for (const item of items) {
     lines.push(`- *${item.name}* x${item.quantity}`)
     if (item.variants) {
