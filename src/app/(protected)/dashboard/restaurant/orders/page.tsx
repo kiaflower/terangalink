@@ -73,6 +73,9 @@ function OrdersPageInner() {
   const preselectedId = searchParams.get('id')
   const didPreselect = useRef(false)
   const [plan, setPlan] = useState<PlanKey>('starter')
+  const pageSizeRef = useRef(50)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
 
   const load = useCallback(async (bid: string, notifyNew = false) => {
     const { data } = await supabase
@@ -80,7 +83,7 @@ function OrdersPageInner() {
       .select('*')
       .eq('restaurant_id', bid)
       .order('created_at', { ascending: false })
-      .limit(50)
+      .limit(pageSizeRef.current)
     const fresh = data ?? []
     if (notifyNew && knownOrderIds.current) {
       const newCount = fresh.filter(o => !knownOrderIds.current!.has(o.id)).length
@@ -91,7 +94,16 @@ function OrdersPageInner() {
     }
     knownOrderIds.current = new Set(fresh.map(o => o.id))
     setOrders(fresh)
+    setHasMore(fresh.length >= pageSizeRef.current)
   }, [supabase])
+
+  async function loadMore() {
+    if (!restaurantId) return
+    setLoadingMore(true)
+    pageSizeRef.current += 50
+    await load(restaurantId)
+    setLoadingMore(false)
+  }
 
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(async d => {
@@ -271,6 +283,18 @@ function OrdersPageInner() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {hasMore && statusFilter === 'all' && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50"
+          >
+            {loadingMore ? 'Chargement...' : 'Charger plus de commandes'}
+          </button>
         </div>
       )}
 
