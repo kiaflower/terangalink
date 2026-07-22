@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
  * À appeler juste après un login client réussi (supabase.auth.signInWithPassword).
  * Pour un restaurant_admin : refuse si le compte a été désactivé (suppression
  * d'un admin secondaire), sinon estampille session_password_version sur la
- * version courante de le restaurant — c'est ce qui permet à CE login de passer
+ * version courante du restaurant — c'est ce qui permet à CE login de passer
  * les contrôles de session à venir, même si le mot de passe partagé a changé
  * entre-temps (justement puisque le login n'a pu réussir qu'avec le mot de
  * passe à jour).

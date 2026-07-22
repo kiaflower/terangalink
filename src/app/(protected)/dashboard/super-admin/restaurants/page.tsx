@@ -186,7 +186,7 @@ function CreateRestaurantModal({ onClose, onCreated }: { onClose: () => void; on
                 <CheckCircle2 className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">{result.name} créée !</h3>
-              <p className="text-gray-500 text-sm mb-6">Communiquez ces identifiants à l&apos;admin de le restaurant.</p>
+              <p className="text-gray-500 text-sm mb-6">Communiquez ces identifiants à l&apos;admin du restaurant.</p>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 w-full max-w-sm text-left space-y-3 mb-6">
                 <div><p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Email</p><p className="text-sm font-medium text-gray-900">{result.email}</p></div>
                 <div><p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Mot de passe</p><p className="text-sm font-mono font-bold text-brand-orange">{result.password}</p></div>
@@ -222,7 +222,7 @@ function CreateRestaurantModal({ onClose, onCreated }: { onClose: () => void; on
                       <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2"><Store className="w-4 h-4 text-brand-orange" />Identité</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="sm:col-span-2">
-                          <label className={lCls}>Nom de le restaurant *</label>
+                          <label className={lCls}>Nom du restaurant *</label>
                           <input type="text" required value={form.name} onChange={e => handleNameChange(e.target.value)} placeholder="Chez Mariama" className={iCls} />
                         </div>
                         <div className="sm:col-span-2">
@@ -248,7 +248,7 @@ function CreateRestaurantModal({ onClose, onCreated }: { onClose: () => void; on
                         <div className="sm:col-span-2">
                           <label className={lCls}>Description</label>
                           <textarea rows={2} value={form.description} onChange={e => set('description', e.target.value)}
-                            placeholder="Présentation courte de le restaurant…"
+                            placeholder="Présentation courte du restaurant…"
                             className={`${iCls} resize-none`} />
                         </div>
                       </div>

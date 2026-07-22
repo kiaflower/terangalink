@@ -175,7 +175,7 @@ export default async function RestaurantDashboardHome() {
           {[
             { label: 'Gérer le menu', desc: 'Ajouter et modifier vos plats', href: '/dashboard/restaurant/menu', icon: Package },
             { label: 'Voir les commandes', desc: 'Commandes en cours et historique', href: '/dashboard/restaurant/orders', icon: ShoppingBag },
-            { label: 'Profil de le restaurant', desc: 'Modifier les informations', href: '/dashboard/restaurant/profile', icon: TrendingUp },
+            { label: 'Profil du restaurant', desc: 'Modifier les informations', href: '/dashboard/restaurant/profile', icon: TrendingUp },
             { label: 'Paramètres', desc: 'Configuration du compte', href: '/dashboard/restaurant/settings', icon: Eye },
           ].map((item) => (
             <Link key={item.href} href={item.href}

@@ -46,7 +46,7 @@ function RestaurantPreview({ name, color, theme, logoUrl, coverUrl }: { name: st
         </div>
       </div>
       <div className="px-4 py-3">
-        <p className="font-bold text-sm" style={{ color: text }}>{name || 'Nom de le restaurant'}</p>
+        <p className="font-bold text-sm" style={{ color: text }}>{name || 'Nom du restaurant'}</p>
         <div className="flex gap-1.5 mt-2">
           {['Tous', 'Nouveautés', 'Promos'].map(cat => (
             <span key={cat} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
@@ -299,7 +299,7 @@ export default function EditRestaurantPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
             <h2 className="font-semibold text-gray-900 text-sm mb-3">Identité</h2>
             <div>
-              <label className={labelClass}>Nom de le restaurant *</label>
+              <label className={labelClass}>Nom du restaurant *</label>
               <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required className={inputClass} />
             </div>
             <div>
@@ -350,7 +350,7 @@ export default function EditRestaurantPage() {
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
               <div>
                 <p className="text-sm font-medium text-gray-900">Badge fondateur</p>
-                <p className="text-xs text-gray-500 mt-0.5">Affiche un badge doré sur la page de le restaurant</p>
+                <p className="text-xs text-gray-500 mt-0.5">Affiche un badge doré sur la page du restaurant</p>
               </div>
               <label className="flex items-center cursor-pointer">
                 <input type="checkbox" checked={form.is_founder} onChange={e => setForm(f => ({ ...f, is_founder: e.target.checked }))} className="w-4 h-4 accent-brand-orange" />
@@ -672,7 +672,7 @@ export default function EditRestaurantPage() {
                     </div>
                   ) : (
                     <p className="text-xs text-gray-400 bg-gray-50 rounded-xl px-3 py-2.5">
-                      Le mot de passe partagé actuel de le restaurant lui sera envoyé par email — aucun mot de passe à saisir ici.
+                      Le mot de passe partagé actuel du restaurant lui sera envoyé par email — aucun mot de passe à saisir ici.
                     </p>
                   )}
                   <button onClick={addAdmin} disabled={addAdminLoading}

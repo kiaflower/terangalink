@@ -66,7 +66,7 @@ export function ReviewForm({
       <div className="rounded-2xl px-5 py-6 text-center space-y-2" style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}>
         <CheckCircle2 className="w-8 h-8 mx-auto" style={{ color: accentColor }} />
         <p className="font-bold text-sm" style={{ color: pageText }}>Merci pour votre avis !</p>
-        <p className="text-xs" style={{ color: subtleText }}>Votre retour aide le restaurant à s&apos;améliorer.</p>
+        <p className="text-xs" style={{ color: subtleText }}>Votre retour aidu restaurant à s&apos;améliorer.</p>
       </div>
     )
   }

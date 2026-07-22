@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!restaurant_id || !event_type) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
   const supabase = createClient()
-  // Exclut le propriétaire de le restaurant (ou un super-admin qui l'impersonne)
+  // Exclut le propriétaire du restaurant (ou un super-admin qui l'impersonne)
   // du comptage — évite de fausser add_to_cart/whatsapp_click/product_view.
   if (await isOwnerVisit(supabase, restaurant_id)) {
     return NextResponse.json({ ok: true, skipped: true })

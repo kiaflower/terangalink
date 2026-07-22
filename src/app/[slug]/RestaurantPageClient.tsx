@@ -122,7 +122,7 @@ function ReviewCard({ review, accent, cardBg, cardBorder, pageText, subtleText }
 export default function RestaurantPageClient({ restaurant, categories, products, reviews = [], fromAnnuaire, plan = 'starter', banners = [], previewMode = false, demoHomeHref = '/' }: Props) {
   const { accent, theme, isDark, isVibrant, pageBg, pageText, cardBg, cardBorder, subtleText } = getRestaurantTheme(restaurant)
   // Boucle d'acquisition "Propulsé par TerangaLink" (Free/Starter) : le lien
-  // porte le code de parrainage de le restaurant, réutilisant le système de
+  // porte le code de parrainage du restaurant, réutilisant le système de
   // parrainage existant (dashboard/restaurant/parrainage) pour récompenser la
   // restaurant d'origine si le clic mène à une inscription payante.
   const referralUrl = restaurant.referral_code

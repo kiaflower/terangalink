@@ -23,10 +23,10 @@ interface Props {
 // `searchParams` dans la page elle-même désactiverait le cache/revalidate=300 pour
 // TOUTES les requêtes, même celles sans query string (ex: Googlebot sur l'URL canonique).
 //
-// Rend le header de la page plat (logo + nom de le restaurant, lien vers son site)
+// Rend le header de la page plat (logo + nom du restaurant, lien vers son site)
 // et, selon la provenance (?from=annuaire ou ?from=accueil), un lien "Retour" vers
 // l'annuaire ou vers l'accueil — ce même paramètre est forwardé sur le lien restaurant
-// pour que le bouton retour reste disponible une fois sur la page de le restaurant.
+// pour que le bouton retour reste disponible une fois sur la page du restaurant.
 export function ProductPageHeaderLinks({ restaurant, accent, pageText, subtleText }: Props) {
   const searchParams = useSearchParams()
   const from = searchParams.get('from')

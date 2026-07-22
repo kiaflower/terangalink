@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     let finalPassword: string
     if (isFirstAdmin) {
       if (!password || password.length < 8) {
-        return NextResponse.json({ error: 'Mot de passe requis (8 caractères min) pour le premier admin de le restaurant.' }, { status: 400 })
+        return NextResponse.json({ error: 'Mot de passe requis (8 caractères min) pour le premier admin du restaurant.' }, { status: 400 })
       }
       finalPassword = password
     } else {

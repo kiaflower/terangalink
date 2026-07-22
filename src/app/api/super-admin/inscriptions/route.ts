@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
 
         if (restaurantError || !restaurant) {
           console.error('auto-create restaurant error:', restaurantError)
-          return NextResponse.json({ error: restaurantError?.message || 'Erreur lors de la création de le restaurant' }, { status: 500 })
+          return NextResponse.json({ error: restaurantError?.message || 'Erreur lors de la création du restaurant' }, { status: 500 })
         }
 
         // Create auth user

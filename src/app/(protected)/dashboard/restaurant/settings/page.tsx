@@ -280,9 +280,9 @@ export default function SettingsPage() {
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
           <h2 className="font-semibold text-gray-900 text-sm mb-1 flex items-center gap-2">
             <Lock className="w-4 h-4 text-brand-orange" />
-            Mot de passe de le restaurant
+            Mot de passe du restaurant
           </h2>
-          <p className="text-xs text-gray-500 mb-4">Ce mot de passe est partagé par tous les admins de le restaurant.</p>
+          <p className="text-xs text-gray-500 mb-4">Ce mot de passe est partagé par tous les admins du restaurant.</p>
           <form onSubmit={handlePasswordChange} className="space-y-3">
             <div>
               <label className={lCls}>Mot de passe actuel</label>

@@ -458,7 +458,7 @@ export default function EarlyAccessClient() {
             <div className="px-5 py-5 overflow-y-auto flex-1">
               {step === 1 && (
                 <>
-                  <FieldGroup label="Nom de le restaurant">
+                  <FieldGroup label="Nom du restaurant">
                     <input value={form.restaurant_name} onChange={e => set('restaurant_name', e.target.value)} required
                       placeholder="ex : Fatou Mode, Bijoux Dakar..." className={inputClass} style={inputStyle} />
                   </FieldGroup>

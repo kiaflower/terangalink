@@ -281,7 +281,7 @@ export default function UsersPage() {
                     </div>
                   ) : addForm.restaurant_id ? (
                     <p className="text-xs text-gray-400 bg-gray-50 rounded-xl px-3 py-2.5">
-                      Le mot de passe partagé actuel de le restaurant lui sera envoyé par email — aucun mot de passe à saisir ici.
+                      Le mot de passe partagé actuel du restaurant lui sera envoyé par email — aucun mot de passe à saisir ici.
                     </p>
                   ) : null}
                   <button onClick={addAdmin} disabled={addLoading}

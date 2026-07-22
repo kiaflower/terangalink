@@ -2,7 +2,7 @@ import { Body, Button, Container, Head, Heading, Hr, Html, Img, Link, Preview, S
 import type { NewsletterBlock } from '@/lib/types/database'
 import { sanitizeRichText } from '../sanitizeHtml'
 
-const BRAND_VIOLET = '#F97316'
+const BRAND_ORANGE = '#F97316'
 
 interface CampaignEmailProps {
   blocks: NewsletterBlock[]
@@ -21,7 +21,7 @@ export function CampaignEmail({ blocks, previewText, unsubscribeUrl, pixelUrl, l
       {previewText ? <Preview>{previewText}</Preview> : null}
       <Body style={{ backgroundColor: '#f4f4f5', fontFamily: 'Arial, Helvetica, sans-serif', margin: 0, padding: '24px 0' }}>
         <Container style={{ maxWidth: 600, margin: '0 auto', padding: 0 }}>
-          <Section style={{ backgroundColor: BRAND_VIOLET, borderRadius: '12px 12px 0 0', padding: '28px 24px', textAlign: 'center' }}>
+          <Section style={{ backgroundColor: BRAND_ORANGE, borderRadius: '12px 12px 0 0', padding: '28px 24px', textAlign: 'center' }}>
             <Img
               src={logoUrl}
               alt="TerangaLink"
@@ -83,7 +83,7 @@ function BlockRenderer({ block }: { block: NewsletterBlock }) {
         <Section style={{ textAlign: 'center', margin: '0 0 16px' }}>
           <Button
             href={block.url}
-            style={{ backgroundColor: BRAND_VIOLET, color: '#ffffff', padding: '12px 24px', borderRadius: 8, fontSize: 15, textDecoration: 'none' }}
+            style={{ backgroundColor: BRAND_ORANGE, color: '#ffffff', padding: '12px 24px', borderRadius: 8, fontSize: 15, textDecoration: 'none' }}
           >
             {block.text}
           </Button>

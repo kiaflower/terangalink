@@ -26,7 +26,7 @@ interface FeaturedBlockProps {
   items: FeaturedItem[] // plusieurs restaurants
 }
 
-const TERANGA_VIOLET = '#F97316'
+const TERANGA_ORANGE = '#F97316'
 
 export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -69,7 +69,7 @@ export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
 
   if (!items.length) return null
   const current = items[activeIndex]
-  const accent = current.restaurant.primary_color || TERANGA_VIOLET
+  const accent = current.restaurant.primary_color || TERANGA_ORANGE
 
   return (
     <div
@@ -81,7 +81,7 @@ export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
       {/* Header titre — pleine largeur */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <span className="text-[11px] font-bold uppercase tracking-widest"
-          style={{ color: TERANGA_VIOLET }}>
+          style={{ color: TERANGA_ORANGE }}>
           {title}
         </span>
         {total > 1 && (
@@ -167,7 +167,7 @@ export function FeaturedBlock({ title, items }: FeaturedBlockProps) {
               className="h-1.5 rounded-full transition-all duration-300"
               style={{
                 width: i === activeIndex ? '16px' : '6px',
-                backgroundColor: i === activeIndex ? TERANGA_VIOLET : '#E5E7EB',
+                backgroundColor: i === activeIndex ? TERANGA_ORANGE : '#E5E7EB',
               }}
             />
           ))}

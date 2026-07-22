@@ -16,7 +16,7 @@ export interface AbandonedCartsScanResult {
  * déjà signalés lors d'un run précédent. `lastCheckedAt` est le
  * `scannedUntil` renvoyé au run précédent ; à null au tout premier run, où
  * on ne remonte que 24h en arrière pour éviter un backfill sur tout
- * l'historique de le restaurant.
+ * l'historique du restaurant.
  */
 export async function detectNewlyAbandonedCarts(
   admin: SupabaseClient<any, any, any>,

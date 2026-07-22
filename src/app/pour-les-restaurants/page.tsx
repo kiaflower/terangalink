@@ -289,7 +289,7 @@ export default async function PourLesRestaurantsPage() {
         </div>
       </nav>
 
-      {/* Hero — fond sombre, lueur violette diffuse, mockups téléphone en illustration */}
+      {/* Hero — fond sombre, lueur orange diffuse, mockups téléphone en illustration */}
       <section className="relative" style={{ backgroundColor: '#0A0A0A' }}>
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
           <div className="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full opacity-40 blur-[100px]" style={{ backgroundColor: '#F97316' }} />
@@ -381,7 +381,7 @@ export default async function PourLesRestaurantsPage() {
       </section>
 
       {/* Aperçu de l'interface — démonstration interactive du vrai plat.
-          Même traitement que le hero : fond sombre + lueur violette diffuse.
+          Même traitement que le hero : fond sombre + lueur orange diffuse.
           Glissée sous la courbe basse de la section blanche au-dessus. */}
       {demoShowcase.length > 0 && (
         <section className="relative -mt-8 sm:-mt-10 pt-16 sm:pt-20 pb-16 px-4 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
@@ -427,7 +427,7 @@ export default async function PourLesRestaurantsPage() {
         </div>
       </section>
 
-      {/* Pricing — fond sombre + lueur violette, comme le hero. Glissée sous la courbe
+      {/* Pricing — fond sombre + lueur orange, comme le hero. Glissée sous la courbe
           basse de la section Features au-dessus. */}
       <section id="tarifs" className="relative -mt-8 sm:-mt-10 pt-16 sm:pt-20 pb-20 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -523,7 +523,7 @@ export default async function PourLesRestaurantsPage() {
         </div>
       </section>
 
-      {/* FAQ — fond sombre + lueur violette, comme le hero. Glissée sous la courbe
+      {/* FAQ — fond sombre + lueur orange, comme le hero. Glissée sous la courbe
           basse des témoignages au-dessus. */}
       <section id="faq" className="relative -mt-8 sm:-mt-10 pt-16 sm:pt-20 pb-20 overflow-hidden" style={{ backgroundColor: '#0A0A0A' }}>
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">

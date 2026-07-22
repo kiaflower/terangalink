@@ -69,7 +69,7 @@ export function adminAddedEmail(restaurantName: string, email: string, password:
     html: layout('Accès dashboard ajouté', `
       <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'admin principal de <strong>${restaurantName}</strong> vous a ajouté comme administrateur secondaire. Voici vos identifiants :</p>
       ${credentialsBlock(email, password)}
-      <p style="margin:0;font-size:13px;color:#6B7280;">Ce mot de passe est partagé avec les autres admins de le restaurant. Seul l'admin principal peut le modifier.</p>
+      <p style="margin:0;font-size:13px;color:#6B7280;">Ce mot de passe est partagé avec les autres admins du restaurant. Seul l'admin principal peut le modifier.</p>
     `),
   }
 }
@@ -91,7 +91,7 @@ export function forgotPasswordPrincipalEmail(restaurantName: string, email: stri
     html: layout('Mot de passe réinitialisé', `
       <p style="margin:0 0 12px;font-size:14px;color:#374151;">Vous avez demandé la réinitialisation du mot de passe de <strong>${restaurantName}</strong>. Voici le nouveau mot de passe :</p>
       ${credentialsBlock(email, newPassword)}
-      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives de le restaurant ont été déconnectées. Si vous n'êtes pas à l'origine de cette demande, contactez le support TerangaLink.</p>
+      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives du restaurant ont été déconnectées. Si vous n'êtes pas à l'origine de cette demande, contactez le support TerangaLink.</p>
     `),
   }
 }
@@ -102,7 +102,7 @@ export function supportResetEmail(restaurantName: string, email: string, newPass
     html: layout('Réinitialisation par le support', `
       <p style="margin:0 0 12px;font-size:14px;color:#374151;">L'équipe support TerangaLink a réinitialisé le mot de passe de <strong>${restaurantName}</strong> à votre demande. Voici le nouveau mot de passe :</p>
       ${credentialsBlock(email, newPassword)}
-      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives de le restaurant ont été déconnectées. Contactez le support si vous n'êtes pas à l'origine de cette demande.</p>
+      <p style="margin:0;font-size:13px;color:#6B7280;">Toutes les sessions actives du restaurant ont été déconnectées. Contactez le support si vous n'êtes pas à l'origine de cette demande.</p>
     `),
   }
 }

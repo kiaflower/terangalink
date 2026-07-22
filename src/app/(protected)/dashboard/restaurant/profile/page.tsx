@@ -92,7 +92,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Profil de le restaurant</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-8">Profil du restaurant</h1>
       <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
         <div>
           <label className="text-xs text-gray-400 mb-1 block">Logo</label>
@@ -127,7 +127,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {field('Nom de le restaurant *', 'name')}
+        {field('Nom du restaurant *', 'name')}
         <div>
           <label className="text-xs text-gray-400 mb-1 block">Description</label>
           <textarea

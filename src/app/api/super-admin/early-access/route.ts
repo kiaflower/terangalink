@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
   if (restaurantError || !restaurant) {
     console.error('early-access auto-create restaurant error:', restaurantError)
-    return NextResponse.json({ error: restaurantError?.message || 'Erreur lors de la création de le restaurant' }, { status: 500 })
+    return NextResponse.json({ error: restaurantError?.message || 'Erreur lors de la création du restaurant' }, { status: 500 })
   }
 
   const { data: newUser, error: userError } = await admin.auth.admin.createUser({

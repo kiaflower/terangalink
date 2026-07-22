@@ -47,7 +47,7 @@ export interface OpenStatus {
 
 /**
  * Statut détaillé "Ouvert maintenant" / "Fermé — Ouvre [jour] à HH:MM", utilisé
- * sous la description de le restaurant. Cherche la prochaine ouverture jusqu'à 7
+ * sous la description du restaurant. Cherche la prochaine ouverture jusqu'à 7
  * jours en avant si le restaurant est fermée aujourd'hui ou n'a plus d'horaires définis.
  */
 export function getOpenStatus(hours: OpeningHours | null | undefined, date = new Date()): OpenStatus | null {

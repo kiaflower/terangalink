@@ -198,9 +198,9 @@ export default function InscriptionPage() {
           {/* Step 1 — Restaurant */}
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold text-gray-900 mb-5">Informations de le restaurant</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-5">Informations du restaurant</h2>
               <div>
-                <label className={labelClass}>Nom de le restaurant *</label>
+                <label className={labelClass}>Nom du restaurant *</label>
                 <input value={form.restaurant_name} onChange={e => set('restaurant_name', e.target.value)}
                   className={inputClass} placeholder="Ex: Fatou Mode" />
               </div>
@@ -234,7 +234,7 @@ export default function InscriptionPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                 <div>
-                  <label className={labelClass}>Logo de le restaurant (optionnel)</label>
+                  <label className={labelClass}>Logo du restaurant (optionnel)</label>
                   <label className="flex items-center gap-3 cursor-pointer">
                     <span className="shrink-0 text-xs font-medium bg-orange-50 text-brand-orange px-3 py-2 rounded-lg hover:bg-orange-100 transition-colors">
                       Choisir un fichier
@@ -388,7 +388,7 @@ export default function InscriptionPage() {
                 </div>
               )}
               {form.plan !== 'pro' && (
-                <p className="text-xs text-gray-400 text-center mt-4">La couleur violette TerangaLink par défaut sera utilisée. Passez en Pro pour personnaliser.</p>
+                <p className="text-xs text-gray-400 text-center mt-4">La couleur orange TerangaLink par défaut sera utilisée. Passez en Pro pour personnaliser.</p>
               )}
             </div>
           )}
