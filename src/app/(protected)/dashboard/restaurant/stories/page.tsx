@@ -126,7 +126,7 @@ function StoriesManager({ restaurantId }: { restaurantId: string }) {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Stories</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {remaining > 0 ? `${remaining} story${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''} aujourd'hui` : 'Limite atteinte pour aujourd\'hui'} — expirent après {MAX_DURATION_HOURS}h maximum
+            {remaining > 0 ? `${remaining} ${remaining > 1 ? 'stories restantes' : 'story restante'} aujourd'hui` : 'Limite atteinte pour aujourd\'hui'} — expirent après {MAX_DURATION_HOURS}h maximum
           </p>
         </div>
       </div>
