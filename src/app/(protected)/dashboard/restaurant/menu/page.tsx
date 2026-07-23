@@ -233,6 +233,25 @@ export default function MenuPage() {
       : v))
   }
 
+  function renameVariantOption(variantIndex: number, oldOption: string, newOption: string) {
+    setVariants(prev => prev.map((v, i) => {
+      if (i !== variantIndex) return v
+      const moveKey = <T,>(map: Record<string, T>): Record<string, T> => {
+        if (!(oldOption in map)) return map
+        const { [oldOption]: value, ...rest } = map
+        return { ...rest, [newOption]: value }
+      }
+      return {
+        ...v,
+        options: v.options.map(o => (o === oldOption ? newOption : o)),
+        option_prices: moveKey(v.option_prices),
+        option_images: moveKey(v.option_images),
+        option_availability: moveKey(v.option_availability),
+        option_stock: moveKey(v.option_stock),
+      }
+    }))
+  }
+
   function setVariantOptionPrice(variantIndex: number, option: string, price: string) {
     setVariants(prev => prev.map((v, i) => {
       if (i !== variantIndex) return v
@@ -401,6 +420,7 @@ export default function MenuPage() {
   const limitReached = hasReachedProductLimit(plan, products.length)
   const hasActiveVariants = variants.some(isActiveVariant)
   const variantsMissingPrice = hasActiveVariants && variants.some(v => isActiveVariant(v) && v.options.some(opt => v.option_prices[opt] == null))
+  const hasVariantStockTracking = variants.some(v => Object.keys(v.option_stock).length > 0)
 
   return (
     <div>
@@ -760,12 +780,18 @@ export default function MenuPage() {
                       type="checkbox"
                       id="track_stock"
                       checked={form.track_stock}
+                      disabled={hasVariantStockTracking}
                       onChange={e => setForm(f => ({ ...f, track_stock: e.target.checked }))}
-                      className="w-4 h-4 accent-brand-orange"
+                      className="w-4 h-4 accent-brand-orange disabled:opacity-40"
                     />
-                    <label htmlFor="track_stock" className="text-sm text-gray-400">Suivre le stock</label>
+                    <label htmlFor="track_stock" className={`text-sm ${hasVariantStockTracking ? 'text-gray-300' : 'text-gray-400'}`}>Suivre le stock</label>
                   </div>
-                  {form.track_stock && (
+                  {hasVariantStockTracking && (
+                    <p className="text-[11px] text-gray-400 -mt-2">
+                      Stock déjà suivi par option de variante ci-dessous — désactivez-le sur les options pour gérer le stock au niveau du plat entier.
+                    </p>
+                  )}
+                  {form.track_stock && !hasVariantStockTracking && (
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">Quantité en stock</label>
                       <input
@@ -817,7 +843,11 @@ export default function MenuPage() {
                           return (
                             <div key={opt} className="space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className={`text-xs bg-white border border-gray-200 rounded-full px-2.5 py-1 flex-1 ${unavailable ? 'text-gray-400 line-through' : ''}`}>{opt}</span>
+                                <input
+                                  value={opt}
+                                  onChange={e => renameVariantOption(vi, opt, e.target.value)}
+                                  className={`text-xs bg-white border border-gray-200 rounded-full px-2.5 py-1 flex-1 min-w-0 ${unavailable ? 'text-gray-400 line-through' : 'text-gray-900'}`}
+                                />
                                 <input
                                   type="number"
                                   placeholder="Prix *"

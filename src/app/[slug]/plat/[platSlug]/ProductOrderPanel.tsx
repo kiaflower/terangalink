@@ -58,6 +58,27 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
   const unitPrice = getUnitPrice(product, selectedVariants)
   const total = unitPrice * quantity
 
+  // Plafonne la quantité au stock le plus contraignant : celui du plat entier
+  // (si suivi) et/ou celui de l'option de variante choisie (si suivi) — les
+  // deux mécanismes sont normalement mutuellement exclusifs côté dashboard,
+  // mais on prend le minimum des deux au cas où.
+  const maxQuantity = (() => {
+    let max = Infinity
+    if (product.track_stock && product.stock_quantity != null) max = Math.min(max, product.stock_quantity)
+    if (product.variants) {
+      for (const v of product.variants) {
+        const chosen = selectedVariants[v.name]
+        const stock = chosen ? v.option_stock?.[chosen] : undefined
+        if (stock != null) max = Math.min(max, stock)
+      }
+    }
+    return max
+  })()
+
+  useEffect(() => {
+    setQuantity(q => Math.min(q, Math.max(1, maxQuantity)))
+  }, [maxQuantity])
+
   async function sendWhatsApp() {
     setSending(true)
     fetch('/api/analytics/track', {
@@ -136,7 +157,7 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
                   const optPrice = variant.option_prices?.[opt]
                   const optStock = variant.option_stock?.[opt]
                   const unavailable = variant.option_availability?.[opt] === true || optStock === 0
-                  const lowStock = optStock != null && optStock >= 1 && optStock <= 10
+                  const isStockTracked = optStock != null
                   return (
                     <div key={opt} className="flex flex-col items-start">
                       <button
@@ -150,8 +171,8 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
                             : { borderColor: '#E5E7EB', color: '#374151' }}>
                         {opt}{unavailable ? ' — Indisponible' : optPrice != null ? ` — ${formatPrice(optPrice)}` : ''}
                       </button>
-                      {!unavailable && lowStock && (
-                        <span className="text-[11px] font-semibold text-orange-500 mt-0.5">Plus que {optStock} en stock</span>
+                      {!unavailable && isStockTracked && (
+                        <span className="text-[11px] font-semibold text-orange-500 mt-0.5">{optStock} en stock</span>
                       )}
                     </div>
                   )
@@ -170,11 +191,15 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
             −
           </button>
           <span className="w-6 text-center font-semibold text-gray-900">{quantity}</span>
-          <button type="button" onClick={() => setQuantity(q => q + 1)}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors font-bold">
+          <button type="button" onClick={() => setQuantity(q => Math.min(maxQuantity, q + 1))}
+            disabled={quantity >= maxQuantity}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors font-bold disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent">
             +
           </button>
         </div>
+        {Number.isFinite(maxQuantity) && (
+          <p className="text-xs text-gray-400 mt-1">{maxQuantity} disponible{maxQuantity > 1 ? 's' : ''}</p>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
