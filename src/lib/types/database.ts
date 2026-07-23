@@ -174,6 +174,8 @@ export interface MenuItemVariantRow {
   options: string[]
   option_prices: Record<string, number>
   option_images: Record<string, string>
+  option_availability: Record<string, boolean>
+  option_stock: Record<string, number>
   created_at: string
 }
 

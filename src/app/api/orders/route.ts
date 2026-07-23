@@ -112,11 +112,18 @@ export async function POST(req: NextRequest) {
   // sur un stock futur et ne doivent pas toucher le stock disponible actuel).
   // decrement_menu_item_stock est un no-op si track_stock est désactivé pour
   // ce plat, donc aucune vérification préalable n'est nécessaire ici.
-  for (const item of items as Array<{ product_id?: string; quantity?: number; isPreorder?: boolean }>) {
+  for (const item of items as Array<{ product_id?: string; quantity?: number; isPreorder?: boolean; variants?: Record<string, string> }>) {
     if (!item.product_id || item.isPreorder) continue
     const quantity = Number(item.quantity)
     if (!Number.isFinite(quantity) || quantity <= 0) continue
     await admin.rpc('decrement_menu_item_stock', { p_menu_item_id: item.product_id, p_quantity: quantity })
+    // Même logique côté option de variante — decrement_variant_option_stock
+    // est un no-op si l'option choisie n'a pas de suivi de stock activé.
+    for (const [variantName, option] of Object.entries(item.variants ?? {})) {
+      await admin.rpc('decrement_variant_option_stock', {
+        p_menu_item_id: item.product_id, p_variant_name: variantName, p_option: option, p_quantity: quantity,
+      })
+    }
   }
 
   // /c/[slug]/[order_number] is the unified link: it auto-redirects the

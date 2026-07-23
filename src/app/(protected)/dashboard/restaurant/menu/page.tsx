@@ -19,6 +19,8 @@ interface VariantForm {
   options: string[]
   option_prices: Record<string, number>
   option_images: Record<string, string>
+  option_availability: Record<string, boolean>
+  option_stock: Record<string, number | null>
 }
 
 interface ProductForm {
@@ -195,7 +197,7 @@ export default function MenuPage() {
   }
 
   function addVariant() {
-    setVariants(prev => [...prev, { name: '', options: [], option_prices: {}, option_images: {} }])
+    setVariants(prev => [...prev, { name: '', options: [], option_prices: {}, option_images: {}, option_availability: {}, option_stock: {} }])
   }
 
   function isActiveVariant(v: VariantForm) {
@@ -251,6 +253,8 @@ export default function MenuPage() {
           options: v.options.filter(o => o !== option),
           option_prices: Object.fromEntries(Object.entries(v.option_prices).filter(([k]) => k !== option)),
           option_images: Object.fromEntries(Object.entries(v.option_images).filter(([k]) => k !== option)),
+          option_availability: Object.fromEntries(Object.entries(v.option_availability).filter(([k]) => k !== option)),
+          option_stock: Object.fromEntries(Object.entries(v.option_stock).filter(([k]) => k !== option)),
         }
       : v))
   }
@@ -262,6 +266,26 @@ export default function MenuPage() {
       if (price === '') delete next[option]
       else next[option] = parseFloat(price) || 0
       return { ...v, option_prices: next }
+    }))
+  }
+
+  function setVariantOptionAvailability(variantIndex: number, option: string, unavailable: boolean) {
+    setVariants(prev => prev.map((v, i) => {
+      if (i !== variantIndex) return v
+      const next = { ...v.option_availability }
+      if (unavailable) next[option] = true
+      else delete next[option]
+      return { ...v, option_availability: next }
+    }))
+  }
+
+  function setVariantOptionStock(variantIndex: number, option: string, quantity: number | null) {
+    setVariants(prev => prev.map((v, i) => {
+      if (i !== variantIndex) return v
+      const next = { ...v.option_stock }
+      if (quantity === null) delete next[option]
+      else next[option] = quantity
+      return { ...v, option_stock: next }
     }))
   }
 
@@ -343,7 +367,11 @@ export default function MenuPage() {
       await supabase.from('menu_item_variants').delete().eq('menu_item_id', productId)
       if (validVariants.length > 0) {
         await supabase.from('menu_item_variants').insert(
-          validVariants.map(v => ({ menu_item_id: productId, name: v.name, options: v.options, option_prices: v.option_prices, option_images: v.option_images }))
+          validVariants.map(v => ({
+            menu_item_id: productId, name: v.name, options: v.options,
+            option_prices: v.option_prices, option_images: v.option_images,
+            option_availability: v.option_availability, option_stock: v.option_stock,
+          }))
         )
       }
     }
@@ -623,7 +651,11 @@ export default function MenuPage() {
                         is_pinned: product.is_pinned,
                         video_url: product.video_url ?? '',
                       })
-                      setVariants((product.variants ?? []).map(v => ({ id: v.id, name: v.name, options: v.options, option_prices: v.option_prices ?? {}, option_images: v.option_images ?? {} })))
+                      setVariants((product.variants ?? []).map(v => ({
+                        id: v.id, name: v.name, options: v.options,
+                        option_prices: v.option_prices ?? {}, option_images: v.option_images ?? {},
+                        option_availability: v.option_availability ?? {}, option_stock: v.option_stock ?? {},
+                      })))
                       setInitialHadVariants((product.variants ?? []).some(v => v.options.length > 0))
                       setModalOpen(true)
                     }}
@@ -824,34 +856,62 @@ export default function MenuPage() {
                         {variant.options.map(opt => {
                           const missingPrice = variant.option_prices[opt] == null
                           const optionImage = variant.option_images[opt]
+                          const unavailable = !!variant.option_availability[opt]
+                          const stockTracked = variant.option_stock[opt] != null
                           return (
-                            <div key={opt} className="flex items-center gap-2">
-                              <span className="text-xs bg-white border border-gray-200 rounded-full px-2.5 py-1 flex-1">{opt}</span>
-                              <input
-                                type="number"
-                                placeholder="Prix *"
-                                value={variant.option_prices[opt] ?? ''}
-                                onChange={e => setVariantOptionPrice(vi, opt, e.target.value)}
-                                className={`w-28 border rounded-lg px-2 py-1 text-xs text-gray-900 ${missingPrice ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
-                              />
-                              {optionImage ? (
-                                <div className="relative w-8 h-8 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={optionImage} alt="" className="w-full h-full object-cover" />
-                                  <button type="button" onClick={() => removeVariantOptionImage(vi, opt)}
-                                    className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition-opacity">
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              ) : (
-                                <label className="w-8 h-8 rounded-md border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-orange text-gray-400 hover:text-brand-orange transition-colors flex-shrink-0"
-                                  title="Photo de cette option (optionnel)">
-                                  <input type="file" accept="image/*" className="hidden"
-                                    onChange={e => { const f = e.target.files?.[0]; if (f) uploadVariantOptionImage(vi, opt, f) }} />
-                                  <Upload className="w-3.5 h-3.5" />
+                            <div key={opt} className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs bg-white border border-gray-200 rounded-full px-2.5 py-1 flex-1 ${unavailable ? 'text-gray-400 line-through' : ''}`}>{opt}</span>
+                                <input
+                                  type="number"
+                                  placeholder="Prix *"
+                                  value={variant.option_prices[opt] ?? ''}
+                                  onChange={e => setVariantOptionPrice(vi, opt, e.target.value)}
+                                  className={`w-28 border rounded-lg px-2 py-1 text-xs text-gray-900 ${missingPrice ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
+                                />
+                                {optionImage ? (
+                                  <div className="relative w-8 h-8 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={optionImage} alt="" className="w-full h-full object-cover" />
+                                    <button type="button" onClick={() => removeVariantOptionImage(vi, opt)}
+                                      className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <label className="w-8 h-8 rounded-md border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-orange text-gray-400 hover:text-brand-orange transition-colors flex-shrink-0"
+                                    title="Photo de cette option (optionnel)">
+                                    <input type="file" accept="image/*" className="hidden"
+                                      onChange={e => { const f = e.target.files?.[0]; if (f) uploadVariantOptionImage(vi, opt, f) }} />
+                                    <Upload className="w-3.5 h-3.5" />
+                                  </label>
+                                )}
+                                <button type="button" onClick={() => removeVariantOption(vi, opt)} className="text-gray-400 hover:text-red-500 text-sm">×</button>
+                              </div>
+                              <div className="flex items-center gap-3 pl-1">
+                                <label className="flex items-center gap-1.5 text-[11px] text-gray-500 cursor-pointer">
+                                  <input type="checkbox" checked={unavailable}
+                                    onChange={e => setVariantOptionAvailability(vi, opt, e.target.checked)}
+                                    className="rounded border-gray-300" />
+                                  Indisponible
                                 </label>
-                              )}
-                              <button type="button" onClick={() => removeVariantOption(vi, opt)} className="text-gray-400 hover:text-red-500 text-sm">×</button>
+                                <label className="flex items-center gap-1.5 text-[11px] text-gray-500 cursor-pointer">
+                                  <input type="checkbox" checked={stockTracked}
+                                    onChange={e => setVariantOptionStock(vi, opt, e.target.checked ? 0 : null)}
+                                    className="rounded border-gray-300" />
+                                  Suivre le stock
+                                </label>
+                                {stockTracked && (
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    placeholder="Qté"
+                                    value={variant.option_stock[opt] ?? 0}
+                                    onChange={e => setVariantOptionStock(vi, opt, Math.max(0, parseInt(e.target.value) || 0))}
+                                    className="w-16 border border-gray-200 rounded-lg px-2 py-0.5 text-[11px] text-gray-900"
+                                  />
+                                )}
+                              </div>
                             </div>
                           )
                         })}

@@ -134,15 +134,26 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
               <div className="flex gap-2 flex-wrap">
                 {variant.options.map((opt: string) => {
                   const optPrice = variant.option_prices?.[opt]
+                  const optStock = variant.option_stock?.[opt]
+                  const unavailable = variant.option_availability?.[opt] === true || optStock === 0
+                  const lowStock = optStock != null && optStock >= 1 && optStock <= 10
                   return (
-                    <button key={opt}
-                      onClick={() => setVariant(variant.name, opt)}
-                      className="px-3 py-1.5 text-sm rounded-lg border transition-colors"
-                      style={selectedVariants[variant.name] === opt
-                        ? { backgroundColor: accent, color: '#fff', borderColor: accent }
-                        : { borderColor: '#E5E7EB', color: '#374151' }}>
-                      {opt}{optPrice != null ? ` — ${formatPrice(optPrice)}` : ''}
-                    </button>
+                    <div key={opt} className="flex flex-col items-start">
+                      <button
+                        onClick={() => !unavailable && setVariant(variant.name, opt)}
+                        disabled={unavailable}
+                        className="px-3 py-1.5 text-sm rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        style={unavailable
+                          ? { borderColor: '#E5E7EB', color: '#9CA3AF', textDecoration: 'line-through' }
+                          : selectedVariants[variant.name] === opt
+                            ? { backgroundColor: accent, color: '#fff', borderColor: accent }
+                            : { borderColor: '#E5E7EB', color: '#374151' }}>
+                        {opt}{unavailable ? ' — Indisponible' : optPrice != null ? ` — ${formatPrice(optPrice)}` : ''}
+                      </button>
+                      {!unavailable && lowStock && (
+                        <span className="text-[11px] font-semibold text-orange-500 mt-0.5">Plus que {optStock} en stock</span>
+                      )}
+                    </div>
                   )
                 })}
               </div>
