@@ -134,6 +134,26 @@ export default function RestaurantPageClient({ restaurant, categories, products,
   const [selectedProduct, setSelectedProduct] = useState<ProductWithVariants | null>(null)
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const [selectedQuantity, setSelectedQuantity] = useState(1)
+
+  // Même plafond que sur la page plat dédiée : stock du plat entier et/ou de
+  // l'option de variante choisie, le plus contraignant des deux.
+  const selectedMaxQuantity = (() => {
+    if (!selectedProduct) return Infinity
+    let max = Infinity
+    if (selectedProduct.track_stock && selectedProduct.stock_quantity != null) max = Math.min(max, selectedProduct.stock_quantity)
+    if (selectedProduct.variants) {
+      for (const v of selectedProduct.variants) {
+        const chosen = selectedVariants[v.name]
+        const stock = chosen ? v.option_stock?.[chosen] : undefined
+        if (stock != null) max = Math.min(max, stock)
+      }
+    }
+    return max
+  })()
+
+  useEffect(() => {
+    setSelectedQuantity(q => Math.min(q, Math.max(1, selectedMaxQuantity)))
+  }, [selectedMaxQuantity])
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
@@ -950,15 +970,26 @@ export default function RestaurantPageClient({ restaurant, categories, products,
                       <div className="flex gap-2 flex-wrap">
                         {variant.options.map((opt: string) => {
                           const optPrice = variant.option_prices?.[opt]
+                          const optStock = variant.option_stock?.[opt]
+                          const unavailable = variant.option_availability?.[opt] === true || optStock === 0
+                          const isStockTracked = optStock != null
                           return (
-                            <button key={opt}
-                              onClick={() => setSelectedVariants(prev => ({ ...prev, [variant.name]: opt }))}
-                              className="px-3 py-1.5 text-sm rounded-lg border transition-colors"
-                              style={selectedVariants[variant.name] === opt
-                                ? { backgroundColor: accent, color: '#fff', borderColor: accent }
-                                : { borderColor: '#E5E7EB', color: '#374151' }}>
-                              {opt}{optPrice != null ? ` — ${formatPrice(optPrice)}` : ''}
-                            </button>
+                            <div key={opt} className="flex flex-col items-start">
+                              <button
+                                onClick={() => !unavailable && setSelectedVariants(prev => ({ ...prev, [variant.name]: opt }))}
+                                disabled={unavailable}
+                                className="px-3 py-1.5 text-sm rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                style={unavailable
+                                  ? { borderColor: '#E5E7EB', color: '#9CA3AF', textDecoration: 'line-through' }
+                                  : selectedVariants[variant.name] === opt
+                                    ? { backgroundColor: accent, color: '#fff', borderColor: accent }
+                                    : { borderColor: '#E5E7EB', color: '#374151' }}>
+                                {opt}{unavailable ? ' — Indisponible' : optPrice != null ? ` — ${formatPrice(optPrice)}` : ''}
+                              </button>
+                              {!unavailable && isStockTracked && (
+                                <span className="text-[11px] font-semibold text-orange-500 mt-0.5">{optStock} en stock</span>
+                              )}
+                            </div>
                           )
                         })}
                       </div>
@@ -974,11 +1005,15 @@ export default function RestaurantPageClient({ restaurant, categories, products,
                     −
                   </button>
                   <span className="w-6 text-center font-semibold text-gray-900">{selectedQuantity}</span>
-                  <button type="button" onClick={() => setSelectedQuantity(q => q + 1)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors font-bold">
+                  <button type="button" onClick={() => setSelectedQuantity(q => Math.min(selectedMaxQuantity, q + 1))}
+                    disabled={selectedQuantity >= selectedMaxQuantity}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors font-bold disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent">
                     +
                   </button>
                 </div>
+                {Number.isFinite(selectedMaxQuantity) && (
+                  <p className="text-xs text-gray-400 mt-1">{selectedMaxQuantity} disponible{selectedMaxQuantity > 1 ? 's' : ''}</p>
+                )}
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setSelectedProduct(null)}
