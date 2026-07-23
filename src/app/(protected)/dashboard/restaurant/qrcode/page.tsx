@@ -1,6 +1,12 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+// Import direct du point d'entrée navigateur du package : son package.json a un
+// champ "browser" mal formé ({"browser": "node examples/..."}) qui ne redirige pas
+// correctement `import from 'qrcode'` vers lib/browser.js — en prod (Vercel), cela
+// résout silencieusement vers un module qui n'expose pas toCanvas, sans lever
+// d'erreur (le canvas restait bloqué sur "Génération..." indéfiniment).
+import QRCode from 'qrcode/lib/browser.js'
 import { createClient } from '@/lib/supabase/client'
 import type { PlanKey } from '@/lib/plans'
 import { FeatureGate } from '@/components/FeatureGate'
@@ -12,6 +18,7 @@ export default function QrCodePage() {
   const [plan, setPlan] = useState<PlanKey | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [qrGenerated, setQrGenerated] = useState(false)
+  const [qrError, setQrError] = useState(false)
 
   useEffect(() => {
     setSiteUrl(window.location.origin)
@@ -27,14 +34,13 @@ export default function QrCodePage() {
   useEffect(() => {
     if (!slug || !canvasRef.current || !siteUrl) return
     const url = `${siteUrl}/${slug}`
-    import('qrcode').then(QRCode => {
-      QRCode.toCanvas(canvasRef.current!, url, {
-        width: 300,
-        margin: 2,
-        color: { dark: '#000000', light: '#ffffff' },
-      }, (err) => {
-        if (!err) setQrGenerated(true)
-      })
+    QRCode.toCanvas(canvasRef.current, url, {
+      width: 300,
+      margin: 2,
+      color: { dark: '#000000', light: '#ffffff' },
+    }, (err) => {
+      if (err) setQrError(true)
+      else setQrGenerated(true)
     })
   }, [slug, siteUrl])
 
@@ -57,8 +63,9 @@ export default function QrCodePage() {
         description="Passez en Starter (ou Pro) pour générer et télécharger le QR code de votre restaurant.">
         <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center">
           <div className="bg-white rounded-2xl p-4 inline-block mb-6">
-            <canvas ref={canvasRef} />
-            {!qrGenerated && <div className="w-[300px] h-[300px] flex items-center justify-center text-gray-400">Génération...</div>}
+            <canvas ref={canvasRef} className={qrGenerated ? '' : 'hidden'} />
+            {!qrGenerated && !qrError && <div className="w-[300px] h-[300px] flex items-center justify-center text-gray-400">Génération...</div>}
+            {qrError && <div className="w-[300px] h-[300px] flex items-center justify-center text-red-500 text-sm px-4">Erreur de génération. Réessayez en rechargeant la page.</div>}
           </div>
           {slug && siteUrl && (
             <p className="text-sm text-gray-500 mb-6 font-mono break-all">

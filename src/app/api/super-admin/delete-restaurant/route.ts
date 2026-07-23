@@ -34,18 +34,36 @@ export async function POST(request: NextRequest) {
     const { data: productRows } = await admin.from('menu_items').select('id').eq('restaurant_id', restaurant_id)
     const productIds = (productRows ?? []).map(p => p.id)
 
+    const { data: blockRows } = await admin.from('featured_blocks').select('id').eq('restaurant_id', restaurant_id)
+    const blockIds = (blockRows ?? []).map(b => b.id)
+
     if (productIds.length) steps.push(['menu_item_variants', () => admin.from('menu_item_variants').delete().in('menu_item_id', productIds)])
     steps.push(
+      ['restaurant_stories', () => admin.from('restaurant_stories').delete().eq('restaurant_id', restaurant_id)],
       ['reviews', () => admin.from('reviews').delete().eq('restaurant_id', restaurant_id)],
       ['menu_items', () => admin.from('menu_items').delete().eq('restaurant_id', restaurant_id)],
       ['menu_categories', () => admin.from('menu_categories').delete().eq('restaurant_id', restaurant_id)],
+      ['newsletter_recipients', () => admin.from('newsletter_recipients').delete().eq('restaurant_id', restaurant_id)],
+      ['featured_block_items', () => admin.from('featured_block_items').delete()
+        .or(`restaurant_id.eq.${restaurant_id}${blockIds.length ? `,block_id.in.(${blockIds.join(',')})` : ''}`)],
+      ['featured_blocks', () => admin.from('featured_blocks').delete().eq('restaurant_id', restaurant_id)],
+      ['weekly_reports', () => admin.from('weekly_reports').delete().eq('restaurant_id', restaurant_id)],
+      ['push_subscriptions', () => admin.from('push_subscriptions').delete().eq('restaurant_id', restaurant_id)],
+      ['restaurant_notification_settings', () => admin.from('restaurant_notification_settings').delete().eq('restaurant_id', restaurant_id)],
+      ['push_notifications_log', () => admin.from('push_notifications_log').delete().eq('restaurant_id', restaurant_id)],
+      ['appointments', () => admin.from('appointments').delete().eq('restaurant_id', restaurant_id)],
       ['orders', () => admin.from('orders').delete().eq('restaurant_id', restaurant_id)],
       ['analytics_events', () => admin.from('analytics_events').delete().eq('restaurant_id', restaurant_id)],
       ['promo_codes', () => admin.from('promo_codes').delete().eq('restaurant_id', restaurant_id)],
+      ['referral_credits', () => admin.from('referral_credits').delete().or(`restaurant_id.eq.${restaurant_id},referred_restaurant_id.eq.${restaurant_id}`)],
       ['payments', () => admin.from('payments').delete().eq('restaurant_id', restaurant_id)],
+      ['invoices', () => admin.from('invoices').delete().eq('restaurant_id', restaurant_id)],
       ['restaurant_banners', () => admin.from('restaurant_banners').delete().eq('restaurant_id', restaurant_id)],
       ['referral_rewards', () => admin.from('referral_rewards').delete().or(`referrer_restaurant_id.eq.${restaurant_id},referred_restaurant_id.eq.${restaurant_id}`)],
       ['subscriptions', () => admin.from('subscriptions').delete().eq('restaurant_id', restaurant_id)],
+      // Historique de candidature — on garde la ligne, on retire juste le lien vers le restaurant supprimé.
+      ['inscriptions', () => admin.from('inscriptions').update({ created_restaurant_id: null }).eq('created_restaurant_id', restaurant_id)],
+      ['early_access_applications', () => admin.from('early_access_applications').update({ created_restaurant_id: null }).eq('created_restaurant_id', restaurant_id)],
     )
 
     for (const [table, run] of steps) {
