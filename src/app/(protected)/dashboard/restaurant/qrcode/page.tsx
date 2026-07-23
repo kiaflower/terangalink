@@ -16,9 +16,19 @@ export default function QrCodePage() {
   const [slug, setSlug] = useState<string | null>(null)
   const [siteUrl, setSiteUrl] = useState('')
   const [plan, setPlan] = useState<PlanKey | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  // `plan` (qui déverrouille le rendu du canvas via FeatureGate) se résout après
+  // `slug`, séparé par un await — le canvas peut donc ne pas encore exister au
+  // premier passage de l'effet ci-dessous. Un simple useRef ne redéclenche rien
+  // quand l'élément apparaît ensuite ; ce state, mis à jour par la ref-callback,
+  // fait que l'effet dépendant de [canvasMounted] se relance au bon moment.
+  const [canvasMounted, setCanvasMounted] = useState(false)
+  const setCanvasRef = (el: HTMLCanvasElement | null) => {
+    canvasRef.current = el
+    setCanvasMounted(!!el)
+  }
   const [qrGenerated, setQrGenerated] = useState(false)
-  const [qrError, setQrError] = useState(false)
+  const [qrError, setQrError] = useState<string | null>(null)
 
   useEffect(() => {
     setSiteUrl(window.location.origin)
@@ -39,10 +49,10 @@ export default function QrCodePage() {
       margin: 2,
       color: { dark: '#000000', light: '#ffffff' },
     }, (err) => {
-      if (err) setQrError(true)
+      if (err) setQrError(err.message || 'Erreur inconnue')
       else setQrGenerated(true)
     })
-  }, [slug, siteUrl])
+  }, [slug, siteUrl, canvasMounted])
 
   function download() {
     if (!canvasRef.current) return
@@ -63,9 +73,14 @@ export default function QrCodePage() {
         description="Passez en Starter (ou Pro) pour générer et télécharger le QR code de votre restaurant.">
         <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center">
           <div className="bg-white rounded-2xl p-4 inline-block mb-6">
-            <canvas ref={canvasRef} className={qrGenerated ? '' : 'hidden'} />
+            <canvas ref={setCanvasRef} className={qrGenerated ? '' : 'hidden'} />
             {!qrGenerated && !qrError && <div className="w-[300px] h-[300px] flex items-center justify-center text-gray-400">Génération...</div>}
-            {qrError && <div className="w-[300px] h-[300px] flex items-center justify-center text-red-500 text-sm px-4">Erreur de génération. Réessayez en rechargeant la page.</div>}
+            {qrError && (
+              <div className="w-[300px] h-[300px] flex flex-col items-center justify-center text-red-500 text-sm px-4 gap-2 text-center">
+                <span>Erreur de génération. Réessayez en rechargeant la page.</span>
+                <span className="text-xs text-gray-400 font-mono break-all">{qrError}</span>
+              </div>
+            )}
           </div>
           {slug && siteUrl && (
             <p className="text-sm text-gray-500 mb-6 font-mono break-all">
