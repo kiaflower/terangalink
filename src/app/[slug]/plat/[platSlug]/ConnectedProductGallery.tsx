@@ -6,13 +6,12 @@ import type { ProductVariant } from '@/lib/types'
 
 interface ConnectedProductGalleryProps {
   images: string[]
-  videoUrl?: string | null
   productName: string
   cardBg: string
   variants?: ProductVariant[]
 }
 
-export function ConnectedProductGallery({ images, videoUrl, productName, cardBg, variants }: ConnectedProductGalleryProps) {
+export function ConnectedProductGallery({ images, productName, cardBg, variants }: ConnectedProductGalleryProps) {
   const { selectedVariants } = useVariantSelection()
 
   let variantImage: string | null = null
@@ -24,5 +23,5 @@ export function ConnectedProductGallery({ images, videoUrl, productName, cardBg,
     }
   }
 
-  return <ProductGallery images={images} videoUrl={videoUrl} variantImage={variantImage} productName={productName} cardBg={cardBg} />
+  return <ProductGallery images={images} variantImage={variantImage} productName={productName} cardBg={cardBg} />
 }

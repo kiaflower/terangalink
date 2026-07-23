@@ -6,8 +6,7 @@ import { formatPrice } from '@/lib/utils'
 import { PLANS, canUseFeature, hasReachedProductLimit, productLimitMessage, type PlanKey } from '@/lib/plans'
 import type { MenuCategory, ProductWithVariants } from '@/lib/types'
 import { fileToCompressedBlob, fileToCroppedBlob } from '@/lib/imageUtils'
-import { uploadWithProgress, validateVideoFile } from '@/lib/videoUtils'
-import { Package, Trash2, Upload, X, ChevronUp, ChevronDown, Pin, Check, Info, Video } from 'lucide-react'
+import { Package, Trash2, Upload, X, ChevronUp, ChevronDown, Pin, Check, Info } from 'lucide-react'
 import Link from 'next/link'
 import { FeatureGate } from '@/components/FeatureGate'
 
@@ -20,7 +19,11 @@ interface VariantForm {
   option_prices: Record<string, number>
   option_images: Record<string, string>
   option_availability: Record<string, boolean>
-  option_stock: Record<string, number | null>
+  // Texte brut pendant la saisie (comme form.stock_quantity au niveau du
+  // plat) — clé présente = suivi actif, valeur convertie en nombre seulement
+  // à la sauvegarde. Stocker un number ici forçait le champ à se réafficher
+  // à "0" à chaque frappe, empêchant de le vider pour taper une autre valeur.
+  option_stock: Record<string, string>
 }
 
 interface ProductForm {
@@ -41,14 +44,13 @@ interface ProductForm {
   is_featured: boolean
   badge_text: string
   is_pinned: boolean
-  video_url: string
 }
 
 const emptyForm: ProductForm = {
   name: '', description: '', price: '', discount_percent: '', category_id: '',
   is_available: true, track_stock: false, stock_quantity: '', images: [],
   preorder_enabled: false, preorder_start: '', preorder_end: '', preorder_delivery_date: '', preorder_max_qty: '',
-  is_featured: false, badge_text: '', is_pinned: false, video_url: '',
+  is_featured: false, badge_text: '', is_pinned: false,
 }
 
 const BADGE_PRESETS = ['Nouveau', 'Meilleure vente', 'Coup de cœur', 'Édition limitée', 'Promo']
@@ -72,8 +74,6 @@ export default function MenuPage() {
   const [reactivationPrice, setReactivationPrice] = useState('')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [uploadingVideo, setUploadingVideo] = useState(false)
-  const [videoError, setVideoError] = useState('')
   const [catName, setCatName] = useState('')
   const [addingCat, setAddingCat] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
@@ -146,32 +146,6 @@ export default function MenuPage() {
     setSavingAnnouncement(false)
     setAnnouncementSaved(true)
     setTimeout(() => setAnnouncementSaved(false), 2500)
-  }
-
-  // Vidéo optionnelle, en plus des photos — mêmes limites que les Stories
-  // (20 Mo / 30s) pour rester léger en data mobile.
-  async function handleVideoUpload(file: File) {
-    if (!restaurantId) return
-    setVideoError('')
-    const error = await validateVideoFile(file)
-    if (error) { setVideoError(error); return }
-    setUploadingVideo(true)
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      setVideoError('Session expirée, reconnectez-vous.')
-      setUploadingVideo(false)
-      return
-    }
-    const path = `${restaurantId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`
-    const uploadedPath = await uploadWithProgress('product-videos', path, file, session.access_token, () => {})
-    if (!uploadedPath) {
-      setVideoError('Erreur lors de l\'envoi de la vidéo. Vérifiez votre connexion et réessayez.')
-      setUploadingVideo(false)
-      return
-    }
-    const { data: pub } = supabase.storage.from('product-videos').getPublicUrl(uploadedPath)
-    setForm(f => ({ ...f, video_url: pub.publicUrl }))
-    setUploadingVideo(false)
   }
 
   async function handleImageUpload(files: FileList | null) {
@@ -279,12 +253,12 @@ export default function MenuPage() {
     }))
   }
 
-  function setVariantOptionStock(variantIndex: number, option: string, quantity: number | null) {
+  function setVariantOptionStock(variantIndex: number, option: string, value: string | null) {
     setVariants(prev => prev.map((v, i) => {
       if (i !== variantIndex) return v
       const next = { ...v.option_stock }
-      if (quantity === null) delete next[option]
-      else next[option] = quantity
+      if (value === null) delete next[option]
+      else next[option] = value
       return { ...v, option_stock: next }
     }))
   }
@@ -344,7 +318,6 @@ export default function MenuPage() {
       is_featured: form.is_featured,
       badge_text: form.is_featured ? (form.badge_text.trim() || null) : null,
       is_pinned: canUseFeature(plan, 'epinglagePlats') && form.is_pinned,
-      video_url: form.video_url || null,
     }
     let productId = editProduct?.id
     let saveError: { message: string } | null = null
@@ -370,7 +343,8 @@ export default function MenuPage() {
           validVariants.map(v => ({
             menu_item_id: productId, name: v.name, options: v.options,
             option_prices: v.option_prices, option_images: v.option_images,
-            option_availability: v.option_availability, option_stock: v.option_stock,
+            option_availability: v.option_availability,
+            option_stock: Object.fromEntries(Object.entries(v.option_stock).map(([k, s]) => [k, Math.max(0, parseInt(s) || 0)])),
           }))
         )
       }
@@ -649,12 +623,12 @@ export default function MenuPage() {
                         is_featured: product.is_featured,
                         badge_text: product.badge_text ?? '',
                         is_pinned: product.is_pinned,
-                        video_url: product.video_url ?? '',
                       })
                       setVariants((product.variants ?? []).map(v => ({
                         id: v.id, name: v.name, options: v.options,
                         option_prices: v.option_prices ?? {}, option_images: v.option_images ?? {},
-                        option_availability: v.option_availability ?? {}, option_stock: v.option_stock ?? {},
+                        option_availability: v.option_availability ?? {},
+                        option_stock: Object.fromEntries(Object.entries(v.option_stock ?? {}).map(([k, n]) => [k, String(n)])),
                       })))
                       setInitialHadVariants((product.variants ?? []).some(v => v.options.length > 0))
                       setModalOpen(true)
@@ -769,24 +743,6 @@ export default function MenuPage() {
                 </div>
                 {uploading && <p className="text-xs text-gray-400">Envoi en cours…</p>}
               </div>
-              <div>
-                <label className="text-xs text-gray-400 mb-1 block">Vidéo (optionnel, max 30s / 20 Mo)</label>
-                {form.video_url ? (
-                  <div className="flex items-center gap-2">
-                    <video src={form.video_url} className="w-16 h-16 rounded-lg object-cover border border-gray-200" muted />
-                    <button type="button" onClick={() => setForm(f => ({ ...f, video_url: '' }))}
-                      className="text-xs text-red-400 hover:text-red-600">Retirer</button>
-                  </div>
-                ) : (
-                  <label className="w-16 h-16 rounded-lg border border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-brand-orange text-gray-400 hover:text-brand-orange transition-colors">
-                    <input type="file" accept="video/*" className="hidden"
-                      onChange={e => { const f = e.target.files?.[0]; if (f) handleVideoUpload(f) }} />
-                    <Video className="w-5 h-5" />
-                  </label>
-                )}
-                {uploadingVideo && <p className="text-xs text-gray-400 mt-1">Envoi de la vidéo en cours…</p>}
-                {videoError && <p className="text-xs text-red-500 mt-1">{videoError}</p>}
-              </div>
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -897,7 +853,7 @@ export default function MenuPage() {
                                 </label>
                                 <label className="flex items-center gap-1.5 text-[11px] text-gray-500 cursor-pointer">
                                   <input type="checkbox" checked={stockTracked}
-                                    onChange={e => setVariantOptionStock(vi, opt, e.target.checked ? 0 : null)}
+                                    onChange={e => setVariantOptionStock(vi, opt, e.target.checked ? '0' : null)}
                                     className="rounded border-gray-300" />
                                   Suivre le stock
                                 </label>
@@ -906,8 +862,8 @@ export default function MenuPage() {
                                     type="number"
                                     min={0}
                                     placeholder="Qté"
-                                    value={variant.option_stock[opt] ?? 0}
-                                    onChange={e => setVariantOptionStock(vi, opt, Math.max(0, parseInt(e.target.value) || 0))}
+                                    value={variant.option_stock[opt] ?? ''}
+                                    onChange={e => setVariantOptionStock(vi, opt, e.target.value)}
                                     className="w-16 border border-gray-200 rounded-lg px-2 py-0.5 text-[11px] text-gray-900"
                                   />
                                 )}

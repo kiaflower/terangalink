@@ -180,7 +180,6 @@ export default async function ProductPage({ params }: Props) {
           <div>
             <ConnectedProductGallery
               images={images}
-              videoUrl={product.video_url}
               productName={product.name}
               cardBg={cardBg}
               variants={product.variants}

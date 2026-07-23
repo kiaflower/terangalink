@@ -921,7 +921,6 @@ export default function RestaurantPageClient({ restaurant, categories, products,
                   key={selectedProduct.id}
                   variant="modal"
                   images={images}
-                  videoUrl={selectedProduct.video_url}
                   variantImage={variantImage}
                   productName={selectedProduct.name}
                   cardBg="#F9FAFB"

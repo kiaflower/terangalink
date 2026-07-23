@@ -62,6 +62,7 @@ export default async function RestaurantDashboardHome() {
     { count: viewsCount },
     { data: recentOrders },
     { data: lowStockProducts },
+    { data: variantsWithStock },
   ] = await Promise.all([
     supabase.from('orders').select('total, status').eq('restaurant_id', restaurantId).gte('created_at', today.toISOString()),
     supabase.from('orders').select('total').eq('restaurant_id', restaurantId).eq('status', 'delivered').gte('created_at', monthStart),
@@ -69,7 +70,25 @@ export default async function RestaurantDashboardHome() {
     supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('restaurant_id', restaurantId).eq('event_type', 'restaurant_view').gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
     supabase.from('orders').select('*').eq('restaurant_id', restaurantId).order('created_at', { ascending: false }).limit(5),
     supabase.from('menu_items').select('id, name, image_url, stock_quantity').eq('restaurant_id', restaurantId).eq('track_stock', true).eq('is_available', true).lte('stock_quantity', 5).order('stock_quantity'),
+    // option_stock est une map jsonb (clé = option, valeur = quantité) — le
+    // seuil "stock faible" est appliqué en JS ci-dessous, pas filtrable
+    // directement côté PostgREST sur une valeur imbriquée.
+    supabase.from('menu_item_variants').select('id, name, option_stock, menu_items!inner(id, name, image_url, restaurant_id)').eq('menu_items.restaurant_id', restaurantId),
   ])
+
+  const lowStockVariantOptions = (variantsWithStock ?? []).flatMap(v => {
+    const item = Array.isArray(v.menu_items) ? v.menu_items[0] : v.menu_items
+    return Object.entries((v.option_stock ?? {}) as Record<string, number>)
+      .filter(([, qty]) => typeof qty === 'number' && qty <= 5)
+      .map(([option, qty]) => ({
+        key: `${v.id}-${option}`,
+        itemName: item?.name ?? '',
+        itemImage: item?.image_url ?? null,
+        variantName: v.name,
+        option,
+        stock: qty,
+      }))
+  })
 
   const monthRevenue = (monthOrders ?? []).reduce((sum, o) => sum + (o.total ?? 0), 0)
 
@@ -218,6 +237,38 @@ export default async function RestaurantDashboardHome() {
                 <p className="flex-1 min-w-0 text-sm font-medium text-gray-900 truncate">{p.name}</p>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${p.stock_quantity === 0 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
                   {p.stock_quantity === 0 ? 'Épuisé' : `${p.stock_quantity} restant${p.stock_quantity > 1 ? 's' : ''}`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {lowStockVariantOptions.length > 0 && (
+        <Card className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-gray-900 font-semibold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-500" />
+              Stock faible (variantes)
+            </h2>
+            <Link href="/dashboard/restaurant/menu" className="text-sm text-brand-orange hover:text-brand-orange-dark transition-colors">
+              Gérer le menu
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {lowStockVariantOptions.map(v => (
+              <div key={v.key} className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
+                {v.itemImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={v.itemImage} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <Package className="w-4 h-4 text-gray-300" />
+                  </div>
+                )}
+                <p className="flex-1 min-w-0 text-sm font-medium text-gray-900 truncate">{v.itemName} — {v.option}</p>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${v.stock === 0 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
+                  {v.stock === 0 ? 'Épuisé' : `${v.stock} restant${v.stock > 1 ? 's' : ''}`}
                 </span>
               </div>
             ))}
