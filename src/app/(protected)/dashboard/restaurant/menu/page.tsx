@@ -358,7 +358,7 @@ export default function MenuPage() {
     if (productId && plan === 'pro') {
       await supabase.from('menu_item_variants').delete().eq('menu_item_id', productId)
       if (validVariants.length > 0) {
-        await supabase.from('menu_item_variants').insert(
+        const { error: variantsError } = await supabase.from('menu_item_variants').insert(
           validVariants.map(v => ({
             menu_item_id: productId, name: v.name, options: v.options,
             option_prices: v.option_prices, option_images: v.option_images,
@@ -366,6 +366,10 @@ export default function MenuPage() {
             option_stock: Object.fromEntries(Object.entries(v.option_stock).map(([k, s]) => [k, Math.max(0, parseInt(s) || 0)])),
           }))
         )
+        if (variantsError) {
+          alert(`Erreur lors de l'enregistrement des variantes : ${variantsError.message}`)
+          console.error('menu_item_variants insert error:', variantsError)
+        }
       }
     }
 
