@@ -21,7 +21,11 @@ import { VariantSelectionProvider } from './VariantSelectionContext'
 import { ConnectedProductGallery } from './ConnectedProductGallery'
 import { ScrollableDescription } from '@/components/product/ScrollableDescription'
 
-export const revalidate = 300
+// Était 300 (5 min) — trop long maintenant que la disponibilité/le stock par
+// option de variante s'affichent ici : un client ne doit pas voir une option
+// comme disponible/en stock jusqu'à 5 min après qu'elle a été désactivée ou
+// épuisée. Cohérent avec /[slug] (annuaire) qui est déjà en revalidate = 0.
+export const revalidate = 0
 
 interface Props {
   params: { slug: string; platSlug: string }
