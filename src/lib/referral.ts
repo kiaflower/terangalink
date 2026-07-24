@@ -31,12 +31,13 @@ export async function registerReferral(
 
   if (existing) return
 
-  await admin.from('referral_rewards').insert({
+  const { error } = await admin.from('referral_rewards').insert({
     referrer_restaurant_id: referrer.id,
     referred_restaurant_id: newRestaurantId,
     discount_percent: 25,
     status: 'pending',
   })
+  if (error) console.error('registerReferral: referral_rewards insert error:', error)
 }
 
 /**
@@ -56,13 +57,21 @@ export async function triggerReferralRewardIfDue(admin: AdminClient, restaurantI
 
   if (!reward) return
 
-  await admin.from('referral_credits').insert({
+  const { error: creditError } = await admin.from('referral_credits').insert({
     restaurant_id: reward.referrer_restaurant_id,
     referred_restaurant_id: restaurantId,
     status: 'available',
   })
+  if (creditError) {
+    // Ne marque surtout pas la récompense "completed" si le crédit n'a pas pu
+    // être créé : le parrain perdrait définitivement son crédit sans recours,
+    // aucune future recherche ne retrouvant plus cette reward (status pending).
+    console.error('triggerReferralRewardIfDue: referral_credits insert error:', creditError)
+    return
+  }
 
-  await admin.from('referral_rewards')
+  const { error: updateError } = await admin.from('referral_rewards')
     .update({ status: 'completed', triggered_at: new Date().toISOString() })
     .eq('id', reward.id)
+  if (updateError) console.error('triggerReferralRewardIfDue: referral_rewards update error:', updateError)
 }

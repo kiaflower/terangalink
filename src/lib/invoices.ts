@@ -132,12 +132,16 @@ async function ensureInvoiceForCurrentPeriod(
   const period = computeCurrentPeriod(sub)
   const periodStartStr = toDateOnly(period.start)
 
-  const { data: existing } = await admin
-    .from('invoices')
-    .select('id')
-    .eq('subscription_id', sub.id)
-    .eq('period_start', periodStartStr)
-    .maybeSingle()
+  // Tant qu'un abonnement n'a jamais été payé (ends_at null), computeCurrentPeriod
+  // ancre la période sur `new Date()` — donc periodStartStr change de jour en jour
+  // avant le premier paiement. Chercher la facture existante par date exacte
+  // créerait alors une nouvelle facture à chaque jour où le sweep tourne. On
+  // cherche donc par abonnement seul dans ce cas : il ne doit jamais y avoir
+  // plus d'une facture non payée en attente du premier paiement.
+  const existingLookup = sub.ends_at
+    ? admin.from('invoices').select('id').eq('subscription_id', sub.id).eq('period_start', periodStartStr).maybeSingle()
+    : admin.from('invoices').select('id').eq('subscription_id', sub.id).order('created_at', { ascending: true }).limit(1).maybeSingle()
+  const { data: existing } = await existingLookup
   if (existing) return { invoiceId: existing.id, created: false }
 
   if (!opts.bypassLeadGate && period.start.getTime() - Date.now() > GENERATE_LEAD_DAYS * 86400000) return null
@@ -169,11 +173,12 @@ async function ensureInvoiceForCurrentPeriod(
   }
 
   if (sub.pending_credit_action === 'discount' || sub.pending_credit_action === 'free_month') {
-    await admin.from('referral_credits')
+    const { error: linkError } = await admin.from('referral_credits')
       .update({ invoice_id: invoice.id })
       .eq('restaurant_id', sub.restaurant_id)
       .eq('status', 'consumed')
       .is('invoice_id', null)
+    if (linkError) console.error('ensureInvoiceForCurrentPeriod: referral_credits link error:', linkError)
   }
   if (sub.pending_credit_action) {
     await admin.from('subscriptions').update({ pending_credit_action: null }).eq('id', sub.id)
