@@ -230,7 +230,7 @@ export default function SuperAdminPromoCodesPage() {
       {/* Edit modal */}
       {editCode && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h3 className="font-bold text-gray-900">Modifier <span className="font-mono text-brand-orange">{editCode.code}</span></h3>
               <button onClick={() => setEditCode(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
@@ -303,7 +303,7 @@ export default function SuperAdminPromoCodesPage() {
 
       {createOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h3 className="font-bold text-gray-900">Créer un code promo</h3>
               <button onClick={() => setCreateOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>

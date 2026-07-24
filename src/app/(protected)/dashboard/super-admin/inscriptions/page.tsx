@@ -84,7 +84,7 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <div className="sticky top-0 bg-white px-6 py-4 flex items-center justify-between border-b border-gray-100 rounded-t-2xl">
           <div>
             <h2 className="font-bold text-gray-900">{ins.restaurant_name}</h2>

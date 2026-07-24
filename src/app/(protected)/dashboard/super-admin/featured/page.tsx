@@ -51,7 +51,7 @@ function RestaurantMultiSelect({ restaurants, items, onToggle, onReorder }: {
   onReorder: (id: string, order: number) => void
 }) {
   return (
-    <div className="border border-gray-200 rounded-xl max-h-64 overflow-y-auto divide-y divide-gray-50">
+    <div className="border border-gray-200 rounded-xl max-h-64 overflow-y-auto overflow-x-hidden divide-y divide-gray-50">
       {restaurants.map(bt => {
         const selected = items.find(i => i.restaurant_id === bt.id)
         return (
@@ -262,7 +262,7 @@ export default function SuperAdminFeaturedPage() {
       {/* Edit modal */}
       {editBlock && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h3 className="font-bold text-gray-900">Modifier le bloc</h3>
               <button onClick={() => setEditBlock(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
@@ -314,7 +314,7 @@ export default function SuperAdminFeaturedPage() {
       {/* Create modal */}
       {createOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <h3 className="font-bold text-gray-900">Créer un bloc coup de cœur</h3>
               <button onClick={() => setCreateOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>

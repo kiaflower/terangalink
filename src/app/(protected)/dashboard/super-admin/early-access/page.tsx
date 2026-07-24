@@ -228,7 +228,7 @@ export default function EarlyAccessPage() {
       {selected && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/30" onClick={() => setSelected(null)} />
-          <div className="relative w-full max-w-lg bg-white h-full overflow-y-auto shadow-2xl border-l border-gray-100">
+          <div className="relative w-full max-w-lg bg-white h-full overflow-y-auto overflow-x-hidden shadow-2xl border-l border-gray-100">
             <div className="sticky top-0 bg-white px-6 py-4 border-b border-gray-100 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
                 {selected.logo_url ? (

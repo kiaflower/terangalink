@@ -178,7 +178,7 @@ function CreateRestaurantModal({ onClose, onCreated }: { onClose: () => void; on
         )}
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {result ? (
             /* Success screen */
             <div className="flex flex-col items-center justify-center py-16 px-8 text-center">

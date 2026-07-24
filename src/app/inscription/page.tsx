@@ -557,7 +557,7 @@ export default function InscriptionPage() {
       {mobilePreviewOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={() => setMobilePreviewOpen(false)}>
-          <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto p-4"
+          <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto overflow-x-hidden p-4"
             onClick={e => e.stopPropagation()}>
             <div className="flex justify-end mb-2">
               <button onClick={() => setMobilePreviewOpen(false)} aria-label="Fermer"><X className="w-5 h-5 text-gray-400" /></button>

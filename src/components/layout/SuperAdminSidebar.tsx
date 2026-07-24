@@ -42,7 +42,7 @@ function NavContent({ onClose, counts }: { onClose?: () => void; counts: Counts 
 
   return (
     <>
-      <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto overflow-x-hidden">
         {navItems.map(({ href, label, icon: Icon, exact, badge }) => {
           const active = exact ? pathname === href : (pathname === href || pathname.startsWith(href + '/'))
           return (

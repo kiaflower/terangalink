@@ -455,7 +455,7 @@ export default function EarlyAccessClient() {
             </div>
 
             {/* Body */}
-            <div className="px-5 py-5 overflow-y-auto flex-1">
+            <div className="px-5 py-5 overflow-y-auto overflow-x-hidden flex-1">
               {step === 1 && (
                 <>
                   <FieldGroup label="Nom du restaurant">
@@ -645,7 +645,7 @@ export default function EarlyAccessClient() {
           </div>
 
           {/* Preview live desktop */}
-          <div className="hidden sm:block w-[300px] flex-shrink-0 p-5 overflow-y-auto" style={{ borderLeft: `1px solid ${BORDER}` }}>
+          <div className="hidden sm:block w-[300px] flex-shrink-0 p-5 overflow-y-auto overflow-x-hidden" style={{ borderLeft: `1px solid ${BORDER}` }}>
             <p className="text-[11px] font-medium uppercase tracking-wide mb-3" style={{ color: TEXT_MUTED }}>Aperçu en direct</p>
             <RestaurantLivePreview
               name={form.restaurant_name}
@@ -665,7 +665,7 @@ export default function EarlyAccessClient() {
       {mobilePreviewOpen && (
         <div className="fixed inset-0 z-[60] bg-black/60 flex items-end justify-center p-0"
           onClick={() => setMobilePreviewOpen(false)}>
-          <div className="bg-white w-full rounded-t-2xl max-h-[92vh] overflow-y-auto p-4" onClick={e => e.stopPropagation()}>
+          <div className="bg-white w-full rounded-t-2xl max-h-[92vh] overflow-y-auto overflow-x-hidden p-4" onClick={e => e.stopPropagation()}>
             <div className="flex justify-end mb-2">
               <button onClick={() => setMobilePreviewOpen(false)} aria-label="Fermer"><X className="w-5 h-5" style={{ color: TEXT_MUTED }} /></button>
             </div>

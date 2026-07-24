@@ -107,7 +107,7 @@ export function RestaurantSidebar({ children, restaurantName, impersonating }: R
           </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-0.5 overflow-y-auto overflow-x-hidden">
           {navItems.map((item) => {
             const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
             return (
