@@ -68,11 +68,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Restaurant non disponible' }, { status: 400 })
   }
 
-  // Le suivi de commande client (/c/[slug]/[ref]) est une fonctionnalité
-  // Starter/Pro — en Free, on n'inclut pas ce lien dans la commande.
-  const { data: subForTracking } = await admin.from('subscriptions').select('plan').eq('restaurant_id', restaurant_id).single()
-  const hasOrderTracking = subForTracking?.plan !== 'free'
-
   const { promo_code_id: appliedPromoId, discount_amount } = await resolveDiscount(admin, restaurant_id, promo_code_id, total)
 
   const baseInsertData: Record<string, unknown> = {
@@ -128,8 +123,8 @@ export async function POST(req: NextRequest) {
 
   // /c/[slug]/[order_number] is the unified link: it auto-redirects the
   // restaurant admin (when logged in) to their dashboard order view, and
-  // shows the public tracking page to the customer otherwise (Starter/Pro only).
-  const dashboard_url = hasOrderTracking ? `${getSiteUrl()}/c/${restaurant.slug}/${data.order_number}` : null
+  // shows the public tracking page to the customer otherwise.
+  const dashboard_url = `${getSiteUrl()}/c/${restaurant.slug}/${data.order_number}`
 
   // Awaited (pas fire-and-forget) : une fonction serverless Vercel peut être
   // gelée juste après avoir envoyé la réponse, ce qui tuerait une promesse

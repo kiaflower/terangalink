@@ -88,10 +88,6 @@ async function renderOrderStatusPage({ slug, ref }: Props['params']) {
     }
   }
 
-  // Le suivi de commande client est une fonctionnalité Starter/Pro — en Free,
-  // seul l'admin du restaurant (redirigé ci-dessus) peut voir la commande.
-  if (subscription?.plan === 'free') notFound()
-
   const items = (order.items ?? []) as OrderItem[]
   const orderNumber = order.order_number || ref
 

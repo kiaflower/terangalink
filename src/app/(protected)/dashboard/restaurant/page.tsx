@@ -127,7 +127,7 @@ export default async function RestaurantDashboardHome() {
 
       <div className="mb-6">
         <FeatureGate plan={plan} feature="qrCode" requiredPlanLabel="Starter"
-          description="Débloquez le QR code téléchargeable, les avis clients, le suivi de commande, les bannières, jusqu'à 30 plats et le parcours d'achat dans vos analytiques.">
+          description="Débloquez le QR code téléchargeable, les avis clients, les bannières, jusqu'à 30 plats et le parcours d'achat dans vos analytiques.">
           {null}
         </FeatureGate>
         <FeatureGate plan={plan} feature="analyticsAvances" requiredPlanLabel="Pro"
