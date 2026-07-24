@@ -163,7 +163,7 @@ export default function InscriptionPage() {
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Créez votre restaurant</h1>
-          <p className="text-gray-500">Aucun paiement requis à l&apos;inscription</p>
+          <p className="text-gray-500">Rejoignez TerangaLink en quelques minutes</p>
         </div>
 
         <div className="lg:grid lg:grid-cols-[1fr,380px] lg:gap-8 lg:items-start">
@@ -351,9 +351,9 @@ export default function InscriptionPage() {
                   </button>
                 ))}
               </div>
-              <p className="text-center text-xs text-gray-400 mt-4">
-                {form.plan === 'free' ? 'Gratuit, sans limite de durée · Aucun paiement requis' : 'Aucun paiement requis à l’inscription'}
-              </p>
+              {form.plan === 'free' && (
+                <p className="text-center text-xs text-gray-400 mt-4">Gratuit, sans limite de durée · Aucun paiement requis</p>
+              )}
 
               {/* Color picker for Pro */}
               {form.plan === 'pro' && (
