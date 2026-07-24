@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { X, FileText, ExternalLink, ShieldCheck, Tag, Truck, Sparkles, CheckCircle2 } from 'lucide-react'
+import { PLANS, type PlanKey } from '@/lib/plans'
 
 interface Inscription {
   id: string; restaurant_name: string; owner_name: string; email: string; phone: string
@@ -32,7 +33,23 @@ const OFFER_ICONS: Record<string, React.ReactNode> = {
   custom: <Sparkles className="w-3.5 h-3.5" />,
 }
 
-function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: () => void; onApproved?: (id: string, action: 'approve' | 'reject') => void }) {
+function isPlanKey(plan: string | undefined): plan is PlanKey {
+  return plan === 'free' || plan === 'starter' || plan === 'pro'
+}
+
+function planName(plan: string | undefined): string {
+  return isPlanKey(plan) ? PLANS[plan].name : (plan ?? '—')
+}
+
+function planLabel(plan: string | undefined, planPrices: Record<string, number>): string {
+  if (!isPlanKey(plan)) return plan ?? '—'
+  const price = planPrices[plan] ?? PLANS[plan].price
+  return price > 0
+    ? `${PLANS[plan].name} — ${new Intl.NumberFormat('fr-SN').format(price)} FCFA/mois`
+    : `${PLANS[plan].name} — Gratuit`
+}
+
+function FicheModal({ ins, planPrices, onClose, onApproved }: { ins: Inscription; planPrices: Record<string, number>; onClose: () => void; onApproved?: (id: string, action: 'approve' | 'reject') => void }) {
   const [approving, setApproving] = useState(false)
   const [rejecting, setRejecting] = useState(false)
 
@@ -45,7 +62,7 @@ function FicheModal({ ins, onClose, onApproved }: { ins: Inscription; onClose: (
     { label: 'Catégorie', value: ins.cuisine_type },
     { label: 'Ville', value: ins.city },
     { label: 'Description', value: ins.description },
-    { label: 'Plan', value: ins.plan === 'pro' ? 'Pro — 19 900 FCFA/mois' : 'Starter — 9 900 FCFA/mois' },
+    { label: 'Plan', value: planLabel(ins.plan, planPrices) },
     { label: 'Instagram', value: ins.instagram_url },
     { label: 'Facebook', value: ins.facebook_url },
     { label: 'TikTok', value: ins.tiktok_url },
@@ -240,6 +257,14 @@ export default function InscriptionsPage() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Inscription | null>(null)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [planPrices, setPlanPrices] = useState<Record<string, number>>({ starter: PLANS.starter.price, pro: PLANS.pro.price })
+
+  useEffect(() => {
+    fetch('/api/platform-settings')
+      .then(r => r.json())
+      .then(data => setPlanPrices({ starter: data.plan_starter_price ?? PLANS.starter.price, pro: data.plan_pro_price ?? PLANS.pro.price }))
+      .catch(() => {})
+  }, [])
 
   async function loadInscriptions(): Promise<Inscription[]> {
     try {
@@ -283,6 +308,7 @@ export default function InscriptionsPage() {
       {selected && (
         <FicheModal
           ins={selected}
+          planPrices={planPrices}
           onClose={() => setSelected(null)}
           onApproved={handleApproved}
         />
@@ -325,7 +351,7 @@ export default function InscriptionsPage() {
                 <p className="text-sm text-gray-500">{ins.phone}</p>
                 {ins.cuisine_type && <p className="text-xs text-gray-400 mt-0.5">{ins.cuisine_type}{ins.city && ` · ${ins.city}`}</p>}
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Plan: <span className="font-medium">{ins.plan === 'pro' ? 'Pro' : 'Starter'}</span> · {new Date(ins.created_at).toLocaleDateString('fr-SN')}
+                  Plan: <span className="font-medium">{planName(ins.plan)}</span> · {new Date(ins.created_at).toLocaleDateString('fr-SN')}
                 </p>
                 {ins.partner_offer_type && (
                   <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-full">
