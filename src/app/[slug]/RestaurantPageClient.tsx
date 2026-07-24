@@ -569,7 +569,17 @@ export default function RestaurantPageClient({ restaurant, categories, products,
                 )}
               </h1>
               {restaurant.description && (
-                <p className="text-white/75 text-sm leading-relaxed max-w-lg">{restaurant.description}</p>
+                <div className="max-w-lg">
+                  {/* Hauteur plafonnée à ~3 lignes avec scroll interne : une
+                      description longue ne doit jamais pousser le <h1> hors du
+                      cadre fixe (h-64/h-80, overflow-hidden) de la hero. */}
+                  <ScrollableDescription
+                    text={restaurant.description}
+                    textColor="rgba(255,255,255,0.75)"
+                    bgColor="rgba(0,0,0,0.45)"
+                    wrapperClassName=""
+                  />
+                </div>
               )}
               {openStatus && (
                 <div className="mt-3">
@@ -792,7 +802,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
 
       {showAllReviews && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-4" onClick={() => setShowAllReviews(false)}>
-          <div className="bg-white rounded-2xl max-h-[80vh] overflow-y-auto w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl max-h-[80vh] overflow-y-auto overflow-x-hidden w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-lg text-gray-900">Tous les avis ({reviews.length})</h2>
               <button onClick={() => setShowAllReviews(false)}><X className="w-5 h-5 text-gray-400" /></button>
@@ -924,7 +934,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
       {/* Product modal */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto overflow-x-hidden">
             {(() => {
               const images = selectedProduct.images_urls?.length ? selectedProduct.images_urls : (selectedProduct.image_url ? [selectedProduct.image_url] : [])
               if (images.length === 0) return null
@@ -1055,7 +1065,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
       {/* Cart drawer */}
       {cartOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end">
-          <div className="bg-white w-full rounded-t-2xl p-6 max-h-[85vh] overflow-y-auto text-gray-900">
+          <div className="bg-white w-full rounded-t-2xl p-6 max-h-[85vh] overflow-y-auto overflow-x-hidden text-gray-900">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">Votre panier</h2>
               <button onClick={() => setCartOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
@@ -1101,7 +1111,7 @@ export default function RestaurantPageClient({ restaurant, categories, products,
       {/* Checkout modal */}
       {checkoutOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end">
-          <div className="bg-white w-full rounded-t-2xl p-6 max-h-[90vh] overflow-y-auto text-gray-900">
+          <div className="bg-white w-full rounded-t-2xl p-6 max-h-[90vh] overflow-y-auto overflow-x-hidden text-gray-900">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">Vos informations</h2>
               <button onClick={() => setCheckoutOpen(false)}><X className="w-5 h-5 text-gray-400" /></button>

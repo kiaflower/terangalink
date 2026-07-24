@@ -6,9 +6,11 @@ interface ScrollableDescriptionProps {
   text: string
   textColor: string
   bgColor: string
+  /** Classe du conteneur externe (marge/positionnement) — 'mt-4' par défaut. */
+  wrapperClassName?: string
 }
 
-export function ScrollableDescription({ text, textColor, bgColor }: ScrollableDescriptionProps) {
+export function ScrollableDescription({ text, textColor, bgColor, wrapperClassName = 'mt-4' }: ScrollableDescriptionProps) {
   const ref = useRef<HTMLDivElement>(null)
   const [showFade, setShowFade] = useState(false)
 
@@ -24,14 +26,14 @@ export function ScrollableDescription({ text, textColor, bgColor }: ScrollableDe
   useEffect(() => { updateFade() }, [text])
 
   return (
-    <div className="relative mt-4">
+    <div className={`relative ${wrapperClassName}`}>
       <div
         ref={ref}
         onScroll={updateFade}
         // ~3 lignes visibles (text-sm + leading-relaxed = 1.625 * 0.875rem par
         // ligne) — hauteur fixe et prévisible pour laisser le plus de place
         // possible à la photo, quel que soit le ratio (carré ou portrait).
-        className="max-h-[4.3rem] overflow-y-auto text-sm leading-relaxed pr-1"
+        className="max-h-[4.3rem] overflow-y-auto overflow-x-hidden text-sm leading-relaxed pr-1"
         style={{ color: textColor }}
       >
         {text}
