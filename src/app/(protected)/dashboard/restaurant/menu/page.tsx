@@ -384,7 +384,12 @@ export default function MenuPage() {
 
   async function deleteProduct(id: string) {
     if (!restaurantId || !confirm('Supprimer ce plat ?')) return
-    await supabase.from('menu_items').delete().eq('id', id)
+    const { error } = await supabase.from('menu_items').delete().eq('id', id)
+    if (error) {
+      alert(`Erreur lors de la suppression du plat : ${error.message}`)
+      console.error('menu_items delete error:', error)
+      return
+    }
     await load(restaurantId)
   }
 
@@ -677,7 +682,13 @@ export default function MenuPage() {
       {/* Product modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6">
+          {/* overflow-x-hidden : sans ça, un champ natif un peu large (ex: input
+              datetime-local des précommandes, dont le rendu du navigateur peut
+              dépasser la largeur du popup sur petit écran) rend ce conteneur
+              scrollable horizontalement en plus de verticalement — les gestes de
+              scroll tactiles deviennent alors ambigus (haut/bas vs gauche/droite),
+              ce qui se manifeste par un scroll qui "part dans tous les sens". */}
+          <div className="bg-white border border-gray-200 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-6">
               {editProduct ? 'Modifier le plat' : 'Nouveau plat'}
             </h2>
@@ -952,13 +963,13 @@ export default function MenuPage() {
                         <label className="text-xs font-medium text-gray-600">Ouverture des commandes</label>
                         <input type="datetime-local" value={form.preorder_start}
                           onChange={e => setForm(f => ({ ...f, preorder_start: e.target.value }))}
-                          className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                          className="w-full min-w-0 mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                       </div>
                       <div>
                         <label className="text-xs font-medium text-gray-600">Fermeture des commandes</label>
                         <input type="datetime-local" value={form.preorder_end}
                           onChange={e => setForm(f => ({ ...f, preorder_end: e.target.value }))}
-                          className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+                          className="w-full min-w-0 mt-1 border border-gray-200 rounded-lg px-3 py-2 text-sm" />
                       </div>
                       <div>
                         <label className="text-xs font-medium text-gray-600">Date/heure de livraison</label>
