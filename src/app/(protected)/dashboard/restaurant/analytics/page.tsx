@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { computeWeeklyStats } from '@/lib/analytics/weeklyStats'
 import { computeRecommendations } from '@/lib/analytics/recommendations'
-import type { PlanKey } from '@/lib/plans'
+import { canUseFeature, type PlanKey } from '@/lib/plans'
 import { FeatureGate } from '@/components/FeatureGate'
 
 async function getRestaurantId(userId: string, supabase: ReturnType<typeof createClient>): Promise<string | null> {
@@ -42,7 +42,7 @@ export default async function AnalyticsPage() {
   if (!restaurantId) return <div className="text-gray-500 py-20 text-center">Aucun restaurant associé</div>
 
   const { data: sub } = await supabase.from('subscriptions').select('plan').eq('restaurant_id', restaurantId).single()
-  const plan: PlanKey = sub?.plan === 'pro' || sub?.plan === 'free' ? sub.plan : 'starter'
+  const plan: PlanKey = sub?.plan === 'pro' || sub?.plan === 'starter' ? sub.plan : 'free'
 
   const now = new Date()
   const d30Iso = new Date(now.getTime() - 30 * 86400000).toISOString()
@@ -65,10 +65,19 @@ export default async function AnalyticsPage() {
         <StatCard label="Revenus estimés" value={`${new Intl.NumberFormat('fr-SN').format(rev30)} FCFA`} />
       </div>
 
-      <FeatureGate plan={plan} feature="analyticsParcours" requiredPlanLabel="Starter"
-        description="Débloquez le parcours d'achat (visites → commandes) et les plats les plus populaires.">
+      {canUseFeature(plan, 'analyticsParcours') ? (
         <AdvancedAnalytics supabase={supabase} restaurantId={restaurantId} now={now} plan={plan} />
-      </FeatureGate>
+      ) : (
+        // Ne rend jamais AdvancedAnalytics ici : c'est un composant serveur async
+        // dont le corps (requêtes Supabase coûteuses) s'exécute dès la création
+        // de l'élément JSX, avant que FeatureGate (composant client) ne décide de
+        // l'afficher ou non — passer children=null évite ces requêtes inutiles
+        // pour les plans qui n'ont de toute façon pas accès à la fonctionnalité.
+        <FeatureGate plan={plan} feature="analyticsParcours" requiredPlanLabel="Starter"
+          description="Débloquez le parcours d'achat (visites → commandes) et les plats les plus populaires.">
+          {null}
+        </FeatureGate>
+      )}
     </div>
   )
 }
@@ -89,21 +98,22 @@ async function AdvancedAnalytics({ supabase, restaurantId, now, plan }: {
   ])
 
   // Un seul tableau "plats populaires" (30j), fusionnant ajouts panier et
-  // commandes par nom de plat plutôt que deux listes séparées.
+  // commandes par identifiant de plat (et non par nom : deux plats différents
+  // peuvent partager le même nom, ex. dans deux catégories distinctes).
   const productStats = new Map<string, { name: string; added: number; ordered: number }>()
   for (const e of cartItemsRes.data ?? []) {
-    if (!e.item_name) continue
-    const entry = productStats.get(e.item_name) ?? { name: e.item_name, added: 0, ordered: 0 }
+    if (!e.item_id || !e.item_name) continue
+    const entry = productStats.get(e.item_id) ?? { name: e.item_name, added: 0, ordered: 0 }
     entry.added += 1
-    productStats.set(e.item_name, entry)
+    productStats.set(e.item_id, entry)
   }
   for (const o of (ordersItemsRes.data ?? []) as Array<{ items: unknown }>) {
-    const items = (o.items as Array<{ name: string; quantity: number }>) ?? []
+    const items = (o.items as Array<{ product_id?: string; name: string; quantity: number }>) ?? []
     for (const item of items) {
-      if (!item.name) continue
-      const entry = productStats.get(item.name) ?? { name: item.name, added: 0, ordered: 0 }
+      if (!item.product_id || !item.name) continue
+      const entry = productStats.get(item.product_id) ?? { name: item.name, added: 0, ordered: 0 }
       entry.ordered += item.quantity ?? 1
-      productStats.set(item.name, entry)
+      productStats.set(item.product_id, entry)
     }
   }
   const popularProducts = Array.from(productStats.values())

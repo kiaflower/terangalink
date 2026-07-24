@@ -45,6 +45,15 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ restaurant_id: restaurantId, event_type: 'product_view', item_id: product.id, item_name: product.name }),
     }).catch(() => {})
+    // Un client qui arrive directement sur une page plat (lien partagé, QR
+    // code, annuaire) ne passe jamais par la page vitrine — sans ceci, ce
+    // trafic ne compte jamais dans "Visites", ce qui peut faire dépasser 100%
+    // le taux de conversion global calculé côté analytics.
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ restaurant_id: restaurantId, event_type: 'restaurant_view' }),
+    }).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id])
 
@@ -78,6 +87,23 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
   useEffect(() => {
     setQuantity(q => Math.min(q, Math.max(1, maxQuantity)))
   }, [maxQuantity])
+
+  function openCheckout() {
+    // Ce flux "achat rapide" n'a pas de panier à proprement parler : ouvrir le
+    // checkout (quantité/variante déjà choisies) est le moment équivalent à un
+    // "ajout au panier" du parcours vitrine — sans cet événement, cartToOrderRate
+    // (commandes confirmées / paniers créés) est faussé pour tout restaurant dont
+    // les clients commandent via un lien plat direct plutôt que la vitrine.
+    fetch('/api/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        restaurant_id: restaurantId, event_type: 'add_to_cart', item_id: product.id, item_name: product.name,
+        session_id: getOrCreateSessionId(restaurantSlug),
+      }),
+    }).catch(() => {})
+    setCheckoutOpen(true)
+  }
 
   async function sendWhatsApp() {
     setSending(true)
@@ -204,7 +230,7 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
 
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <button
-          onClick={() => setCheckoutOpen(true)}
+          onClick={openCheckout}
           disabled={!product.is_available}
           className="flex-1 py-3.5 rounded-xl font-bold text-white flex items-center justify-center gap-2 shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
           style={{ backgroundColor: accent }}>
@@ -228,7 +254,7 @@ export function ProductOrderPanel({ product, restaurantId, restaurantSlug, resta
 
       {checkoutOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4" onClick={() => setCheckoutOpen(false)}>
-          <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 max-h-[90vh] overflow-y-auto text-gray-900" onClick={e => e.stopPropagation()}>
+          <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 max-h-[90vh] overflow-y-auto overflow-x-hidden text-gray-900" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold">Vos informations</h2>
               <button onClick={() => setCheckoutOpen(false)}><X className="w-5 h-5 text-gray-400" /></button>
