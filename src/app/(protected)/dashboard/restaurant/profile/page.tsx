@@ -5,12 +5,15 @@ import { createClient } from '@/lib/supabase/client'
 import type { Restaurant } from '@/lib/types'
 import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { fileToCompressedBlob } from '@/lib/imageUtils'
+import { DEFAULT_ACCENT, THEME_OPTIONS, COLOR_PALETTE } from '@/lib/theme'
+import type { PlanKey } from '@/lib/plans'
 import { Check, Upload, Truck } from 'lucide-react'
 
 export default function ProfilePage() {
   const supabase = createClient()
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [form, setForm] = useState<Partial<Restaurant>>({})
+  const [plan, setPlan] = useState<PlanKey>('starter')
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -20,10 +23,16 @@ export default function ProfilePage() {
   useEffect(() => {
     fetch('/api/auth/me').then(r => r.json()).then(async d => {
       if (!d.restaurant_id) return
-      const { data } = await supabase.from('restaurants').select('*').eq('id', d.restaurant_id).single()
+      const [{ data }, { data: subscription }] = await Promise.all([
+        supabase.from('restaurants').select('*').eq('id', d.restaurant_id).single(),
+        supabase.from('subscriptions').select('plan').eq('restaurant_id', d.restaurant_id).single(),
+      ])
       if (data) { setRestaurant(data); setForm(data) }
+      if (subscription?.plan) setPlan(subscription.plan as PlanKey)
     })
   }, [supabase])
+
+  const canCustomizeTheme = plan === 'pro'
 
   async function uploadImage(file: File, kind: 'logo' | 'cover') {
     if (!restaurant) return
@@ -64,6 +73,8 @@ export default function ProfilePage() {
       show_delivery_info: form.show_delivery_info,
       logo_url: form.logo_url,
       cover_url: form.cover_url,
+      primary_color: canCustomizeTheme ? form.primary_color : DEFAULT_ACCENT,
+      theme: canCustomizeTheme ? form.theme : 'light',
     }).eq('id', restaurant.id).select().single()
 
     setSaving(false)
@@ -196,6 +207,54 @@ export default function ProfilePage() {
             </div>
           </div>
         )}
+
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-sm font-medium text-gray-500">Couleur & thème de la vitrine</h3>
+            {!canCustomizeTheme && (
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                Réservé au plan Pro
+              </span>
+            )}
+          </div>
+          {!canCustomizeTheme && (
+            <p className="text-xs text-gray-400 mb-3">
+              Votre vitrine garde les couleurs et le thème par défaut de TerangaLink. Passez au plan Pro pour la personnaliser.
+            </p>
+          )}
+          <fieldset disabled={!canCustomizeTheme} className={`space-y-4 ${!canCustomizeTheme ? 'opacity-40 pointer-events-none' : ''}`}>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Couleur principale</label>
+              <div className="flex flex-wrap gap-2">
+                {COLOR_PALETTE.map(c => (
+                  <button key={c} type="button" onClick={() => setForm(f => ({ ...f, primary_color: c }))}
+                    className="w-8 h-8 rounded-lg border-2 transition-all"
+                    style={{ backgroundColor: c, borderColor: form.primary_color === c ? '#F97316' : 'transparent', transform: form.primary_color === c ? 'scale(1.15)' : 'scale(1)' }} />
+                ))}
+                <input type="color" value={(form.primary_color as string) || DEFAULT_ACCENT}
+                  onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
+                  className="w-8 h-8 rounded-lg cursor-pointer border border-gray-200" title="Couleur personnalisée" />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Thème</label>
+              <div className="flex gap-2">
+                {THEME_OPTIONS.map(t => (
+                  <button key={t.value} type="button"
+                    onClick={() => setForm(f => ({ ...f, theme: t.value }))}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all"
+                    style={{
+                      borderColor: form.theme === t.value ? '#F97316' : '#E5E7EB',
+                      backgroundColor: t.bg === 'var(--accent)' ? ((form.primary_color as string) || DEFAULT_ACCENT) : t.bg,
+                      color: t.text,
+                    }}>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </fieldset>
+        </div>
 
         {success && <p className="text-green-400 text-sm flex items-center gap-1.5"><Check className="w-4 h-4" /> Profil mis à jour avec succès</p>}
         {error && <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>}

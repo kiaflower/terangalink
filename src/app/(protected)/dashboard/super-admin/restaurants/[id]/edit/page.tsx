@@ -6,19 +6,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { fileToCompressedBase64 } from '@/lib/imageUtils'
-import { getRestaurantTheme, withAlpha } from '@/lib/theme'
+import { getRestaurantTheme, withAlpha, THEME_OPTIONS as THEMES, COLOR_PALETTE } from '@/lib/theme'
 import { ArrowLeft, Upload, Plus, Trash2, UserCircle, RefreshCw } from 'lucide-react'
-
-const THEMES = [
-  { value: 'light', label: 'Clair', bg: '#FFFFFF', text: '#111111' },
-  { value: 'dark', label: 'Sombre', bg: '#111111', text: '#FFFFFF' },
-  { value: 'vibrant', label: 'Coloré', bg: 'var(--accent)', text: '#FFFFFF' },
-]
-
-const COLOR_PALETTE = [
-  '#F97316', '#2563EB', '#059669', '#DC2626',
-  '#D97706', '#DB2777', '#0891B2', '#111111',
-]
 
 const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'

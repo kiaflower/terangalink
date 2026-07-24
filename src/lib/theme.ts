@@ -1,5 +1,16 @@
 export const DEFAULT_ACCENT = '#F97316'
 
+export const COLOR_PALETTE = [
+  '#F97316', '#2563EB', '#059669', '#DC2626',
+  '#D97706', '#DB2777', '#0891B2', '#111111',
+] as const
+
+export const THEME_OPTIONS = [
+  { value: 'light', label: 'Clair', bg: '#FFFFFF', text: '#111111' },
+  { value: 'dark', label: 'Sombre', bg: '#111111', text: '#FFFFFF' },
+  { value: 'vibrant', label: 'Coloré', bg: 'var(--accent)', text: '#FFFFFF' },
+] as const
+
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/
 
 export function sanitizeHexColor(input?: string | null, fallback: string = DEFAULT_ACCENT): string {
