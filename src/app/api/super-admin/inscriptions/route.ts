@@ -172,18 +172,16 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ error: profileError.message }, { status: 500 })
         }
 
-        // Create subscription. Free est gratuit et actif immédiatement (pas
-        // d'essai à faire expirer, jamais de facture) ; Starter/Pro gardent
-        // l'essai de 8 jours existant.
+        // Create subscription. Tous les plans sont actifs immédiatement, sans
+        // période d'essai (retiré — Starter/Pro avaient auparavant 8 jours).
         const plan = (r.plan as string) || 'starter'
         const startedAt = new Date()
-        const endsAt = plan === 'free' ? null : new Date(startedAt.getTime() + 8 * 24 * 60 * 60 * 1000)
         await admin.from('subscriptions').insert({
           restaurant_id: restaurant.id,
           plan,
-          status: plan === 'free' ? 'active' : 'trial',
+          status: 'active',
           started_at: startedAt.toISOString(),
-          ends_at: endsAt ? endsAt.toISOString() : null,
+          ends_at: null,
         })
 
         // Record the referral relationship — the discount only kicks in once

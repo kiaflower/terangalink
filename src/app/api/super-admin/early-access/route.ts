@@ -136,13 +136,12 @@ export async function POST(req: NextRequest) {
   }
 
   const startedAt = new Date()
-  const endsAt = new Date(startedAt.getTime() + 8 * 24 * 60 * 60 * 1000)
   await admin.from('subscriptions').insert({
     restaurant_id: restaurant.id,
     plan: application.plan || 'starter',
-    status: 'trial',
+    status: 'active',
     started_at: startedAt.toISOString(),
-    ends_at: endsAt.toISOString(),
+    ends_at: null,
   })
 
   await registerReferral(admin, restaurant.id, application.referral_code)

@@ -135,17 +135,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: profileError.message }, { status: 500 })
     }
 
-    // Step 4: Create subscription. Free est actif immédiatement (pas d'essai,
-    // jamais de facture) ; Starter/Pro gardent l'essai de 8 jours existant.
+    // Step 4: Create subscription. Tous les plans sont actifs immédiatement,
+    // sans période d'essai (retiré — Starter/Pro avaient auparavant 8 jours).
     const startedAt = new Date()
-    const endsAt = finalPlan === 'free' ? null : new Date(startedAt.getTime() + 8 * 24 * 60 * 60 * 1000)
 
     const { error: subError } = await admin.from('subscriptions').insert({
       restaurant_id: restaurant.id,
       plan: finalPlan,
-      status: finalPlan === 'free' ? 'active' : 'trial',
+      status: 'active',
       started_at: startedAt.toISOString(),
-      ends_at: endsAt ? endsAt.toISOString() : null,
+      ends_at: null,
     })
 
     if (subError) {

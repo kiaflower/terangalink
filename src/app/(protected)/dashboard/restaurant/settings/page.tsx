@@ -497,7 +497,7 @@ export default function SettingsPage() {
         {restaurant?.referral_code ? (
           <div>
             <p className="text-xs text-gray-500 mb-4">
-              Partagez ce code. Si le filleul s&apos;abonne après son essai, vous recevez tous les deux 25% sur votre prochain mois.
+              Partagez ce code. Si le filleul s&apos;inscrit avec et paie son premier mois, vous recevez tous les deux 25% sur votre prochain mois.
             </p>
             <div className="flex items-center gap-3 mb-3">
               <span className="font-mono font-bold text-xl tracking-wider px-4 py-2 bg-white border border-gray-200 rounded-xl" style={{ color: '#F97316' }}>

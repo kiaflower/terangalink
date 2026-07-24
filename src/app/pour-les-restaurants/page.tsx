@@ -482,11 +482,10 @@ export default async function PourLesRestaurantsPage() {
             ))}
           </div>
           <p className="text-center text-sm mt-8" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            Envie de tester Starter ou Pro avant de choisir ?{' '}
+            Une question avant de choisir entre Starter et Pro ?{' '}
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-orange-300 hover:text-white hover:underline">
               Écrivez-nous sur WhatsApp
-            </a>{' '}
-            pour un essai gratuit de 8 jours.
+            </a>.
           </p>
         </div>
       </section>
