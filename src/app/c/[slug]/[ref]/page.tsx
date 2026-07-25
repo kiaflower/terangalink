@@ -6,7 +6,14 @@ import { ChevronRight, Truck, Store } from 'lucide-react'
 import { OrderStatusLive } from '@/components/tracking/OrderStatusLive'
 import { getRestaurantTheme } from '@/lib/theme'
 
+// force-dynamic seul ne suffit pas toujours à empêcher le Data Cache de
+// Vercel de garder en cache les appels fetch() internes de supabase-js (ex:
+// le plan de l'abonnement) au-delà du déploiement qui les a produits — le
+// header Cache-Control de la réponse HTTP ne reflète pas ce cache-là.
+// revalidate + fetchCache le désactivent explicitement pour cette route.
 export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
 
 interface OrderItem {
   name: string
