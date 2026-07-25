@@ -8,6 +8,7 @@ import { fileToCompressedBlob } from '@/lib/imageUtils'
 import { DEFAULT_ACCENT, THEME_OPTIONS, COLOR_PALETTE } from '@/lib/theme'
 import type { PlanKey } from '@/lib/plans'
 import { Check, Upload, Truck } from 'lucide-react'
+import { RestaurantLivePreview } from '@/components/onboarding/RestaurantLivePreview'
 
 export default function ProfilePage() {
   const supabase = createClient()
@@ -102,9 +103,10 @@ export default function ProfilePage() {
   )
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-5xl">
       <h1 className="text-2xl font-bold text-gray-900 mb-8">Profil du restaurant</h1>
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
         <div>
           <label className="text-xs text-gray-400 mb-1 block">Logo</label>
           <div className="flex items-center gap-3">
@@ -265,6 +267,27 @@ export default function ProfilePage() {
         >
           {saving ? 'Enregistrement...' : 'Sauvegarder'}
         </button>
+      </div>
+
+      <div className="lg:col-span-1">
+        <div className="sticky top-6">
+          <p className="text-xs font-medium text-gray-500 mb-3 uppercase tracking-wider">Aperçu en direct</p>
+          <RestaurantLivePreview
+            name={(form.name as string) || ''}
+            category={CUISINE_OPTIONS.find(o => o.value === form.cuisine_type)?.label}
+            city={form.city as string | undefined}
+            logoUrl={form.logo_url as string | undefined}
+            coverUrl={form.cover_url as string | undefined}
+            primaryColor={canCustomizeTheme ? ((form.primary_color as string) || DEFAULT_ACCENT) : DEFAULT_ACCENT}
+            theme={canCustomizeTheme ? ((form.theme as string) || 'light') : 'light'}
+          />
+          {!canCustomizeTheme && (
+            <p className="text-xs text-gray-400 mt-3">
+              Passez au plan Pro pour personnaliser les couleurs et le thème de votre vitrine.
+            </p>
+          )}
+        </div>
+      </div>
       </div>
     </div>
   )

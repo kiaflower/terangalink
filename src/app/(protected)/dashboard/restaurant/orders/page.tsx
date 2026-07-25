@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { formatPrice, formatDate } from '@/lib/utils'
 import type { Order } from '@/lib/types'
-import { ClipboardList, MessageCircle, Star } from 'lucide-react'
+import { ClipboardList, MessageCircle, Star, Search, X } from 'lucide-react'
 import { ReceiptGenerator } from '@/components/orders/ReceiptGenerator'
 import type { PlanKey } from '@/lib/plans'
 
@@ -68,6 +68,7 @@ function OrdersPageInner() {
   const [hasReview, setHasReview] = useState<boolean | null>(null)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [search, setSearch] = useState('')
   const [newOrdersMsg, setNewOrdersMsg] = useState<string | null>(null)
   const knownOrderIds = useRef<Set<string> | null>(null)
   const preselectedId = searchParams.get('id')
@@ -230,7 +231,17 @@ function OrdersPageInner() {
     window.open(waLink(order.customer_phone, message), '_blank')
   }
 
-  const filteredOrders = statusFilter === 'all' ? orders : orders.filter(o => o.status === statusFilter)
+  const searchTerm = search.trim().toLowerCase()
+  const filteredOrders = orders
+    .filter(o => statusFilter === 'all' || o.status === statusFilter)
+    .filter(o => {
+      if (!searchTerm) return true
+      return (
+        o.order_number?.toLowerCase().includes(searchTerm) ||
+        o.customer_name?.toLowerCase().includes(searchTerm) ||
+        o.customer_phone?.toLowerCase().includes(searchTerm)
+      )
+    })
 
   return (
     <div>
@@ -241,6 +252,26 @@ function OrdersPageInner() {
           {newOrdersMsg}
         </div>
       )}
+
+      <div className="relative mb-4">
+        <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Rechercher par n° commande, client ou téléphone..."
+          className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500"
+            aria-label="Effacer la recherche"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
 
       <div className="flex gap-2 flex-wrap mb-6">
         {STATUS_FILTERS.map(f => (
@@ -259,7 +290,11 @@ function OrdersPageInner() {
       {filteredOrders.length === 0 ? (
         <div className="text-center py-20 text-gray-500">
           <ClipboardList className="w-10 h-10 mx-auto mb-4 text-gray-300" />
-          <p>Aucune commande {statusFilter !== 'all' ? 'dans ce statut' : 'reçue pour le moment'}</p>
+          <p>
+            {searchTerm
+              ? 'Aucune commande ne correspond à cette recherche'
+              : `Aucune commande ${statusFilter !== 'all' ? 'dans ce statut' : 'reçue pour le moment'}`}
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
