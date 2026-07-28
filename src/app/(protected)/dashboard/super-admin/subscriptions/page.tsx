@@ -55,7 +55,7 @@ export default function SubscriptionsPage() {
     const interval = setInterval(fetchSubs, 60000)
     const channel = supabase
       .channel('subscriptions-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, fetchSubs)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'subscriptions' }, fetchSubs)
       .subscribe()
     return () => { clearInterval(interval); supabase.removeChannel(channel) }
   }, [fetchSubs])

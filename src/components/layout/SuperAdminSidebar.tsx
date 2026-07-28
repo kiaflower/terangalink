@@ -96,9 +96,9 @@ export function SuperAdminSidebar({ children }: { children: React.ReactNode }) {
 
     const channel = supabase
       .channel('sidebar-counts')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'inscriptions' }, fetchCounts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_requests' }, fetchCounts)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'early_access_applications' }, fetchCounts)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'inscriptions' }, fetchCounts)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'appointment_requests' }, fetchCounts)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'early_access_applications' }, fetchCounts)
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }

@@ -102,7 +102,7 @@ export function OrderStatusLive({
         'postgres_changes',
         {
           event: 'UPDATE',
-          schema: 'public',
+          schema: 'app',
           table: 'orders',
           filter: `id=eq.${orderId}`,
         },

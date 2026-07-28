@@ -84,10 +84,10 @@ export default function SuperAdminDashboard() {
     // Real-time subscriptions on key tables
     const channel = supabase
       .channel('super-admin-dashboard')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'inscriptions' }, fetchData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, fetchData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointment_requests' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'inscriptions' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'orders' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'subscriptions' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'app', table: 'appointment_requests' }, fetchData)
       .subscribe()
 
     return () => {
