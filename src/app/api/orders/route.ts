@@ -5,12 +5,27 @@ import { sendPushToRestaurant } from '@/lib/push/sendPush'
 
 export const dynamic = 'force-dynamic'
 
-async function generateOrderNumber(restaurantId: string, admin: ReturnType<typeof createAdminClient>): Promise<string> {
-  const { count } = await admin
+async function generateOrderNumber(
+  restaurantId: string,
+  admin: ReturnType<typeof createAdminClient>
+): Promise<string> {
+  const { data, error } = await admin
     .from('orders')
-    .select('id', { count: 'exact', head: true })
+    .select('order_number')
     .eq('restaurant_id', restaurantId)
-  const next = ((count ?? 0) + 1).toString().padStart(6, '0')
+    .order('order_number', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+
+  if (!data?.order_number) {
+    return 'TL-000001'
+  }
+
+  const current = parseInt(data.order_number.replace('TL-', ''), 10)
+  const next = String(current + 1).padStart(6, '0')
+
   return `TL-${next}`
 }
 

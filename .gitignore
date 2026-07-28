@@ -42,3 +42,4 @@ next-env.d.ts
 supabase/.branches
 supabase/.temp
 supabase/_a_coller_dans_sql_editor.sql
+.env*
