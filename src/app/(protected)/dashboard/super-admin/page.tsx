@@ -54,8 +54,8 @@ export default function SuperAdminDashboard() {
       { count: rdvCount },
       { data: recentIns },
     ] = await Promise.all([
-      supabase.from('restaurants').select('*', { count: 'exact', head: true }),
-      supabase.from('restaurants').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      supabase.from('restaurants').select('id', { count: 'exact', head: true }),
+      supabase.from('restaurants').select('id', { count: 'exact', head: true }).eq('is_active', true),
       supabase.from('inscriptions').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('orders').select('*', { count: 'exact', head: true }).gte('created_at', yesterday),
       supabase.from('subscriptions').select('*', { count: 'exact', head: true }).in('status', ['active', 'trial']),

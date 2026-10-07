@@ -8,6 +8,7 @@ import { getCanonicalSiteUrl } from '@/lib/site-url'
 import { buildLocalBusinessJsonLd, jsonLdScript } from '@/lib/structuredData'
 import { canUseFeature, type PlanKey } from '@/lib/plans'
 import RestaurantPageClient from './RestaurantPageClient'
+import { RESTAURANT_PUBLIC_COLUMNS } from '@/lib/restaurantColumns'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -29,7 +30,7 @@ export default async function RestaurantPage({ params, searchParams }: Props) {
 
   const { data: restaurant } = await supabase
     .from('restaurants')
-    .select('*')
+    .select(RESTAURANT_PUBLIC_COLUMNS)
     .eq('slug', params.slug)
     .single()
 

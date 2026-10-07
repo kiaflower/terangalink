@@ -8,6 +8,7 @@ import { CUISINE_OPTIONS } from '@/lib/cuisines'
 import { fileToCompressedBase64 } from '@/lib/imageUtils'
 import { getRestaurantTheme, withAlpha, THEME_OPTIONS as THEMES, COLOR_PALETTE } from '@/lib/theme'
 import { ArrowLeft, Upload, Plus, Trash2, UserCircle, RefreshCw } from 'lucide-react'
+import { RESTAURANT_PUBLIC_COLUMNS } from '@/lib/restaurantColumns'
 
 const inputClass = 'w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange/20 transition-colors'
 const labelClass = 'block text-xs font-medium text-gray-500 mb-1.5'
@@ -190,7 +191,7 @@ export default function EditRestaurantPage() {
   }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    supabase.from('restaurants').select('*').eq('id', id).single().then(({ data }) => {
+    supabase.from('restaurants').select(RESTAURANT_PUBLIC_COLUMNS).eq('id', id).single().then(({ data }) => {
       if (data) {
         const d = data as unknown as Record<string, unknown>
         setForm({

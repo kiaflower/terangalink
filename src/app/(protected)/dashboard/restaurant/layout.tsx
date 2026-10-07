@@ -7,6 +7,7 @@ import { RestaurantSidebar } from '@/components/layout/RestaurantSidebar'
 import { RestaurantSessionGuard } from '@/components/dashboard/RestaurantSessionGuard'
 import { InstallPwaBanner } from '@/components/dashboard/InstallPwaBanner'
 import { RegisterServiceWorker } from '@/components/dashboard/RegisterServiceWorker'
+import { RESTAURANT_PUBLIC_COLUMNS } from '@/lib/restaurantColumns'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,7 +40,7 @@ export default async function RestaurantDashboardLayout({ children }: { children
   // is actually a super_admin — otherwise a stale cookie (left over from a
   // previous super-admin session on the same browser) would silently put a
   // regular restaurant owner into impersonation mode for someone else's restaurant.
-  const { data: profile } = await supabase.from('profiles').select('*, restaurant:restaurants(*)').eq('id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select(`*, restaurant:restaurants(${RESTAURANT_PUBLIC_COLUMNS})` as '*, restaurant:restaurants(*)').eq('id', user.id).single()
   const isSuperAdmin = (profile as { role?: string } | null)?.role === 'super_admin'
   const impersonating = isSuperAdmin && !!impersonateCookie
 

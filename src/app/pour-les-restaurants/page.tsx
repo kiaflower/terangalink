@@ -17,6 +17,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildWhatsAppMessage } from '@/lib/utils'
 import type { Restaurant, MenuCategory, ProductWithVariants } from '@/lib/types'
+import { RESTAURANT_PUBLIC_COLUMNS } from '@/lib/restaurantColumns'
 
 export const metadata: Metadata = {
   title: 'Arrêtez de gérer vos commandes en pleine cuisine — TerangaLink',
@@ -117,7 +118,7 @@ async function loadDemoShowcase(): Promise<DemoShowcaseEntry[]> {
 
   const { data: restaurants } = await supabase
     .from('restaurants')
-    .select('*')
+    .select(RESTAURANT_PUBLIC_COLUMNS)
     .eq('is_demo', true)
     .eq('is_active', true)
     .order('created_at', { ascending: true })

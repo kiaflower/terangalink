@@ -9,6 +9,7 @@ import { DEFAULT_ACCENT, THEME_OPTIONS, COLOR_PALETTE } from '@/lib/theme'
 import type { PlanKey } from '@/lib/plans'
 import { Check, Upload, Truck } from 'lucide-react'
 import { RestaurantLivePreview } from '@/components/onboarding/RestaurantLivePreview'
+import { RESTAURANT_PUBLIC_COLUMNS } from '@/lib/restaurantColumns'
 
 export default function ProfilePage() {
   const supabase = createClient()
@@ -25,7 +26,7 @@ export default function ProfilePage() {
     fetch('/api/auth/me').then(r => r.json()).then(async d => {
       if (!d.restaurant_id) return
       const [{ data }, { data: subscription }] = await Promise.all([
-        supabase.from('restaurants').select('*').eq('id', d.restaurant_id).single(),
+        supabase.from('restaurants').select(RESTAURANT_PUBLIC_COLUMNS).eq('id', d.restaurant_id).single(),
         supabase.from('subscriptions').select('plan').eq('restaurant_id', d.restaurant_id).single(),
       ])
       if (data) { setRestaurant(data); setForm(data) }
